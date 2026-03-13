@@ -21,8 +21,8 @@
 
     body {
       font-family: 'Inter', Arial, Helvetica, sans-serif;
-      color: #e0e0e0;
-      background: #d3d3d3;
+      color: #c0c8d8;
+      background: #0f1117;
     }
 
     /* ── Navigation ── */
@@ -101,7 +101,7 @@
     .text-col h2 {
       font-size: 2.4rem;
       font-weight: 700;
-      color: #fff;
+      color: #e8ecf4;
       line-height: 1.2;
       margin-bottom: 20px;
     }
@@ -109,13 +109,13 @@
     .text-col p {
       font-size: 1.05rem;
       line-height: 1.75;
-      color: #9ca3b8;
+      color: #8b93a8;
     }
 
     .media-col img {
       width: 100%;
       border-radius: 16px;
-      border: 1px solid #000;
+      border: 3px solid rgba(255, 255, 255, 0.12);
       object-fit: cover;
       display: block;
     }
@@ -135,7 +135,7 @@
     #hjem h1 {
       font-size: 3.4rem;
       font-weight: 700;
-      color: #fff;
+      color: #e8ecf4;
       margin-bottom: 16px;
       line-height: 1.15;
     }
@@ -180,8 +180,9 @@
       width: 100%;
       height: auto;
       object-fit: contain;
-      border-radius: 12px;
-      border: 1px solid #000;
+      border-radius: 12px 12px 0 0;
+      border: 3px solid rgba(255, 255, 255, 0.12);
+      border-bottom: none;
       display: block;
       transition: transform 0.3s;
     }
@@ -227,8 +228,8 @@
       text-align: center;
       padding: 24px;
       font-size: 0.75rem;
-      color: #3a3f52;
-      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      color: #4e5672;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     /* ── Responsive ── */
@@ -301,7 +302,21 @@
       text-align: center;
       font-size: 0.8rem;
       color: #9ca3b8;
-      margin-top: 6px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 3px solid rgba(255, 255, 255, 0.12);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+    }
+
+    /* ── Study section – larger image ── */
+    #studiet .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+
+    #studiet .gallery-grid img {
+      max-height: 500px;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -324,7 +339,7 @@
     <!-- Hero -->
     <section id="hjem">
       <div class="hero-content">
-        <h1 data-i18n="hero.title">Vetle Lunde nettside</h1>
+        <h1 data-i18n="hero.title">Vetle Lunde</h1>
         <p class="subtitle" data-i18n="hero.subtitle">Jeg er interessert i geologi, spesielt bergartsgeologi og jordas utvikling frem til i dag. Jeg jobber for tiden med bacheloroppgaven min om Gula- og Funnsjøgruppen i Trøndelag, som en del av Merøprosjektet til NGU.</p>
         <span class="scroll-hint" data-i18n="hero.scroll">↓ Scroll ned for å lese mer</span>
       </div>
@@ -334,8 +349,7 @@
     <section id="om-meg">
       <div class="section-inner">
         <div class="text-col">
-          <span class="section-label" data-i18n="about.label">Om meg</span>
-          <h2 data-i18n="about.title">Hvem er Vetle?</h2>
+          <h2 data-i18n="about.title">Om meg</h2>
           <p data-i18n="about.text">Jeg er en student fra Sogndal med stor interesse for geologi og hvordan naturkreftene former landskapet rundt oss. Gjennom studietiden har jeg fått utforsket alt fra fjellformasjoner til skredfare, og jeg trives best ute i felt med hammer og kompass i hånden.</p>
         </div>
       </div>
@@ -420,11 +434,10 @@
         "nav.study": "Studiet",
         "nav.bachelor": "Bacheloroppgave",
         "nav.contact": "Kontakt",
-        "hero.title": "Vetle Lunde nettside",
+        "hero.title": "Vetle Lunde",
         "hero.subtitle": "Jeg er interessert i geologi, spesielt bergartsgeologi og jordas utvikling frem til i dag. Jeg jobber for tiden med bacheloroppgaven min om Gula- og Funnsjøgruppen i Trøndelag, som en del av Merøprosjektet til NGU.",
         "hero.scroll": "\u2193 Scroll ned for \u00e5 lese mer",
-        "about.label": "Om meg",
-        "about.title": "Hvem er Vetle?",
+        "about.title": "Om meg",
         "about.text": "Jeg er en student fra Sogndal med stor interesse for geologi og hvordan naturkreftene former landskapet rundt oss. Gjennom studietiden har jeg f\u00e5tt utforsket alt fra fjellformasjoner til skredfare, og jeg trives best ute i felt med hammer og kompass i h\u00e5nden.",
         "study.label": "Studiet",
         "study.title": "Geologi og Geofare",
@@ -451,11 +464,10 @@
         "nav.study": "Studies",
         "nav.bachelor": "Bachelor Thesis",
         "nav.contact": "Contact",
-        "hero.title": "Vetle Lunde website",
+        "hero.title": "Vetle Lunde",
         "hero.subtitle": "I am interested in geology, especially rock geology and the evolution of the Earth until today. I am currently working on my bachelor thesis on the Gula and Funnsjø group in Trøndelag, as part of the Merø project by NGU.",
         "hero.scroll": "\u2193 Scroll down to read more",
-        "about.label": "About me",
-        "about.title": "Who is Vetle?",
+        "about.title": "About me",
         "about.text": "I\u2019m a student from Sogndal with a strong interest in geology and how natural forces shape the landscape around us. Throughout my studies I\u2019ve explored everything from mountain formations to avalanche hazards, and I feel most at home out in the field with a hammer and compass in hand.",
         "study.label": "Studies",
         "study.title": "Geology and Geo-Hazards",
