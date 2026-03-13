@@ -290,6 +290,40 @@
         height: 200px;
       }
     }
+
+    /* ── Language toggle ── */
+    .lang-toggle {
+      background: rgba(99, 132, 255, 0.15);
+      color: #a0a8c0;
+      border: 1px solid rgba(99, 132, 255, 0.3);
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 6px 14px;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: color 0.3s, background 0.3s, border-color 0.3s;
+    }
+
+    .lang-toggle:hover,
+    .lang-toggle:focus-visible {
+      color: #fff;
+      background: rgba(99, 132, 255, 0.25);
+      border-color: rgba(99, 132, 255, 0.5);
+    }
+
+    /* ── Figure captions inside gallery ── */
+    .gallery-grid figure {
+      margin: 0;
+    }
+
+    .gallery-grid figcaption {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #9ca3b8;
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body>
@@ -297,11 +331,12 @@
   <!-- Navigation -->
   <nav>
     <ul>
-      <li><a href="#hjem">Hjem</a></li>
-      <li><a href="#om-meg">Om meg</a></li>
-      <li><a href="#studiet">Studiet</a></li>
-      <li><a href="#bachelor">Bacheloroppgave</a></li>
-      <li><a href="#kontakt">Kontakt</a></li>
+      <li><a href="#hjem" data-i18n="nav.home">Hjem</a></li>
+      <li><a href="#om-meg" data-i18n="nav.about">Om meg</a></li>
+      <li><a href="#studiet" data-i18n="nav.study">Studiet</a></li>
+      <li><a href="#bachelor" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
+      <li><a href="#kontakt" data-i18n="nav.contact">Kontakt</a></li>
+      <li><button class="lang-toggle" data-i18n="lang.switch" aria-label="Switch language">EN</button></li>
     </ul>
   </nav>
 
@@ -310,10 +345,10 @@
     <!-- Hero -->
     <section id="hjem">
       <div class="hero-content">
-        <span class="section-label">Velkommen</span>
-        <h1>Hei, jeg er <span>Vetle</span></h1>
-        <p class="subtitle">Geologistudent med lidenskap for fjell, stein og naturkrefter. Utforsk mine tre år med Geologi og Geofare i Sogndal.</p>
-        <span class="scroll-hint">↓ Scroll ned for å lese mer</span>
+        <span class="section-label" data-i18n="hero.label">Velkommen</span>
+        <h1 data-i18n-html="hero.title">Hei, jeg er <span>Vetle</span></h1>
+        <p class="subtitle" data-i18n="hero.subtitle">Geologistudent med lidenskap for fjell, stein og naturkrefter. Utforsk mine tre år med Geologi og Geofare i Sogndal.</p>
+        <span class="scroll-hint" data-i18n="hero.scroll">↓ Scroll ned for å lese mer</span>
       </div>
     </section>
 
@@ -321,14 +356,15 @@
     <section id="om-meg">
       <div class="section-inner">
         <div class="text-col">
-          <span class="section-label">Om meg</span>
-          <h2>Hvem er Vetle?</h2>
-          <p>Jeg er en student fra Sogndal med stor interesse for geologi og hvordan naturkreftene former landskapet rundt oss. Gjennom studietiden har jeg fått utforsket alt fra fjellformasjoner til skredfare, og jeg trives best ute i felt med hammer og kompass i hånden.</p>
+          <span class="section-label" data-i18n="about.label">Om meg</span>
+          <h2 data-i18n="about.title">Hvem er Vetle?</h2>
+          <p data-i18n="about.text">Jeg er en student fra Sogndal med stor interesse for geologi og hvordan naturkreftene former landskapet rundt oss. Gjennom studietiden har jeg fått utforsket alt fra fjellformasjoner til skredfare, og jeg trives best ute i felt med hammer og kompass i hånden.</p>
         </div>
         <div class="media-col">
           <img
             src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=540&fit=crop"
             alt="Fjellpanorama – naturen som inspirerer"
+            data-i18n-alt="about.img.alt"
           />
         </div>
       </div>
@@ -338,28 +374,32 @@
     <section id="studiet">
       <div class="section-inner">
         <div class="text-col">
-          <span class="section-label">Studiet</span>
-          <h2>Geologi og Geofare</h2>
-          <p>Bachelorgraden i Geologi og Geofare ved Høgskolen på Vestlandet i Sogndal gir solid kunnskap om jordas oppbygging, berggrunn, løsmasser og naturfarer. Studiet kombinerer teori med mye feltarbeid i spektakulær vestlandsnatur, noe som gjør det til en unik og praktisk utdanning.</p>
+          <span class="section-label" data-i18n="study.label">Studiet</span>
+          <h2 data-i18n="study.title">Geologi og Geofare</h2>
+          <p data-i18n="study.text">Bachelorgraden i Geologi og Geofare ved Høgskolen på Vestlandet i Sogndal gir solid kunnskap om jordas oppbygging, berggrunn, løsmasser og naturfarer. Studiet kombinerer teori med mye feltarbeid i spektakulær vestlandsnatur, noe som gjør det til en unik og praktisk utdanning.</p>
         </div>
         <div class="media-col">
           <div class="gallery-grid">
             <img
               src="https://images.unsplash.com/photo-1529963183134-61a90db47eaf?w=600&h=400&fit=crop"
               alt="Snødekt fjelltopp"
+              data-i18n-alt="study.img1.alt"
             />
             <img
               class="tall"
               src="https://images.unsplash.com/photo-1472396961693-142e6e269027?w=600&h=800&fit=crop"
               alt="Rødt fjell-landskap"
+              data-i18n-alt="study.img2.alt"
             />
             <img
               src="https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=600&h=400&fit=crop"
               alt="Blå himmel over skyer og fjell"
+              data-i18n-alt="study.img3.alt"
             />
             <img
               src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop"
               alt="Steinvarde ved solnedgang"
+              data-i18n-alt="study.img4.alt"
             />
           </div>
         </div>
@@ -370,20 +410,28 @@
     <section id="bachelor">
       <div class="section-inner">
         <div class="text-col">
-          <span class="section-label">Bacheloroppgave</span>
-          <h2>Bacheloroppgaven min</h2>
-          <p>Bacheloroppgaven min fokuserer på å forstå geologiske prosesser og hvordan de påvirker samfunnet. Gjennom feltarbeid, laboratorieanalyser og kartlegging har jeg undersøkt hvordan man kan vurdere og håndtere geofarer i norsk terreng. Oppgaven knytter sammen teori og praksis på en måte som er relevant for fremtidig arbeid innen geofag.</p>
+          <span class="section-label" data-i18n="bachelor.label">Bacheloroppgave</span>
+          <h2 data-i18n="bachelor.title">Bacheloroppgaven min</h2>
+          <p data-i18n="bachelor.text">Bacheloroppgaven min fokuserer på å forstå geologiske prosesser og hvordan de påvirker samfunnet. Gjennom feltarbeid, laboratorieanalyser og kartlegging har jeg undersøkt hvordan man kan vurdere og håndtere geofarer i norsk terreng. Oppgaven knytter sammen teori og praksis på en måte som er relevant for fremtidig arbeid innen geofag.</p>
         </div>
         <div class="media-col">
           <div class="gallery-grid">
-            <img
-              src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=600&h=400&fit=crop"
-              alt="Bacheloroppgave – feltarbeid bilde 1"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&h=400&fit=crop"
-              alt="Bacheloroppgave – feltarbeid bilde 2"
-            />
+            <figure>
+              <img
+                src="https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=600&h=400&fit=crop"
+                alt="Bacheloroppgave – feltarbeid bilde 1"
+                data-i18n-alt="bachelor.img1.alt"
+              />
+              <figcaption data-i18n="bachelor.caption1">Den vakre naturen i Trøndelag</figcaption>
+            </figure>
+            <figure>
+              <img
+                src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=600&h=400&fit=crop"
+                alt="Bacheloroppgave – feltarbeid bilde 2"
+                data-i18n-alt="bachelor.img2.alt"
+              />
+              <figcaption data-i18n="bachelor.caption2">Bratte fjellsider</figcaption>
+            </figure>
           </div>
         </div>
       </div>
@@ -393,9 +441,9 @@
     <section id="kontakt">
       <div class="section-inner">
         <div class="text-col">
-          <span class="section-label">Kontakt</span>
-          <h2>Ta kontakt</h2>
-          <p>Har du spørsmål om studiet, bacheloroppgaven eller bare vil slå av en prat om geologi? Ikke nøl med å ta kontakt!</p>
+          <span class="section-label" data-i18n="contact.label">Kontakt</span>
+          <h2 data-i18n="contact.title">Ta kontakt</h2>
+          <p data-i18n="contact.text">Har du spørsmål om studiet, bacheloroppgaven eller bare vil slå av en prat om geologi? Ikke nøl med å ta kontakt!</p>
         </div>
       </div>
     </section>
@@ -403,8 +451,121 @@
   </main>
 
   <footer>
-    &copy; 2026 Vetle &middot; Geologi og Geofare &middot; Sogndal
+    &copy; 2026 Vetle &middot; <span data-i18n="footer.text">Geologi og Geofare</span> &middot; Sogndal
   </footer>
+
+  <script>
+    var translations = {
+      nb: {
+        "nav.home": "Hjem",
+        "nav.about": "Om meg",
+        "nav.study": "Studiet",
+        "nav.bachelor": "Bacheloroppgave",
+        "nav.contact": "Kontakt",
+        "hero.label": "Velkommen",
+        "hero.title": "Hei, jeg er <span>Vetle</span>",
+        "hero.subtitle": "Geologistudent med lidenskap for fjell, stein og naturkrefter. Utforsk mine tre år med Geologi og Geofare i Sogndal.",
+        "hero.scroll": "\u2193 Scroll ned for \u00e5 lese mer",
+        "about.label": "Om meg",
+        "about.title": "Hvem er Vetle?",
+        "about.text": "Jeg er en student fra Sogndal med stor interesse for geologi og hvordan naturkreftene former landskapet rundt oss. Gjennom studietiden har jeg f\u00e5tt utforsket alt fra fjellformasjoner til skredfare, og jeg trives best ute i felt med hammer og kompass i h\u00e5nden.",
+        "about.img.alt": "Fjellpanorama \u2013 naturen som inspirerer",
+        "study.label": "Studiet",
+        "study.title": "Geologi og Geofare",
+        "study.text": "Bachelorgraden i Geologi og Geofare ved H\u00f8gskolen p\u00e5 Vestlandet i Sogndal gir solid kunnskap om jordas oppbygging, berggrunn, l\u00f8smasser og naturfarer. Studiet kombinerer teori med mye feltarbeid i spektakul\u00e6r vestlandsnatur, noe som gj\u00f8r det til en unik og praktisk utdanning.",
+        "study.img1.alt": "Sn\u00f8dekt fjelltopp",
+        "study.img2.alt": "R\u00f8dt fjell-landskap",
+        "study.img3.alt": "Bl\u00e5 himmel over skyer og fjell",
+        "study.img4.alt": "Steinvarde ved solnedgang",
+        "bachelor.label": "Bacheloroppgave",
+        "bachelor.title": "Bacheloroppgaven min",
+        "bachelor.text": "Bacheloroppgaven min fokuserer p\u00e5 \u00e5 forst\u00e5 geologiske prosesser og hvordan de p\u00e5virker samfunnet. Gjennom feltarbeid, laboratorieanalyser og kartlegging har jeg unders\u00f8kt hvordan man kan vurdere og h\u00e5ndtere geofarer i norsk terreng. Oppgaven knytter sammen teori og praksis p\u00e5 en m\u00e5te som er relevant for fremtidig arbeid innen geofag.",
+        "bachelor.img1.alt": "Bacheloroppgave \u2013 feltarbeid bilde 1",
+        "bachelor.img2.alt": "Bacheloroppgave \u2013 feltarbeid bilde 2",
+        "bachelor.caption1": "Den vakre naturen i Tr\u00f8ndelag",
+        "bachelor.caption2": "Bratte fjellsider",
+        "contact.label": "Kontakt",
+        "contact.title": "Ta kontakt",
+        "contact.text": "Har du sp\u00f8rsm\u00e5l om studiet, bacheloroppgaven eller bare vil sl\u00e5 av en prat om geologi? Ikke n\u00f8l med \u00e5 ta kontakt!",
+        "footer.text": "Geologi og Geofare",
+        "page.title": "Vetle \u2013 Geologi og Geofare",
+        "lang.switch": "EN"
+      },
+      en: {
+        "nav.home": "Home",
+        "nav.about": "About me",
+        "nav.study": "Studies",
+        "nav.bachelor": "Bachelor Thesis",
+        "nav.contact": "Contact",
+        "hero.label": "Welcome",
+        "hero.title": "Hi, I\u2019m <span>Vetle</span>",
+        "hero.subtitle": "Geology student with a passion for mountains, rocks and natural forces. Explore my three years of Geology and Geo-Hazards in Sogndal.",
+        "hero.scroll": "\u2193 Scroll down to read more",
+        "about.label": "About me",
+        "about.title": "Who is Vetle?",
+        "about.text": "I\u2019m a student from Sogndal with a strong interest in geology and how natural forces shape the landscape around us. Throughout my studies I\u2019ve explored everything from mountain formations to avalanche hazards, and I feel most at home out in the field with a hammer and compass in hand.",
+        "about.img.alt": "Mountain panorama \u2013 nature that inspires",
+        "study.label": "Studies",
+        "study.title": "Geology and Geo-Hazards",
+        "study.text": "The Bachelor\u2019s degree in Geology and Geo-Hazards at the Western Norway University of Applied Sciences in Sogndal provides solid knowledge about the structure of the Earth, bedrock, sediments and natural hazards. The programme combines theory with extensive fieldwork in spectacular western Norwegian nature, making it a unique and practical education.",
+        "study.img1.alt": "Snow-covered mountain peak",
+        "study.img2.alt": "Red mountain landscape",
+        "study.img3.alt": "Blue sky above clouds and mountains",
+        "study.img4.alt": "Cairn at sunset",
+        "bachelor.label": "Bachelor Thesis",
+        "bachelor.title": "My Bachelor Thesis",
+        "bachelor.text": "My bachelor thesis focuses on understanding geological processes and how they affect society. Through fieldwork, laboratory analyses and mapping, I have investigated how one can assess and manage geo-hazards in Norwegian terrain. The thesis ties together theory and practice in a way that is relevant for future work in geoscience.",
+        "bachelor.img1.alt": "Bachelor thesis \u2013 fieldwork photo 1",
+        "bachelor.img2.alt": "Bachelor thesis \u2013 fieldwork photo 2",
+        "bachelor.caption1": "The beautiful nature of Tr\u00f8ndelag",
+        "bachelor.caption2": "Steep mountain sides",
+        "contact.label": "Contact",
+        "contact.title": "Get in touch",
+        "contact.text": "Do you have questions about the programme, the bachelor thesis or just want to chat about geology? Don\u2019t hesitate to get in touch!",
+        "footer.text": "Geology and Geo-Hazards",
+        "page.title": "Vetle \u2013 Geology and Geo-Hazards",
+        "lang.switch": "NO"
+      }
+    };
+
+    function setLanguage(lang) {
+      document.documentElement.lang = lang;
+      try { localStorage.setItem("lang", lang); } catch (e) { /* ignore */ }
+
+      var dict = translations[lang];
+      if (!dict) return;
+
+      document.title = dict["page.title"] || document.title;
+
+      document.querySelectorAll("[data-i18n]").forEach(function (el) {
+        var key = el.getAttribute("data-i18n");
+        if (dict[key] != null) el.textContent = dict[key];
+      });
+
+      document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
+        var key = el.getAttribute("data-i18n-html");
+        if (dict[key] != null) el.innerHTML = dict[key];
+      });
+
+      document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
+        var key = el.getAttribute("data-i18n-alt");
+        if (dict[key] != null) el.alt = dict[key];
+      });
+    }
+
+    document.querySelector(".lang-toggle").addEventListener("click", function () {
+      var current = document.documentElement.lang === "en" ? "nb" : "en";
+      setLanguage(current);
+    });
+
+    (function () {
+      var saved;
+      try { saved = localStorage.getItem("lang"); } catch (e) { /* ignore */ }
+      if (saved && translations[saved]) {
+        setLanguage(saved);
+      }
+    })();
+  </script>
 
 </body>
 </html>
