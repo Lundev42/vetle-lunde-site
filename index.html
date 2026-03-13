@@ -148,6 +148,7 @@
       max-width: 720px;
       margin: 0 auto;
       padding: 0 24px;
+      transform: translateY(-40px);
     }
 
     #hjem h1 {
@@ -264,11 +265,6 @@
       border: 3px solid rgba(255, 255, 255, 0.12);
       border-bottom: none;
       display: block;
-      transition: transform 0.3s;
-    }
-
-    .gallery-grid img:hover {
-      transform: scale(1.03);
     }
 
     .gallery-grid .tall {
@@ -385,6 +381,14 @@
     /* ── Figure captions inside gallery ── */
     .gallery-grid figure {
       margin: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .gallery-grid figure:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 20px rgba(99, 132, 255, 0.4), 0 0 40px rgba(99, 132, 255, 0.15);
     }
 
     .gallery-grid figcaption {
