@@ -96,13 +96,6 @@ test.describe("Hero section", () => {
     expect(borderBottom).toContain("3px");
     expect(borderBottom).toContain("solid");
   });
-
-  test("hero section has a fade transition pseudo-element", async ({ page }) => {
-    const afterBg = await page.locator("#hjem").evaluate((el) =>
-      getComputedStyle(el, "::after").backgroundImage
-    );
-    expect(afterBg).toContain("gradient");
-  });
 });
 
 test.describe("i18n language switching", () => {

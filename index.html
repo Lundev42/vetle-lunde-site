@@ -281,11 +281,10 @@
     /* ── Hero caption ── */
     .hero-caption {
       position: absolute;
-      bottom: 170px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 24px;
+      left: 24px;
       z-index: 3;
-      text-align: center;
+      text-align: left;
       font-size: 0.85rem;
       color: rgba(255, 255, 255, 0.75);
       padding: 12px 14px;
@@ -296,25 +295,6 @@
       width: max-content;
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
-    }
-
-    /* ── Hero-to-section fade transition ── */
-    #hjem::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 160px;
-      background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        rgba(15, 17, 23, 0.25) 25%,
-        rgba(15, 17, 23, 0.6) 50%,
-        var(--bg-primary) 100%
-      );
-      z-index: 2;
-      pointer-events: none;
     }
 
     /* ── Hero image border ── */
