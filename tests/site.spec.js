@@ -198,7 +198,7 @@ test.describe("Contact form modal", () => {
 
   test("contact button text switches to English", async ({ page }) => {
     await page.click(".lang-toggle");
-    await expect(page.locator("#contact-open-btn")).toHaveText("Contact Us");
+    await expect(page.locator("#contact-open-btn")).toHaveText("Contact me");
   });
 
   test("modal is hidden by default", async ({ page }) => {

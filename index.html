@@ -1044,7 +1044,7 @@
         "meta.description": "Portfolio of Vetle Øyvind Larsen Lunde – geology student at Western Norway University of Applied Sciences in Sogndal. Geology and Geo-Hazards.",
         "skip.link": "Skip to main content",
         "lang.switch": "NO",
-        "contact.button": "Contact Us",
+        "contact.button": "Contact me",
         "contact.modal.title": "Contact Form",
         "contact.modal.close.aria": "Close",
         "contact.form.name.label": "Name",
@@ -1311,21 +1311,36 @@
       var sections = document.querySelectorAll('section[id]');
       var navLinks = document.querySelectorAll('nav a[href^="#"]');
       if (!('IntersectionObserver' in window)) return;
+
+      function setActive(id) {
+        navLinks.forEach(function (link) {
+          link.classList.remove('nav-active');
+          if (link.getAttribute('href') === '#' + id) {
+            link.classList.add('nav-active');
+          }
+        });
+      }
+
+      var lastSection = sections[sections.length - 1];
+
       /* Top 40% and bottom 60% margins ensure the "active" section is the one
          occupying the middle strip of the viewport, giving a natural feel. */
       var observer = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            navLinks.forEach(function (link) {
-              link.classList.remove('nav-active');
-              if (link.getAttribute('href') === '#' + entry.target.id) {
-                link.classList.add('nav-active');
-              }
-            });
+            setActive(entry.target.id);
           }
         });
       }, { rootMargin: '-40% 0px -60% 0px' });
       sections.forEach(function (s) { observer.observe(s); });
+
+      /* When scrolled to the bottom of the page, activate the last section
+         even if it is too short to reach the observer's detection zone. */
+      window.addEventListener('scroll', function () {
+        if ((window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 2)) {
+          setActive(lastSection.id);
+        }
+      });
     })();
   </script>
 
