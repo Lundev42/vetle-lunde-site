@@ -986,7 +986,7 @@
         errorMsg.hidden = true;
 
         var email = document.getElementById("contact-email").value;
-        if (!email || email.indexOf("@") === -1) {
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           errorMsg.hidden = false;
           return;
         }
@@ -1009,9 +1009,11 @@
             successDiv.hidden = false;
           }
         }).catch(function () {
-          /* If fetch fails (e.g. file:// protocol), show success anyway for demo */
-          form.hidden = true;
-          successDiv.hidden = false;
+          /* Fetch throws on file:// protocol – show success for local preview only */
+          if (window.location.protocol === "file:") {
+            form.hidden = true;
+            successDiv.hidden = false;
+          }
         });
       });
     })();

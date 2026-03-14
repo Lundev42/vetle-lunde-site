@@ -289,7 +289,7 @@ test.describe("Contact form modal", () => {
     await expect(honeypot).toHaveClass("honeypot");
   });
 
-  test("submit with valid data shows success message", async ({ page }) => {
+  test("submit with valid data shows success message (file:// fallback)", async ({ page }) => {
     await page.click("#contact-open-btn");
     await page.fill("#contact-name", "Test User");
     await page.fill("#contact-email", "test@example.com");
