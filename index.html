@@ -183,12 +183,12 @@
       padding-left: 180px;
     }
 
-    .timeline::before {
+    .timeline-entry:not(:last-child)::after {
       content: '';
       position: absolute;
-      left: 170px;
-      top: 0;
-      bottom: 0;
+      left: -6px;
+      top: 12px;
+      bottom: -12px;
       width: 2px;
       background: var(--accent);
       opacity: 0.4;
@@ -225,6 +225,7 @@
       border-radius: 50%;
       border: 2px solid var(--accent);
       background: var(--bg-primary);
+      z-index: 1;
     }
 
     .timeline-entry .job-title {
@@ -380,8 +381,9 @@
 
     #om-meg .media-col img {
       width: 100%;
-      height: auto;
-      object-fit: contain;
+      max-height: 480px;
+      object-fit: cover;
+      object-position: center 80%;
       border-radius: 16px 16px 0 0;
       border: 3px solid rgba(255, 255, 255, 0.12);
       border-bottom: none;
@@ -517,8 +519,8 @@
         padding-left: 28px;
       }
 
-      .timeline::before {
-        left: 6px;
+      .timeline-entry:not(:last-child)::after {
+        left: -17px;
       }
 
       .timeline-marker {
