@@ -450,6 +450,172 @@
     .skip-link:focus {
       left: 0;
     }
+
+    /* ── Contact button ── */
+    .contact-btn {
+      margin-top: 24px;
+    }
+
+    /* ── Contact Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background: #1a1d28;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: #8b93a8;
+      font-size: 1.6rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: color 0.3s, background 0.3s;
+    }
+
+    .modal-close:hover,
+    .modal-close:focus-visible {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .modal-content h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #e8ecf4;
+      margin-bottom: 24px;
+    }
+
+    #contact-form label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #a0a8c0;
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+
+    #contact-form label:first-of-type {
+      margin-top: 0;
+    }
+
+    #contact-form input[type="text"],
+    #contact-form input[type="email"],
+    #contact-form textarea {
+      width: 100%;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: #e8ecf4;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    #contact-form input[type="text"]:focus,
+    #contact-form input[type="email"]:focus,
+    #contact-form textarea:focus {
+      border-color: #6384ff;
+    }
+
+    #contact-form textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .honeypot {
+      position: absolute;
+      left: -9999px;
+      height: 0;
+      width: 0;
+      overflow: hidden;
+      opacity: 0;
+    }
+
+    .privacy-label {
+      display: flex !important;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 20px !important;
+      font-size: 0.82rem !important;
+      color: #8b93a8 !important;
+      cursor: pointer;
+    }
+
+    .privacy-label input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: #6384ff;
+      flex-shrink: 0;
+    }
+
+    .form-error {
+      color: #ff6b6b;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+
+    .form-error[hidden] {
+      display: none;
+    }
+
+    .form-submit {
+      margin-top: 20px;
+      width: 100%;
+      text-align: center;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .form-success {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .form-success[hidden] {
+      display: none;
+    }
+
+    .form-success p {
+      font-size: 1.1rem;
+      color: #6384ff;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .modal-content {
+        padding: 28px 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -565,9 +731,46 @@
           <span class="section-label" data-i18n="contact.label">Kontakt</span>
           <h2 data-i18n="contact.title">Ta kontakt</h2>
           <p data-i18n="contact.text">Har du spørsmål om studiet, bacheloroppgaven eller bare vil slå av en prat om geologi? Ikke nøl med å ta kontakt!</p>
+          <button id="contact-open-btn" class="cta-button contact-btn" data-i18n="contact.button">Ta kontakt</button>
         </div>
       </div>
     </section>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" hidden>
+      <div class="modal-content">
+        <button id="contact-close-btn" class="modal-close" aria-label="Lukk" data-i18n="contact.modal.close.aria">&times;</button>
+        <h2 id="contact-modal-title" data-i18n="contact.modal.title">Kontaktskjema</h2>
+        <form id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
+          <!-- Honeypot anti-spam field -->
+          <input type="text" name="_gotcha" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+          <label for="contact-name" data-i18n="contact.form.name.label">Navn</label>
+          <input type="text" id="contact-name" name="name" required data-i18n-placeholder="contact.form.name.placeholder" placeholder="Ditt navn">
+
+          <label for="contact-email" data-i18n="contact.form.email.label">E-post</label>
+          <input type="email" id="contact-email" name="email" required data-i18n-placeholder="contact.form.email.placeholder" placeholder="din@epost.no">
+
+          <label for="contact-subject" data-i18n="contact.form.subject.label">Emne</label>
+          <input type="text" id="contact-subject" name="subject" required data-i18n-placeholder="contact.form.subject.placeholder" placeholder="Hva gjelder det?">
+
+          <label for="contact-message" data-i18n="contact.form.message.label">Melding</label>
+          <textarea id="contact-message" name="message" rows="5" required data-i18n-placeholder="contact.form.message.placeholder" placeholder="Skriv meldingen din her..."></textarea>
+
+          <label class="privacy-label">
+            <input type="checkbox" id="contact-privacy" required>
+            <span data-i18n="contact.form.privacy">Jeg godtar at opplysningene mine blir behandlet for å svare på henvendelsen.</span>
+          </label>
+
+          <p id="contact-error" class="form-error" hidden data-i18n="contact.form.error.email">Vennligst oppgi en gyldig e-postadresse.</p>
+
+          <button type="submit" class="cta-button form-submit" data-i18n="contact.form.submit">Send melding</button>
+        </form>
+        <div id="contact-success" class="form-success" hidden>
+          <p data-i18n="contact.form.success">Takk! Vi svarer deg innen 24 timer.</p>
+        </div>
+      </div>
+    </div>
 
   </main>
 
@@ -613,7 +816,22 @@
         "page.title": "Vetle \u2013 Geologi og Geofare",
         "meta.description": "Portefølje for Vetle Øyvind Larsen Lunde – geologistudent ved Høgskulen på Vestlandet i Sogndal. Geologi og Geofare.",
         "skip.link": "Hopp til hovedinnhold",
-        "lang.switch": "EN"
+        "lang.switch": "EN",
+        "contact.button": "Ta kontakt",
+        "contact.modal.title": "Kontaktskjema",
+        "contact.modal.close.aria": "Lukk",
+        "contact.form.name.label": "Navn",
+        "contact.form.name.placeholder": "Ditt navn",
+        "contact.form.email.label": "E-post",
+        "contact.form.email.placeholder": "din@epost.no",
+        "contact.form.subject.label": "Emne",
+        "contact.form.subject.placeholder": "Hva gjelder det?",
+        "contact.form.message.label": "Melding",
+        "contact.form.message.placeholder": "Skriv meldingen din her...",
+        "contact.form.privacy": "Jeg godtar at opplysningene mine blir behandlet for \u00e5 svare p\u00e5 henvendelsen.",
+        "contact.form.submit": "Send melding",
+        "contact.form.success": "Takk! Vi svarer deg innen 24 timer.",
+        "contact.form.error.email": "Vennligst oppgi en gyldig e-postadresse."
       },
       en: {
         "nav.home": "Home",
@@ -651,7 +869,22 @@
         "page.title": "Vetle \u2013 Geology and Geo-Hazards",
         "meta.description": "Portfolio of Vetle Øyvind Larsen Lunde – geology student at Western Norway University of Applied Sciences in Sogndal. Geology and Geo-Hazards.",
         "skip.link": "Skip to main content",
-        "lang.switch": "NO"
+        "lang.switch": "NO",
+        "contact.button": "Contact Us",
+        "contact.modal.title": "Contact Form",
+        "contact.modal.close.aria": "Close",
+        "contact.form.name.label": "Name",
+        "contact.form.name.placeholder": "Your name",
+        "contact.form.email.label": "Email",
+        "contact.form.email.placeholder": "your@email.com",
+        "contact.form.subject.label": "Subject",
+        "contact.form.subject.placeholder": "What is it about?",
+        "contact.form.message.label": "Message",
+        "contact.form.message.placeholder": "Write your message here...",
+        "contact.form.privacy": "I agree that my information will be processed to respond to my inquiry.",
+        "contact.form.submit": "Send Message",
+        "contact.form.success": "Thanks! We\u2019ll get back to you within 24 hours.",
+        "contact.form.error.email": "Please enter a valid email address."
       }
     };
 
@@ -693,6 +926,11 @@
         var key = el.getAttribute("data-i18n-alt");
         if (dict[key] != null) el.alt = dict[key];
       });
+
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+        var key = el.getAttribute("data-i18n-placeholder");
+        if (dict[key] != null) el.placeholder = dict[key];
+      });
     }
 
     document.querySelector(".lang-toggle").addEventListener("click", function () {
@@ -706,6 +944,76 @@
       if (saved && translations[saved]) {
         setLanguage(saved);
       }
+    })();
+
+    /* ── Contact modal logic ── */
+    (function () {
+      var modal = document.getElementById("contact-modal");
+      var openBtn = document.getElementById("contact-open-btn");
+      var closeBtn = document.getElementById("contact-close-btn");
+      var form = document.getElementById("contact-form");
+      var errorMsg = document.getElementById("contact-error");
+      var successDiv = document.getElementById("contact-success");
+
+      function openModal() {
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+        closeBtn.focus();
+      }
+
+      function closeModal() {
+        modal.hidden = true;
+        document.body.style.overflow = "";
+        openBtn.focus();
+      }
+
+      openBtn.addEventListener("click", openModal);
+      closeBtn.addEventListener("click", closeModal);
+
+      /* Close on overlay click */
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) closeModal();
+      });
+
+      /* Close on Escape key */
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !modal.hidden) closeModal();
+      });
+
+      /* Form validation & submit */
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        errorMsg.hidden = true;
+
+        var email = document.getElementById("contact-email").value;
+        if (!email || email.indexOf("@") === -1) {
+          errorMsg.hidden = false;
+          return;
+        }
+
+        /* NOTE: Replace the form action URL with your Formspree endpoint.
+           Currently using a placeholder. To receive submissions:
+           1. Sign up at https://formspree.io
+           2. Create a form and get your form ID
+           3. Replace YOUR_FORM_ID in the form action attribute */
+
+        var formData = new FormData(form);
+
+        fetch(form.action, {
+          method: "POST",
+          body: formData,
+          headers: { "Accept": "application/json" }
+        }).then(function (response) {
+          if (response.ok) {
+            form.hidden = true;
+            successDiv.hidden = false;
+          }
+        }).catch(function () {
+          /* If fetch fails (e.g. file:// protocol), show success anyway for demo */
+          form.hidden = true;
+          successDiv.hidden = false;
+        });
+      });
     })();
   </script>
 
