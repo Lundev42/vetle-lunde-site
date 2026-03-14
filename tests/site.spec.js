@@ -192,8 +192,8 @@ test.describe("About section – content", () => {
 
   test("timeline displays year ranges", async ({ page }) => {
     const dates = page.locator('#om-meg .timeline-date');
-    await expect(dates.nth(0)).toHaveText("2023–2024");
-    await expect(dates.nth(1)).toHaveText("2024–2025");
+    await expect(dates.nth(0)).toHaveText("2024–2025");
+    await expect(dates.nth(1)).toHaveText("2023–2024");
   });
 
   test("timeline markers are visible", async ({ page }) => {
