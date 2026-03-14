@@ -864,7 +864,9 @@
         "contact.form.privacy": "Jeg godtar at opplysningene mine blir behandlet for \u00e5 svare p\u00e5 henvendelsen.",
         "contact.form.submit": "Send melding",
         "contact.form.success": "Takk! Jeg svarer deg innen 24 timer.",
-        "contact.form.error.email": "Vennligst oppgi en gyldig e-postadresse."
+        "contact.form.error.email": "Vennligst oppgi en gyldig e-postadresse.",
+        "contact.form.sending": "Sender...",
+        "contact.form.error.server": "Noe gikk galt. Pr\u00f8v igjen senere."
       },
       en: {
         "nav.home": "Home",
@@ -917,7 +919,9 @@
         "contact.form.privacy": "I agree that my information will be processed to respond to my inquiry.",
         "contact.form.submit": "Send Message",
         "contact.form.success": "Thanks! I\u2019ll get back to you within 24 hours.",
-        "contact.form.error.email": "Please enter a valid email address."
+        "contact.form.error.email": "Please enter a valid email address.",
+        "contact.form.sending": "Sending...",
+        "contact.form.error.server": "Something went wrong. Please try again later."
       }
     };
 
@@ -1021,7 +1025,7 @@
         if (e.key === "Escape" && !modal.hidden) closeModal();
       });
 
-      /* Form validation & submit via mailto */
+      /* Form validation & submit via AJAX (mailto fallback) */
       var CONTACT_EMAIL = "vetleoyvind@yahoo.com";
 
       form.addEventListener("submit", function (e) {
@@ -1037,16 +1041,51 @@
         var name = document.getElementById("contact-name").value;
         var subject = document.getElementById("contact-subject").value;
         var message = document.getElementById("contact-message").value;
+        var honeypot = form.querySelector('[name="_gotcha"]').value;
 
-        var body = "Navn / Name: " + name + "\nE-post / Email: " + email + "\n\n" + message;
-        var mailto = "mailto:" + CONTACT_EMAIL +
-          "?subject=" + encodeURIComponent(subject) +
-          "&body=" + encodeURIComponent(body);
+        var lang = document.documentElement.lang || "nb";
+        var dict = translations[lang] || translations["nb"];
+        var submitBtn = form.querySelector(".form-submit");
+        submitBtn.disabled = true;
+        submitBtn.textContent = dict["contact.form.sending"] || "Sender...";
 
-        window.location.href = mailto;
+        fetch("contact.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            subject: subject,
+            message: message,
+            _gotcha: honeypot
+          })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.success) {
+            form.hidden = true;
+            successDiv.hidden = false;
+          } else {
+            errorMsg.textContent = data.message || dict["contact.form.error.server"];
+            errorMsg.hidden = false;
+          }
+        })
+        .catch(function () {
+          /* Fallback to mailto when PHP is unavailable (e.g. static hosting, file:// protocol) */
+          var body = "Navn / Name: " + name + "\nE-post / Email: " + email + "\n\n" + message;
+          var mailto = "mailto:" + CONTACT_EMAIL +
+            "?subject=" + encodeURIComponent(subject) +
+            "&body=" + encodeURIComponent(body);
 
-        form.hidden = true;
-        successDiv.hidden = false;
+          window.location.href = mailto;
+
+          form.hidden = true;
+          successDiv.hidden = false;
+        })
+        .finally(function () {
+          submitBtn.disabled = false;
+          submitBtn.textContent = dict["contact.form.submit"] || "Send melding";
+        });
       });
 
     })();
