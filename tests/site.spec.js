@@ -184,3 +184,127 @@ test.describe("SEO and accessibility must-haves", () => {
     await expect(desc).toHaveAttribute("content", /geology student/);
   });
 });
+
+test.describe("Contact form modal", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(PAGE_URL);
+  });
+
+  test("contact section has a 'Ta kontakt' button", async ({ page }) => {
+    const btn = page.locator("#contact-open-btn");
+    await expect(btn).toBeVisible();
+    await expect(btn).toHaveText("Ta kontakt");
+  });
+
+  test("contact button text switches to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    await expect(page.locator("#contact-open-btn")).toHaveText("Contact Us");
+  });
+
+  test("modal is hidden by default", async ({ page }) => {
+    const modal = page.locator("#contact-modal");
+    await expect(modal).toBeHidden();
+  });
+
+  test("clicking contact button opens the modal", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    const modal = page.locator("#contact-modal");
+    await expect(modal).toBeVisible();
+  });
+
+  test("modal has a title 'Kontaktskjema'", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await expect(page.locator("#contact-modal-title")).toHaveText("Kontaktskjema");
+  });
+
+  test("modal title switches to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    await page.click("#contact-open-btn");
+    await expect(page.locator("#contact-modal-title")).toHaveText("Contact Form");
+  });
+
+  test("close button closes the modal", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await expect(page.locator("#contact-modal")).toBeVisible();
+    await page.click("#contact-close-btn");
+    await expect(page.locator("#contact-modal")).toBeHidden();
+  });
+
+  test("Escape key closes the modal", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await expect(page.locator("#contact-modal")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#contact-modal")).toBeHidden();
+  });
+
+  test("clicking overlay closes the modal", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await expect(page.locator("#contact-modal")).toBeVisible();
+    // Click the overlay (top-left corner, outside modal-content)
+    await page.locator("#contact-modal").click({ position: { x: 5, y: 5 } });
+    await expect(page.locator("#contact-modal")).toBeHidden();
+  });
+
+  test("form has all required fields", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await expect(page.locator("#contact-name")).toBeVisible();
+    await expect(page.locator("#contact-email")).toBeVisible();
+    await expect(page.locator("#contact-subject")).toBeVisible();
+    await expect(page.locator("#contact-message")).toBeVisible();
+    await expect(page.locator("#contact-privacy")).toBeVisible();
+  });
+
+  test("form labels switch to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    await page.click("#contact-open-btn");
+    await expect(page.locator('label[for="contact-name"]')).toHaveText("Name");
+    await expect(page.locator('label[for="contact-email"]')).toHaveText("Email");
+    await expect(page.locator('label[for="contact-subject"]')).toHaveText("Subject");
+    await expect(page.locator('label[for="contact-message"]')).toHaveText("Message");
+  });
+
+  test("placeholders switch to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    await page.click("#contact-open-btn");
+    await expect(page.locator("#contact-name")).toHaveAttribute("placeholder", "Your name");
+    await expect(page.locator("#contact-email")).toHaveAttribute("placeholder", "your@email.com");
+  });
+
+  test("shows error for invalid email on submit", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await page.fill("#contact-name", "Test User");
+    await page.fill("#contact-email", "invalid-email");
+    await page.fill("#contact-subject", "Test");
+    await page.fill("#contact-message", "Hello");
+    await page.click("#contact-privacy");
+    await page.click(".form-submit");
+    await expect(page.locator("#contact-error")).toBeVisible();
+  });
+
+  test("honeypot field is not accessible to users", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    const honeypot = page.locator('input[name="_gotcha"]');
+    await expect(honeypot).toHaveAttribute("aria-hidden", "true");
+    await expect(honeypot).toHaveAttribute("tabindex", "-1");
+    await expect(honeypot).toHaveClass("honeypot");
+  });
+
+  test("submit with valid data shows success message (file:// fallback)", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await page.fill("#contact-name", "Test User");
+    await page.fill("#contact-email", "test@example.com");
+    await page.fill("#contact-subject", "Test Subject");
+    await page.fill("#contact-message", "Hello there!");
+    await page.click("#contact-privacy");
+    await page.click(".form-submit");
+    // Expected: Fetch fails on file:// protocol, catch handler simulates success for local preview
+    await expect(page.locator("#contact-success")).toBeVisible();
+  });
+
+  test("modal has correct ARIA attributes", async ({ page }) => {
+    const modal = page.locator("#contact-modal");
+    await expect(modal).toHaveAttribute("role", "dialog");
+    await expect(modal).toHaveAttribute("aria-modal", "true");
+    await expect(modal).toHaveAttribute("aria-labelledby", "contact-modal-title");
+  });
+});
