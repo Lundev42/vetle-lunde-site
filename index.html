@@ -1337,7 +1337,7 @@
       /* When scrolled to the bottom of the page, activate the last section
          even if it is too short to reach the observer's detection zone. */
       window.addEventListener('scroll', function () {
-        if ((window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 2)) {
+        if ((window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 2)) { /* 2px tolerance for sub-pixel rounding */
           setActive(lastSection.id);
         }
       });
