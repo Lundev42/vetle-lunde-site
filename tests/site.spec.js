@@ -307,4 +307,70 @@ test.describe("Contact form modal", () => {
     await expect(modal).toHaveAttribute("aria-modal", "true");
     await expect(modal).toHaveAttribute("aria-labelledby", "contact-modal-title");
   });
+
+  test("success message shows 'Send ny melding' button after submission", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await page.fill("#contact-name", "Test User");
+    await page.fill("#contact-email", "test@example.com");
+    await page.fill("#contact-subject", "Test Subject");
+    await page.fill("#contact-message", "Hello there!");
+    await page.click("#contact-privacy");
+    await page.click(".form-submit");
+    await expect(page.locator("#contact-success")).toBeVisible();
+    const sendAnotherBtn = page.locator("#contact-new-btn");
+    await expect(sendAnotherBtn).toBeVisible();
+    await expect(sendAnotherBtn).toHaveText("Send ny melding");
+  });
+
+  test("'Send ny melding' button text switches to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    await page.click("#contact-open-btn");
+    await page.fill("#contact-name", "Test User");
+    await page.fill("#contact-email", "test@example.com");
+    await page.fill("#contact-subject", "Test Subject");
+    await page.fill("#contact-message", "Hello there!");
+    await page.click("#contact-privacy");
+    await page.click(".form-submit");
+    await expect(page.locator("#contact-new-btn")).toHaveText("Send Another Message");
+  });
+
+  test("clicking 'Send ny melding' resets form and hides success message", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await page.fill("#contact-name", "Test User");
+    await page.fill("#contact-email", "test@example.com");
+    await page.fill("#contact-subject", "Test Subject");
+    await page.fill("#contact-message", "Hello there!");
+    await page.click("#contact-privacy");
+    await page.click(".form-submit");
+    await expect(page.locator("#contact-success")).toBeVisible();
+    await expect(page.locator("#contact-form")).toBeHidden();
+    // Click the send-another button
+    await page.click("#contact-new-btn");
+    await expect(page.locator("#contact-form")).toBeVisible();
+    await expect(page.locator("#contact-success")).toBeHidden();
+    // Form fields should be cleared
+    await expect(page.locator("#contact-name")).toHaveValue("");
+    await expect(page.locator("#contact-email")).toHaveValue("");
+    await expect(page.locator("#contact-subject")).toHaveValue("");
+    await expect(page.locator("#contact-message")).toHaveValue("");
+    await expect(page.locator("#contact-privacy")).not.toBeChecked();
+  });
+
+  test("reopening modal after submission shows fresh form", async ({ page }) => {
+    await page.click("#contact-open-btn");
+    await page.fill("#contact-name", "Test User");
+    await page.fill("#contact-email", "test@example.com");
+    await page.fill("#contact-subject", "Test Subject");
+    await page.fill("#contact-message", "Hello there!");
+    await page.click("#contact-privacy");
+    await page.click(".form-submit");
+    await expect(page.locator("#contact-success")).toBeVisible();
+    // Close and reopen the modal
+    await page.click("#contact-close-btn");
+    await page.click("#contact-open-btn");
+    // Should show the form, not the success message
+    await expect(page.locator("#contact-form")).toBeVisible();
+    await expect(page.locator("#contact-success")).toBeHidden();
+    await expect(page.locator("#contact-name")).toHaveValue("");
+  });
 });
