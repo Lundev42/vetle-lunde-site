@@ -741,6 +741,8 @@
       <div class="modal-content">
         <button id="contact-close-btn" class="modal-close" aria-label="Lukk" data-i18n="contact.modal.close.aria">&times;</button>
         <h2 id="contact-modal-title" data-i18n="contact.modal.title">Kontaktskjema</h2>
+        <!-- SETUP: Replace YOUR_FORM_ID with your Formspree form ID.
+             Sign up at https://formspree.io, create a form, and paste the ID below. -->
         <form id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
           <!-- Honeypot anti-spam field -->
           <input type="text" name="_gotcha" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -767,7 +769,7 @@
           <button type="submit" class="cta-button form-submit" data-i18n="contact.form.submit">Send melding</button>
         </form>
         <div id="contact-success" class="form-success" hidden>
-          <p data-i18n="contact.form.success">Takk! Vi svarer deg innen 24 timer.</p>
+          <p data-i18n="contact.form.success">Takk! Jeg svarer deg innen 24 timer.</p>
         </div>
       </div>
     </div>
@@ -830,7 +832,7 @@
         "contact.form.message.placeholder": "Skriv meldingen din her...",
         "contact.form.privacy": "Jeg godtar at opplysningene mine blir behandlet for \u00e5 svare p\u00e5 henvendelsen.",
         "contact.form.submit": "Send melding",
-        "contact.form.success": "Takk! Vi svarer deg innen 24 timer.",
+        "contact.form.success": "Takk! Jeg svarer deg innen 24 timer.",
         "contact.form.error.email": "Vennligst oppgi en gyldig e-postadresse."
       },
       en: {
@@ -883,7 +885,7 @@
         "contact.form.message.placeholder": "Write your message here...",
         "contact.form.privacy": "I agree that my information will be processed to respond to my inquiry.",
         "contact.form.submit": "Send Message",
-        "contact.form.success": "Thanks! We\u2019ll get back to you within 24 hours.",
+        "contact.form.success": "Thanks! I\u2019ll get back to you within 24 hours.",
         "contact.form.error.email": "Please enter a valid email address."
       }
     };
@@ -991,11 +993,8 @@
           return;
         }
 
-        /* NOTE: Replace the form action URL with your Formspree endpoint.
-           Currently using a placeholder. To receive submissions:
-           1. Sign up at https://formspree.io
-           2. Create a form and get your form ID
-           3. Replace YOUR_FORM_ID in the form action attribute */
+        /* NOTE: Replace YOUR_FORM_ID in the form action attribute.
+           See the HTML comment above the <form> element for setup steps. */
 
         var formData = new FormData(form);
 

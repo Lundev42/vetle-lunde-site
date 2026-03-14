@@ -297,7 +297,7 @@ test.describe("Contact form modal", () => {
     await page.fill("#contact-message", "Hello there!");
     await page.click("#contact-privacy");
     await page.click(".form-submit");
-    // Fetch will fail on file:// protocol, catch handler shows success
+    // Expected: Fetch fails on file:// protocol, catch handler simulates success for local preview
     await expect(page.locator("#contact-success")).toBeVisible();
   });
 
