@@ -317,9 +317,9 @@ test.describe("Contact form modal", () => {
     await page.click("#contact-privacy");
     await page.click(".form-submit");
     await expect(page.locator("#contact-success")).toBeVisible();
-    const newBtn = page.locator("#contact-new-btn");
-    await expect(newBtn).toBeVisible();
-    await expect(newBtn).toHaveText("Send ny melding");
+    const sendAnotherBtn = page.locator("#contact-new-btn");
+    await expect(sendAnotherBtn).toBeVisible();
+    await expect(sendAnotherBtn).toHaveText("Send ny melding");
   });
 
   test("'Send ny melding' button text switches to English", async ({ page }) => {

@@ -991,11 +991,15 @@
       var errorMsg = document.getElementById("contact-error");
       var successDiv = document.getElementById("contact-success");
 
-      function openModal() {
+      function resetFormState() {
         form.reset();
         form.hidden = false;
         successDiv.hidden = true;
         errorMsg.hidden = true;
+      }
+
+      function openModal() {
+        resetFormState();
         modal.hidden = false;
         document.body.style.overflow = "hidden";
         closeBtn.focus();
@@ -1049,12 +1053,7 @@
       });
 
       /* ── Send-another button ── */
-      document.getElementById("contact-new-btn").addEventListener("click", function () {
-        form.reset();
-        form.hidden = false;
-        successDiv.hidden = true;
-        errorMsg.hidden = true;
-      });
+      document.getElementById("contact-new-btn").addEventListener("click", resetFormState);
     })();
   </script>
 
