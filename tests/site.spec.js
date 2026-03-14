@@ -156,6 +156,45 @@ test.describe("About section – content", () => {
     const text = page.locator('#om-meg [data-i18n="about.text"]');
     await expect(text).toContainText("Hi, my name is Vetle!");
   });
+
+  test("displays background subheader in Om meg section", async ({ page }) => {
+    const heading = page.locator('#om-meg h3[data-i18n="about.background.title"]');
+    await expect(heading).toBeVisible();
+    await expect(heading).toHaveText("Min bakgrunn");
+  });
+
+  test("background subheader switches to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    const heading = page.locator('#om-meg h3[data-i18n="about.background.title"]');
+    await expect(heading).toHaveText("My background");
+  });
+
+  test("displays job history entries in Om meg section", async ({ page }) => {
+    const job1Title = page.locator('#om-meg h4[data-i18n="about.job1.title"]');
+    await expect(job1Title).toBeVisible();
+    await expect(job1Title).toContainText("ConocoPhillips 2023");
+    const job1Text = page.locator('#om-meg [data-i18n="about.job1.text"]');
+    await expect(job1Text).toBeVisible();
+    await expect(job1Text).toContainText("biostratigrafisk database");
+    const job2Title = page.locator('#om-meg h4[data-i18n="about.job2.title"]');
+    await expect(job2Title).toBeVisible();
+    const job2Text = page.locator('#om-meg [data-i18n-html="about.job2.text"]');
+    await expect(job2Text).toBeVisible();
+    await expect(job2Text).toContainText("under arbeid");
+  });
+
+  test("job history switches to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    const job1Text = page.locator('#om-meg [data-i18n="about.job1.text"]');
+    await expect(job1Text).toContainText("biostratigraphic database");
+    const job2Text = page.locator('#om-meg [data-i18n-html="about.job2.text"]');
+    await expect(job2Text).toContainText("Currently in progress");
+  });
+
+  test("job2 text renders HTML with em tag", async ({ page }) => {
+    const em = page.locator('#om-meg [data-i18n-html="about.job2.text"] em');
+    await expect(em).toBeVisible();
+  });
 });
 
 test.describe("Norwegian Bokmål content", () => {
