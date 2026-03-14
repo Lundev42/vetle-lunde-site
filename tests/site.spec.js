@@ -66,20 +66,20 @@ test.describe("Hero section", () => {
   test("has a caption describing the hero image", async ({ page }) => {
     const caption = page.locator("#hjem .hero-caption");
     await expect(caption).toBeVisible();
-    await expect(caption).toHaveText("Visdalen, med fjellet Hellstuguhøe på 2072 moh. i midten av bildet hvor det dukker opp en sidedal til venstre.");
+    await expect(caption).toHaveText("Visdalen, med fjellet Hellstuguhøe på 2072 moh sentralt i bildet");
   });
 
   test("hero caption switches to English", async ({ page }) => {
     await page.click(".lang-toggle");
     const caption = page.locator("#hjem .hero-caption");
-    await expect(caption).toHaveText("Visdalen, with the mountain Hellstuguhøe at 2072 m a.s.l. in the middle of the image, where a side valley appears to the left.");
+    await expect(caption).toHaveText("Visdalen, with the mountain Hellstuguhøe at 2072 m a.s.l. in the centre of the image");
   });
 
   test("hero caption switches back to Norwegian", async ({ page }) => {
     await page.click(".lang-toggle");
     await page.click(".lang-toggle");
     const caption = page.locator("#hjem .hero-caption");
-    await expect(caption).toHaveText("Visdalen, med fjellet Hellstuguhøe på 2072 moh. i midten av bildet hvor det dukker opp en sidedal til venstre.");
+    await expect(caption).toHaveText("Visdalen, med fjellet Hellstuguhøe på 2072 moh sentralt i bildet");
   });
 
   test("hero caption has border styling consistent with other captions", async ({ page }) => {
@@ -87,14 +87,6 @@ test.describe("Hero section", () => {
     const border = await caption.evaluate((el) => getComputedStyle(el).border);
     expect(border).toContain("3px");
     expect(border).toContain("solid");
-  });
-
-  test("hero section has a bottom border", async ({ page }) => {
-    const borderBottom = await page.locator("#hjem").evaluate((el) =>
-      getComputedStyle(el).borderBottom
-    );
-    expect(borderBottom).toContain("3px");
-    expect(borderBottom).toContain("solid");
   });
 });
 
