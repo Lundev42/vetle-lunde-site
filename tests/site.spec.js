@@ -180,7 +180,7 @@ test.describe("About section – content", () => {
     await expect(job2Title).toBeVisible();
     const job2Text = page.locator('#om-meg [data-i18n-html="about.job2.text"]');
     await expect(job2Text).toBeVisible();
-    await expect(job2Text).toContainText("under arbeid");
+    await expect(job2Text).toContainText("Well Delivery");
   });
 
   test("timeline container is visible in Om meg section", async ({ page }) => {
@@ -208,12 +208,14 @@ test.describe("About section – content", () => {
     const job1Text = page.locator('#om-meg [data-i18n="about.job1.text"]');
     await expect(job1Text).toContainText("biostratigraphic database");
     const job2Text = page.locator('#om-meg [data-i18n-html="about.job2.text"]');
-    await expect(job2Text).toContainText("Currently in progress");
+    await expect(job2Text).toContainText("Well Delivery");
+    await expect(job2Text).toContainText("Ekofisk field");
   });
 
-  test("job2 text renders HTML with em tag", async ({ page }) => {
-    const em = page.locator('#om-meg [data-i18n-html="about.job2.text"] em');
-    await expect(em).toBeVisible();
+  test("job2 text contains Ekofisk description", async ({ page }) => {
+    const job2Text = page.locator('#om-meg [data-i18n-html="about.job2.text"]');
+    await expect(job2Text).toContainText("Ekofiskfeltet");
+    await expect(job2Text).toContainText("StarSteer");
   });
 });
 
