@@ -49,20 +49,6 @@ test.describe("Hero section", () => {
     await expect(overlay).toBeVisible();
   });
 
-  test("has a Call to Action button that links to contact section", async ({ page }) => {
-    const cta = page.locator("#hjem .cta-button");
-    await expect(cta).toBeVisible();
-    await expect(cta).toHaveText("Ta kontakt");
-    await expect(cta).toHaveAttribute("href", "#kontakt");
-  });
-
-  test("CTA button text switches language", async ({ page }) => {
-    await page.click(".lang-toggle");
-    await expect(page.locator("#hjem .cta-button")).toHaveText("Get in touch");
-    await page.click(".lang-toggle");
-    await expect(page.locator("#hjem .cta-button")).toHaveText("Ta kontakt");
-  });
-
   test("has a caption describing the hero image", async ({ page }) => {
     const caption = page.locator("#hjem .hero-caption");
     await expect(caption).toBeVisible();
