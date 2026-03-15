@@ -587,12 +587,14 @@ test.describe("Accordion component in Studiet section", () => {
     await expect(page.locator("#studiet details.accordion")).not.toHaveAttribute("open", "");
   });
 
-  test("accordion contains course list items", async ({ page }) => {
+  test("accordion contains course table with correct courses", async ({ page }) => {
     const summary = page.locator("#studiet .accordion summary");
     await summary.click();
-    const items = page.locator("#studiet .accordion-content li");
-    await expect(items).toHaveCount(10);
-    await expect(items.first()).toContainText("GEO100");
+    const table = page.locator("#studiet .accordion-content .course-table");
+    await expect(table).toBeVisible();
+    const courseRows = page.locator("#studiet .accordion-content .course-table tbody tr:not(.semester-row)");
+    await expect(courseRows).toHaveCount(6);
+    await expect(courseRows.first()).toContainText("GE413");
   });
 
   test("accordion title switches to English", async ({ page }) => {
@@ -605,7 +607,7 @@ test.describe("Accordion component in Studiet section", () => {
     await page.click(".lang-toggle");
     const summary = page.locator("#studiet .accordion summary");
     await summary.click();
-    const firstItem = page.locator("#studiet .accordion-content li").first();
-    await expect(firstItem).toContainText("Introduction to Geology");
+    const firstCourse = page.locator("#studiet .accordion-content .course-table tbody tr:not(.semester-row)").first();
+    await expect(firstCourse).toContainText("Cartography and GIS");
   });
 });
