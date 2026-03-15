@@ -258,157 +258,72 @@ test.describe("SEO and accessibility must-haves", () => {
   });
 });
 
-test.describe("Contact form modal", () => {
+test.describe("Contact section link buttons", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(PAGE_URL);
   });
 
-  test("contact section has a 'Ta kontakt' button", async ({ page }) => {
-    const btn = page.locator("#contact-open-btn");
-    await expect(btn).toBeVisible();
-    await expect(btn).toHaveText("Ta kontakt");
+  test("contact section has email, GitHub, and LinkedIn buttons", async ({ page }) => {
+    const emailBtn = page.locator('.contact-link-btn[href^="mailto:"]');
+    const githubBtn = page.locator('.contact-link-btn[href*="github.com"]');
+    const linkedinBtn = page.locator('.contact-link-btn[href*="linkedin.com"]');
+    await expect(emailBtn).toBeVisible();
+    await expect(githubBtn).toBeVisible();
+    await expect(linkedinBtn).toBeVisible();
   });
 
-  test("contact button text switches to English", async ({ page }) => {
+  test("email button has correct mailto link", async ({ page }) => {
+    const emailBtn = page.locator('.contact-link-btn[href^="mailto:"]');
+    await expect(emailBtn).toHaveAttribute("href", "mailto:vetleoyvind@yahoo.com");
+  });
+
+  test("GitHub button links to correct profile", async ({ page }) => {
+    const githubBtn = page.locator('.contact-link-btn[href*="github.com"]');
+    await expect(githubBtn).toHaveAttribute("href", "https://github.com/Lundev42");
+  });
+
+  test("LinkedIn button links to correct profile", async ({ page }) => {
+    const linkedinBtn = page.locator('.contact-link-btn[href*="linkedin.com"]');
+    await expect(linkedinBtn).toHaveAttribute("href", "https://www.linkedin.com/in/vetle-lunde-3844753b6/");
+  });
+
+  test("buttons have text labels", async ({ page }) => {
+    await expect(page.locator('.contact-link-btn[href^="mailto:"]')).toContainText("E-post");
+    await expect(page.locator('.contact-link-btn[href*="github.com"]')).toContainText("GitHub");
+    await expect(page.locator('.contact-link-btn[href*="linkedin.com"]')).toContainText("LinkedIn");
+  });
+
+  test("button labels switch to English", async ({ page }) => {
     await page.click(".lang-toggle");
-    await expect(page.locator("#contact-open-btn")).toHaveText("Contact me");
+    await expect(page.locator('.contact-link-btn[href^="mailto:"]')).toContainText("Email");
+    await expect(page.locator('.contact-link-btn[href*="github.com"]')).toContainText("GitHub");
+    await expect(page.locator('.contact-link-btn[href*="linkedin.com"]')).toContainText("LinkedIn");
   });
 
-  test("modal is hidden by default", async ({ page }) => {
-    const modal = page.locator("#contact-modal");
-    await expect(modal).toBeHidden();
+  test("external links open in new tab", async ({ page }) => {
+    const githubBtn = page.locator('.contact-link-btn[href*="github.com"]');
+    const linkedinBtn = page.locator('.contact-link-btn[href*="linkedin.com"]');
+    await expect(githubBtn).toHaveAttribute("target", "_blank");
+    await expect(linkedinBtn).toHaveAttribute("target", "_blank");
   });
 
-  test("clicking contact button opens the modal", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    const modal = page.locator("#contact-modal");
-    await expect(modal).toBeVisible();
+  test("external links have rel noopener noreferrer", async ({ page }) => {
+    const githubBtn = page.locator('.contact-link-btn[href*="github.com"]');
+    const linkedinBtn = page.locator('.contact-link-btn[href*="linkedin.com"]');
+    await expect(githubBtn).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(linkedinBtn).toHaveAttribute("rel", "noopener noreferrer");
   });
 
-  test("modal has a title 'Kontaktskjema'", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await expect(page.locator("#contact-modal-title")).toHaveText("Kontaktskjema");
+  test("buttons have aria-labels", async ({ page }) => {
+    await expect(page.locator('.contact-link-btn[href^="mailto:"]')).toHaveAttribute("aria-label", "Send e-post");
+    await expect(page.locator('.contact-link-btn[href*="github.com"]')).toHaveAttribute("aria-label", "GitHub");
+    await expect(page.locator('.contact-link-btn[href*="linkedin.com"]')).toHaveAttribute("aria-label", "LinkedIn");
   });
 
-  test("modal title switches to English", async ({ page }) => {
-    await page.click(".lang-toggle");
-    await page.click("#contact-open-btn");
-    await expect(page.locator("#contact-modal-title")).toHaveText("Contact Form");
-  });
-
-  test("close button closes the modal", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await expect(page.locator("#contact-modal")).toBeVisible();
-    await page.click("#contact-close-btn");
-    await expect(page.locator("#contact-modal")).toBeHidden();
-  });
-
-  test("Escape key closes the modal", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await expect(page.locator("#contact-modal")).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(page.locator("#contact-modal")).toBeHidden();
-  });
-
-  test("clicking overlay closes the modal", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await expect(page.locator("#contact-modal")).toBeVisible();
-    // Click the overlay (top-left corner, outside modal-content)
-    await page.locator("#contact-modal").click({ position: { x: 5, y: 5 } });
-    await expect(page.locator("#contact-modal")).toBeHidden();
-  });
-
-  test("form has all required fields", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await expect(page.locator("#contact-name")).toBeVisible();
-    await expect(page.locator("#contact-email")).toBeVisible();
-    await expect(page.locator("#contact-subject")).toBeVisible();
-    await expect(page.locator("#contact-message")).toBeVisible();
-    await expect(page.locator("#contact-privacy")).toBeVisible();
-  });
-
-  test("form labels switch to English", async ({ page }) => {
-    await page.click(".lang-toggle");
-    await page.click("#contact-open-btn");
-    await expect(page.locator('label[for="contact-name"]')).toHaveText("Name");
-    await expect(page.locator('label[for="contact-email"]')).toHaveText("Email");
-    await expect(page.locator('label[for="contact-subject"]')).toHaveText("Subject");
-    await expect(page.locator('label[for="contact-message"]')).toHaveText("Message");
-  });
-
-  test("placeholders switch to English", async ({ page }) => {
-    await page.click(".lang-toggle");
-    await page.click("#contact-open-btn");
-    await expect(page.locator("#contact-name")).toHaveAttribute("placeholder", "Your name");
-    await expect(page.locator("#contact-email")).toHaveAttribute("placeholder", "your@email.com");
-  });
-
-  test("shows error for invalid email on submit", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await page.fill("#contact-name", "Test User");
-    await page.fill("#contact-email", "invalid-email");
-    await page.fill("#contact-subject", "Test");
-    await page.fill("#contact-message", "Hello");
-    await page.click("#contact-privacy");
-    await page.click(".form-submit");
-    await expect(page.locator("#contact-error")).toBeVisible();
-  });
-
-  test("honeypot field is not accessible to users", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    const honeypot = page.locator('input[name="_gotcha"]');
-    await expect(honeypot).toHaveAttribute("aria-hidden", "true");
-    await expect(honeypot).toHaveAttribute("tabindex", "-1");
-    await expect(honeypot).toHaveClass("honeypot");
-  });
-
-  test("submit with valid data shows success message (file:// fallback)", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await page.fill("#contact-name", "Test User");
-    await page.fill("#contact-email", "test@example.com");
-    await page.fill("#contact-subject", "Test Subject");
-    await page.fill("#contact-message", "Hello there!");
-    await page.click("#contact-privacy");
-    await page.click(".form-submit");
-    // Expected: Fetch fails on file:// protocol, catch handler simulates success for local preview
-    await expect(page.locator("#contact-success")).toBeVisible();
-  });
-
-  test("modal has correct ARIA attributes", async ({ page }) => {
-    const modal = page.locator("#contact-modal");
-    await expect(modal).toHaveAttribute("role", "dialog");
-    await expect(modal).toHaveAttribute("aria-modal", "true");
-    await expect(modal).toHaveAttribute("aria-labelledby", "contact-modal-title");
-  });
-
-  test("success message has no 'Send ny melding' button after submission", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await page.fill("#contact-name", "Test User");
-    await page.fill("#contact-email", "test@example.com");
-    await page.fill("#contact-subject", "Test Subject");
-    await page.fill("#contact-message", "Hello there!");
-    await page.click("#contact-privacy");
-    await page.click(".form-submit");
-    await expect(page.locator("#contact-success")).toBeVisible();
-    await expect(page.locator("#contact-new-btn")).toHaveCount(0);
-  });
-
-  test("reopening modal after submission shows fresh form", async ({ page }) => {
-    await page.click("#contact-open-btn");
-    await page.fill("#contact-name", "Test User");
-    await page.fill("#contact-email", "test@example.com");
-    await page.fill("#contact-subject", "Test Subject");
-    await page.fill("#contact-message", "Hello there!");
-    await page.click("#contact-privacy");
-    await page.click(".form-submit");
-    await expect(page.locator("#contact-success")).toBeVisible();
-    // Close and reopen the modal
-    await page.click("#contact-close-btn");
-    await page.click("#contact-open-btn");
-    // Should show the form, not the success message
-    await expect(page.locator("#contact-form")).toBeVisible();
-    await expect(page.locator("#contact-success")).toBeHidden();
-    await expect(page.locator("#contact-name")).toHaveValue("");
+  test("contact text is displayed on a single line", async ({ page }) => {
+    const p = page.locator("#kontakt p");
+    const style = await p.evaluate(el => getComputedStyle(el).whiteSpace);
+    expect(style).toBe("nowrap");
   });
 });
 
