@@ -798,36 +798,32 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 14px 32px;
-      font-size: 1rem;
-      font-weight: 600;
-      color: #ffffff;
-      background: #6384ff;
-      border: none;
-      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--card-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
       cursor: pointer;
       text-decoration: none;
       letter-spacing: 0.02em;
-      transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1), background 0.25s;
+      transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s;
       position: relative;
     }
 
     .contact-link-btn:hover,
     .contact-link-btn:focus-visible {
-      background: #4a6bff;
-      transform: translateY(-4px) scale(1.04);
-      box-shadow:
-        -4px -4px 16px rgba(255, 0, 128, 0.6),
-         4px -4px 16px rgba(255, 230, 0, 0.5),
-         4px  4px 16px rgba(0, 230, 255, 0.5),
-        -4px  4px 16px rgba(200, 0, 255, 0.5),
-         0    0   24px rgba(255, 0, 128, 0.3),
-         0    0   48px rgba(255, 230, 0, 0.15);
+      color: var(--text-heading);
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--accent-hover);
     }
 
     .contact-link-btn:active {
-      transform: translateY(-1px) scale(0.98);
-      box-shadow: 0 4px 12px rgba(99, 132, 255, 0.3);
+      transform: translateY(0);
+      box-shadow: none;
     }
 
     .contact-link-btn svg {
