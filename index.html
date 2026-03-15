@@ -808,7 +808,7 @@
       cursor: pointer;
       text-decoration: none;
       letter-spacing: 0.02em;
-      transition: color 0.25s, border-color 0.25s, background 0.25s, transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s;
+      transition: color 0.25s, background 0.25s;
       position: relative;
     }
 
@@ -816,14 +816,6 @@
     .contact-link-btn:focus-visible {
       color: var(--text-heading);
       background: var(--accent-bg);
-      border-color: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px var(--accent-hover);
-    }
-
-    .contact-link-btn:active {
-      transform: translateY(0);
-      box-shadow: none;
     }
 
     .contact-link-btn svg {
