@@ -209,11 +209,13 @@ test.describe("About section – content", () => {
     await expect(job1Text).toContainText("biostratigraphic database");
     const job2Text = page.locator('#om-meg [data-i18n-html="about.job2.text"]');
     await expect(job2Text).toContainText("Well Delivery");
+    await expect(job2Text).toContainText("Ekofisk field");
   });
 
   test("job2 text contains Ekofisk description", async ({ page }) => {
     const job2Text = page.locator('#om-meg [data-i18n-html="about.job2.text"]');
     await expect(job2Text).toContainText("Ekofiskfeltet");
+    await expect(job2Text).toContainText("StarSteer");
   });
 });
 
