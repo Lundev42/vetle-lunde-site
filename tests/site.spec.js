@@ -307,11 +307,11 @@ test.describe("Contact section link buttons", () => {
     await expect(linkedinBtn).toHaveAttribute("target", "_blank");
   });
 
-  test("external links have rel noopener", async ({ page }) => {
+  test("external links have rel noopener noreferrer", async ({ page }) => {
     const githubBtn = page.locator('.contact-link-btn[href*="github.com"]');
     const linkedinBtn = page.locator('.contact-link-btn[href*="linkedin.com"]');
-    await expect(githubBtn).toHaveAttribute("rel", /noopener/);
-    await expect(linkedinBtn).toHaveAttribute("rel", /noopener/);
+    await expect(githubBtn).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(linkedinBtn).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   test("buttons have aria-labels", async ({ page }) => {
