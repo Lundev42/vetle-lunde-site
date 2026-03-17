@@ -3,6 +3,7 @@ const { test, expect } = require("@playwright/test");
 
 const PAGE_URL = "file://" + require("path").resolve(__dirname, "../index.html");
 const BACHELOR_URL = "file://" + require("path").resolve(__dirname, "../bacheloroppgave.html");
+const STARSTEER_URL = "file://" + require("path").resolve(__dirname, "../starsteer.html");
 
 test.describe("Bacheloroppgave section", () => {
   test.beforeEach(async ({ page }) => {
@@ -519,5 +520,59 @@ test.describe("Accordion component in Bakgrunn section", () => {
     const firstCourse = page.locator("#bakgrunn .course-table tbody tr:not(.semester-row)").first();
     await expect(firstCourse).toContainText("MA414");
     await expect(firstCourse).toContainText("Mathematics for Natural Sciences");
+  });
+});
+
+test.describe("Footer copyright", () => {
+  test("footer shows '© 2026 Vetle Lunde' on index", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    const footer = page.locator("footer");
+    await expect(footer).toContainText("2026 Vetle Lunde");
+  });
+
+  test("footer shows '© 2026 Vetle Lunde' on bacheloroppgave", async ({ page }) => {
+    await page.goto(BACHELOR_URL);
+    const footer = page.locator("footer");
+    await expect(footer).toContainText("2026 Vetle Lunde");
+  });
+});
+
+test.describe("StarSteer link", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(PAGE_URL);
+  });
+
+  test("StarSteer text is a link to starsteer.html", async ({ page }) => {
+    const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
+    await expect(link).toBeVisible();
+    await expect(link).toHaveText("StarSteer");
+    await expect(link).toHaveAttribute("target", "_blank");
+  });
+
+  test("StarSteer link is also present in English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
+    await expect(link).toBeVisible();
+    await expect(link).toHaveText("StarSteer");
+  });
+});
+
+test.describe("StarSteer page", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(STARSTEER_URL);
+  });
+
+  test("has a footer with '© 2026 Vetle Lunde'", async ({ page }) => {
+    const footer = page.locator("footer");
+    await expect(footer).toContainText("2026 Vetle Lunde");
+  });
+
+  test("has nav links back to index.html", async ({ page }) => {
+    await expect(page.locator('nav a[data-i18n="nav.home"]')).toHaveAttribute("href", "index.html#hjem");
+  });
+
+  test("contains StarSteer content", async ({ page }) => {
+    const body = page.locator("body");
+    await expect(body).toContainText("StarSteer");
   });
 });
