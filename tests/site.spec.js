@@ -546,7 +546,35 @@ test.describe("StarSteer link", () => {
     const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
     await expect(link).toBeVisible();
     await expect(link).toHaveText("StarSteer");
-    await expect(link).toHaveAttribute("target", "_blank");
+  });
+
+  test("StarSteer link opens in same tab (no target=_blank)", async ({ page }) => {
+    const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
+    await expect(link).not.toHaveAttribute("target", "_blank");
+    const target = await link.getAttribute("target");
+    expect(target).toBeNull();
+  });
+
+  test("StarSteer link has no underline", async ({ page }) => {
+    const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
+    const textDecoration = await link.evaluate(el => getComputedStyle(el).textDecorationLine);
+    expect(textDecoration).toBe("none");
+  });
+
+  test("StarSteer link visited colour matches accent colour", async ({ page }) => {
+    const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
+    // Verify the link color matches --accent (the :visited rule re-applies the accent colour)
+    const { linkColor, accentColor } = await link.evaluate(el => {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      // Create a temporary element to resolve the CSS variable to an rgb value
+      const tmp = document.createElement("span");
+      tmp.style.color = "var(--accent)";
+      document.body.appendChild(tmp);
+      const resolved = getComputedStyle(tmp).color;
+      document.body.removeChild(tmp);
+      return { linkColor: getComputedStyle(el).color, accentColor: resolved };
+    });
+    expect(linkColor).toBe(accentColor);
   });
 
   test("StarSteer link is also present in English", async ({ page }) => {
@@ -554,6 +582,12 @@ test.describe("StarSteer link", () => {
     const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
     await expect(link).toBeVisible();
     await expect(link).toHaveText("StarSteer");
+  });
+
+  test("StarSteer link in English has no target=_blank", async ({ page }) => {
+    await page.click(".lang-toggle");
+    const link = page.locator('#bakgrunn [data-i18n-html="about.job2.text"] a[href="starsteer.html"]');
+    await expect(link).not.toHaveAttribute("target", "_blank");
   });
 });
 
