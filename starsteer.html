@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Portefølje for Vetle Øyvind Larsen Lunde – geologistudent ved Høgskulen på Vestlandet i Sogndal. Geologi og Geofare.">
-  <meta property="og:title" content="Vetle – Geologi og Geofare">
-  <meta property="og:description" content="Portefølje for Vetle Øyvind Larsen Lunde – geologistudent ved Høgskulen på Vestlandet i Sogndal.">
+  <meta name="description" content="StarSteer – programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips på Ekofiskfeltet.">
+  <meta property="og:title" content="StarSteer – Vetle Lunde">
+  <meta property="og:description" content="StarSteer – programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips på Ekofiskfeltet.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://Lundev42.github.io/vetle-lunde-site/">
+  <meta property="og:url" content="https://Lundev42.github.io/vetle-lunde-site/starsteer.html">
   <meta property="og:locale" content="nb_NO">
   <meta property="og:locale:alternate" content="en_US">
   <meta name="theme-color" content="#0f1117">
-  <title>Vetle – Geologi og Geofare</title>
+  <title>StarSteer – Vetle Lunde</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🪨</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -125,17 +125,27 @@
       width: 100%;
       margin: 0 auto;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 60px;
     }
 
     .text-col {
-      flex: 1 1 45%;
-      max-width: 650px;
+      flex: 1 1 55%;
+      max-width: 750px;
     }
 
-    .media-col {
-      flex: 1 1 50%;
+    .section-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 20px;
+      padding: 4px 14px;
+      margin-bottom: 16px;
     }
 
     .text-col h2 {
@@ -150,70 +160,44 @@
       font-size: 1.05rem;
       line-height: 1.75;
       color: var(--text-muted);
+      margin-bottom: 16px;
     }
 
-    .media-col img {
-      width: 100%;
-      border-radius: 16px;
-      border: 3px solid rgba(255, 255, 255, 0.12);
-      object-fit: cover;
-      display: block;
-      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    .text-col p:last-child {
+      margin-bottom: 0;
     }
 
-    /* ── Bachelor heading centered on top ── */
-    #bachelor .section-inner {
+    /* ── Info cards ── */
+    .info-cards {
+      display: flex;
       flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 28px;
     }
 
-    #bachelor .section-inner > h2 {
-      width: 100%;
-      text-align: center;
-      font-size: 2.4rem;
-      font-weight: 700;
-      color: var(--text-heading);
-      line-height: 1.2;
-    }
-
-    /* ── Gallery grid (used in media-col) ── */
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .gallery-grid img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      border-radius: 12px 12px 0 0;
-      border: 3px solid rgba(255, 255, 255, 0.12);
-      border-bottom: none;
-      display: block;
-    }
-
-    .gallery-grid figure {
-      margin: 0;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .gallery-grid figure:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(99, 132, 255, 0.2), 0 0 20px rgba(99, 132, 255, 0.1);
-    }
-
-    .gallery-grid figcaption {
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      padding: 10px 12px;
+    .info-card {
       background: var(--card-bg);
-      border: 3px solid rgba(255, 255, 255, 0.12);
-      border-top: none;
-      border-radius: 0 0 12px 12px;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      border: 1px solid var(--accent-border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      flex: 1 1 200px;
+      min-width: 180px;
+      transition: background-color 0.3s ease;
+    }
+
+    .info-card .card-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .info-card .card-value {
+      font-size: 0.95rem;
+      color: var(--text-heading);
+      font-weight: 500;
     }
 
     /* ── Contact / Footer ── */
@@ -248,10 +232,6 @@
       nav a {
         font-size: 0.75rem;
         padding: 6px 12px;
-      }
-
-      .gallery-grid {
-        grid-template-columns: 1fr;
       }
     }
 
@@ -380,11 +360,6 @@
       background: var(--accent-bg);
     }
 
-    /* ── Image hover border glow ── */
-    .media-col figure:hover img {
-      border-color: rgba(99, 132, 255, 0.4);
-    }
-
     /* ── Alternating section backgrounds ── */
     section:nth-of-type(even) {
       background: var(--bg-secondary);
@@ -401,7 +376,7 @@
       <li><a href="index.html#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="index.html#om-meg" data-i18n="nav.about">Om meg</a></li>
       <li><a href="index.html#bakgrunn" data-i18n="nav.background">Bakgrunn</a></li>
-      <li><a href="#bachelor" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
+      <li><a href="bacheloroppgave.html" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
       <li><a href="index.html#kontakt" data-i18n="nav.contact">Kontakt</a></li>
       <li><button class="lang-toggle" data-i18n="lang.switch" aria-label="Switch language">EN</button></li>
       <li><button class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
@@ -413,32 +388,41 @@
 
   <main id="hovedinnhold">
 
-    <!-- Bachelor thesis -->
-    <section id="bachelor">
+    <!-- StarSteer intro -->
+    <section id="starsteer-intro">
       <div class="section-inner reveal">
-        <h2 data-i18n="bachelor.title">Bacheloroppgave</h2>
         <div class="text-col">
-          <p data-i18n="bachelor.text">Bacheloroppgaven min fokuserer på å forstå geologiske prosesser og hvordan de påvirker samfunnet. Gjennom feltarbeid, laboratorieanalyser og kartlegging har jeg undersøkt hvordan man kan vurdere og håndtere geofarer i norsk terreng. Oppgaven knytter sammen teori og praksis på en måte som er relevant for fremtidig arbeid innen geofag.</p>
-        </div>
-        <div class="media-col">
-          <div class="gallery-grid">
-            <figure>
-              <img
-                src="IMG_3906.JPG"
-                alt="Bacheloroppgave – feltarbeid bilde 1"
-                data-i18n-alt="bachelor.img1.alt"
-              />
-              <figcaption data-i18n="bachelor.caption1">Den vakre naturen i Trøndelag</figcaption>
-            </figure>
-            <figure>
-              <img
-                src="IMG_7509.jpeg"
-                alt="Bacheloroppgave – feltarbeid bilde 2"
-                data-i18n-alt="bachelor.img2.alt"
-              />
-              <figcaption data-i18n="bachelor.caption2">Bratte fjellsider</figcaption>
-            </figure>
+          <span class="section-label" data-i18n="starsteer.label">Programvare</span>
+          <h2 data-i18n="starsteer.title">StarSteer</h2>
+          <p data-i18n="starsteer.intro">StarSteer er en spesialisert programvare for retningsboring, utviklet for å designe og modellere brønntrajektorier med høy presisjon. Programvaren er et av bransjens ledende verktøy innen brønnstyring og brukes av geofaglige team verden over.</p>
+          <p data-i18n="starsteer.intro2">Under praksisperioden min hos ConocoPhillips benyttet jeg StarSteer som del av arbeidet med å utvikle et bibliotek av re-styrte brønner på Ekofiskfeltet i Nordsjøen.</p>
+          <div class="info-cards">
+            <div class="info-card">
+              <div class="card-label" data-i18n="starsteer.card1.label">Bruk</div>
+              <div class="card-value" data-i18n="starsteer.card1.value">Retningsboring</div>
+            </div>
+            <div class="info-card">
+              <div class="card-label" data-i18n="starsteer.card2.label">Felt</div>
+              <div class="card-value" data-i18n="starsteer.card2.value">Ekofisk, Nordsjøen</div>
+            </div>
+            <div class="info-card">
+              <div class="card-label" data-i18n="starsteer.card3.label">Selskap</div>
+              <div class="card-value">ConocoPhillips</div>
+            </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- StarSteer details -->
+    <section id="starsteer-detaljer">
+      <div class="section-inner reveal">
+        <div class="text-col">
+          <span class="section-label" data-i18n="starsteer.details.label">Funksjonalitet</span>
+          <h2 data-i18n="starsteer.details.title">Hvordan fungerer StarSteer?</h2>
+          <p data-i18n="starsteer.details.p1">StarSteer gjør det mulig å designe brønntrajektorier i 3D og integrere geologiske data direkte i planleggingsprosessen. Programvaren støtter import av biostratigrafiske tolkninger, bildelogganalyser og geofysiske logger som tetthet og resistivitet (CPI).</p>
+          <p data-i18n="starsteer.details.p2">Ved å sammenstille disse datakildene kan geofaglige team identifisere strukturelle avvik i geomodeller og planlegge presise korreksjonsbaner for re-styring av eksisterende brønner. Dette er avgjørende for å opprettholde produksjonseffektiviteten på modne felt som Ekofisk.</p>
+          <p data-i18n="starsteer.details.p3">I mitt arbeid brukte jeg StarSteer til å korrelere tetthet- og resistivitetslogger på tvers av brønner, identifisere avvik mot Petrel-geomodellen og utarbeide et bibliotek av veldokumenterte re-styringsscenarier. Resultatet støtter implementeringen av sanntidsoperasjoner og forbedrer treffsikkerheten for fremtidige brønner på Ekofisk og Eldfisk-feltene.</p>
         </div>
       </div>
     </section>
@@ -457,15 +441,23 @@
         "nav.background": "Bakgrunn",
         "nav.bachelor": "Bacheloroppgave",
         "nav.contact": "Kontakt",
-        "bachelor.title": "Bacheloroppgave",
-        "bachelor.text": "Bacheloroppgaven min fokuserer p\u00e5 \u00e5 forst\u00e5 geologiske prosesser og hvordan de p\u00e5virker samfunnet. Gjennom feltarbeid, laboratorieanalyser og kartlegging har jeg unders\u00f8kt hvordan man kan vurdere og h\u00e5ndtere geofarer i norsk terreng. Oppgaven knytter sammen teori og praksis p\u00e5 en m\u00e5te som er relevant for fremtidig arbeid innen geofag.",
-        "bachelor.img1.alt": "Bacheloroppgave \u2013 feltarbeid bilde 1",
-        "bachelor.img2.alt": "Bacheloroppgave \u2013 feltarbeid bilde 2",
-        "bachelor.caption1": "Den vakre naturen i Tr\u00f8ndelag",
-        "bachelor.caption2": "Bratte fjellsider",
+        "starsteer.label": "Programvare",
+        "starsteer.title": "StarSteer",
+        "starsteer.intro": "StarSteer er en spesialisert programvare for retningsboring, utviklet for \u00e5 designe og modellere br\u00f8nntrajektorier med h\u00f8y presisjon. Programvaren er et av bransjens ledende verkt\u00f8y innen br\u00f8nnstyring og brukes av geofaglige team verden over.",
+        "starsteer.intro2": "Under praksisperioden min hos ConocoPhillips benyttet jeg StarSteer som del av arbeidet med \u00e5 utvikle et bibliotek av re-styrte br\u00f8nner p\u00e5 Ekofiskfeltet i Nordsj\u00f8en.",
+        "starsteer.card1.label": "Bruk",
+        "starsteer.card1.value": "Retningsboring",
+        "starsteer.card2.label": "Felt",
+        "starsteer.card2.value": "Ekofisk, Nordsj\u00f8en",
+        "starsteer.card3.label": "Selskap",
+        "starsteer.details.label": "Funksjonalitet",
+        "starsteer.details.title": "Hvordan fungerer StarSteer?",
+        "starsteer.details.p1": "StarSteer gj\u00f8r det mulig \u00e5 designe br\u00f8nntrajektorier i 3D og integrere geologiske data direkte i planleggingsprosessen. Programvaren st\u00f8tter import av biostratigrafiske tolkninger, bildelogganalyser og geofysiske logger som tetthet og resistivitet (CPI).",
+        "starsteer.details.p2": "Ved \u00e5 sammenstille disse datakildene kan geofaglige team identifisere strukturelle avvik i geomodeller og planlegge presise korreksjonsbaner for re-styring av eksisterende br\u00f8nner. Dette er avg\u00f8rende for \u00e5 opprettholde produksjonseffektiviteten p\u00e5 modne felt som Ekofisk.",
+        "starsteer.details.p3": "I mitt arbeid brukte jeg StarSteer til \u00e5 korrelere tetthet- og resistivitetslogger p\u00e5 tvers av br\u00f8nner, identifisere avvik mot Petrel-geomodellen og utarbeide et bibliotek av veldokumenterte re-styringsscenarier. Resultatet st\u00f8tter implementeringen av sanntidsoperasjoner og forbedrer treffsikkerheten for fremtidige br\u00f8nner p\u00e5 Ekofisk og Eldfisk-feltene.",
         "footer.text": "Geologi og Geofare",
-        "page.title": "Vetle \u2013 Geologi og Geofare",
-        "meta.description": "Portefølje for Vetle Øyvind Larsen Lunde – geologistudent ved Høgskulen på Vestlandet i Sogndal. Geologi og Geofare.",
+        "page.title": "StarSteer \u2013 Vetle Lunde",
+        "meta.description": "StarSteer \u2013 programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips p\u00e5 Ekofiskfeltet.",
         "skip.link": "Hopp til hovedinnhold",
         "lang.switch": "EN",
         "theme.toggle.dark": "Bytt til lyst tema",
@@ -477,15 +469,23 @@
         "nav.background": "Background",
         "nav.bachelor": "Bachelor Thesis",
         "nav.contact": "Contact",
-        "bachelor.title": "Bachelor Thesis",
-        "bachelor.text": "My bachelor thesis focuses on understanding geological processes and how they affect society. Through fieldwork, laboratory analyses and mapping, I have investigated how one can assess and manage geo-hazards in Norwegian terrain. The thesis ties together theory and practice in a way that is relevant for future work in geoscience.",
-        "bachelor.img1.alt": "Bachelor thesis \u2013 fieldwork photo 1",
-        "bachelor.img2.alt": "Bachelor thesis \u2013 fieldwork photo 2",
-        "bachelor.caption1": "The beautiful nature of Tr\u00f8ndelag",
-        "bachelor.caption2": "Steep mountain sides",
+        "starsteer.label": "Software",
+        "starsteer.title": "StarSteer",
+        "starsteer.intro": "StarSteer is a specialised directional drilling software designed for planning and modelling wellbore trajectories with high precision. It is one of the industry\u2019s leading tools for well steering and is used by geoscience teams worldwide.",
+        "starsteer.intro2": "During my internship at ConocoPhillips I used StarSteer as part of the work to develop a library of re-steered wells on the Ekofisk field in the North Sea.",
+        "starsteer.card1.label": "Application",
+        "starsteer.card1.value": "Directional drilling",
+        "starsteer.card2.label": "Field",
+        "starsteer.card2.value": "Ekofisk, North Sea",
+        "starsteer.card3.label": "Company",
+        "starsteer.details.label": "Functionality",
+        "starsteer.details.title": "How does StarSteer work?",
+        "starsteer.details.p1": "StarSteer enables the design of wellbore trajectories in 3D and allows geological data to be integrated directly into the planning workflow. The software supports import of biostratigraphic interpretations, image log analyses and geophysical logs such as density and resistivity (CPI).",
+        "starsteer.details.p2": "By combining these data sources, geoscience teams can identify structural discrepancies in geomodels and plan precise correction paths for re-steering existing wells. This is critical for maintaining production efficiency on mature fields such as Ekofisk.",
+        "starsteer.details.p3": "In my work I used StarSteer to correlate density and resistivity logs across wells, identify discrepancies against the Petrel geomodel, and compile a library of well-documented re-steering scenarios. The results support the implementation of real-time operations and improve the accuracy of future wells on the Ekofisk and Eldfisk fields.",
         "footer.text": "Geology and Geo-Hazards",
-        "page.title": "Vetle \u2013 Geology and Geo-Hazards",
-        "meta.description": "Portfolio of Vetle Øyvind Larsen Lunde – geology student at Western Norway University of Applied Sciences in Sogndal. Geology and Geo-Hazards.",
+        "page.title": "StarSteer \u2013 Vetle Lunde",
+        "meta.description": "StarSteer \u2013 directional drilling software used by Vetle Lunde at ConocoPhillips on the Ekofisk field.",
         "skip.link": "Skip to main content",
         "lang.switch": "NO",
         "theme.toggle.dark": "Switch to light mode",
@@ -636,7 +636,6 @@
 
       var lastSection = sections[sections.length - 1];
 
-      /* Detection strip occupies 20 %–40 % from the top of the viewport. */
       var observer = new IntersectionObserver(function (entries) {
         if (scrollLocked) return;
         entries.forEach(function (entry) {
@@ -647,8 +646,6 @@
       }, { rootMargin: '-20% 0px -60% 0px' });
       sections.forEach(function (s) { observer.observe(s); });
 
-      /* When a nav link is clicked, immediately highlight it and suppress
-         the scroll-to-bottom override during the smooth-scroll animation. */
       navLinks.forEach(function (link) {
         link.addEventListener('click', function () {
           var id = link.getAttribute('href').substring(1);
@@ -658,8 +655,6 @@
         });
       });
 
-      /* When scrolled to the bottom of the page, activate the last section
-         even if it is too short to reach the observer's detection zone. */
       window.addEventListener('scroll', function () {
         if (!scrollLocked && (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 2)) {
           setActive(lastSection.id);
