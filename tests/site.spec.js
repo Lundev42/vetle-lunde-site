@@ -155,7 +155,7 @@ test.describe("About section – content", () => {
 
   test("displays job history entries in Bakgrunn section", async ({ page }) => {
     const titles = page.locator('#bakgrunn h4.job-title');
-    await expect(titles).toHaveCount(2);
+    await expect(titles).toHaveCount(3);
     const job1Text = page.locator('#bakgrunn [data-i18n="about.job1.text"]');
     await expect(job1Text).toBeVisible();
     await expect(job1Text).toContainText("biostratigrafisk database");
@@ -166,29 +166,32 @@ test.describe("About section – content", () => {
 
   test("displays ConocoPhillips text titles beside job entries", async ({ page }) => {
     const titles = page.locator('#bakgrunn h4.job-title');
-    await expect(titles).toHaveCount(2);
+    await expect(titles).toHaveCount(3);
     await expect(titles.nth(0)).toHaveText("ConocoPhillips 2024–2025");
     await expect(titles.nth(1)).toHaveText("ConocoPhillips 2023–2024");
+    await expect(titles.nth(2)).toHaveText("Vaktsoldat – Akershus Festning 2022–2023");
   });
 
   test("timeline container is visible in Bakgrunn section", async ({ page }) => {
     const timeline = page.locator('#bakgrunn .timeline');
     await expect(timeline).toBeVisible();
     const entries = page.locator('#bakgrunn .timeline-entry');
-    await expect(entries).toHaveCount(2);
+    await expect(entries).toHaveCount(3);
   });
 
   test("timeline displays year ranges", async ({ page }) => {
     const dates = page.locator('#bakgrunn .timeline-date');
     await expect(dates.nth(0)).toHaveText("2024–2025");
     await expect(dates.nth(1)).toHaveText("2023–2024");
+    await expect(dates.nth(2)).toHaveText("2022–2023");
   });
 
   test("timeline markers are visible", async ({ page }) => {
     const markers = page.locator('#bakgrunn .timeline-marker');
-    await expect(markers).toHaveCount(2);
+    await expect(markers).toHaveCount(3);
     await expect(markers.nth(0)).toBeVisible();
     await expect(markers.nth(1)).toBeVisible();
+    await expect(markers.nth(2)).toBeVisible();
   });
 
   test("job history switches to English", async ({ page }) => {
@@ -204,6 +207,19 @@ test.describe("About section – content", () => {
     const job2Text = page.locator('#bakgrunn [data-i18n-html="about.job2.text"]');
     await expect(job2Text).toContainText("Ekofiskfeltet");
     await expect(job2Text).toContainText("StarSteer");
+  });
+
+  test("job0 text contains Akershus Festning description", async ({ page }) => {
+    const job0Text = page.locator('#bakgrunn [data-i18n="about.job0.text"]');
+    await expect(job0Text).toContainText("Akershus festning");
+    await expect(job0Text).toContainText("Kongens Garde");
+  });
+
+  test("job0 switches to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    const job0Text = page.locator('#bakgrunn [data-i18n="about.job0.text"]');
+    await expect(job0Text).toContainText("Akershus Fortress");
+    await expect(job0Text).toContainText("King\u2019s Guard");
   });
 });
 
