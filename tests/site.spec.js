@@ -167,9 +167,9 @@ test.describe("About section – content", () => {
   test("displays ConocoPhillips text titles beside job entries", async ({ page }) => {
     const titles = page.locator('#bakgrunn h4.job-title');
     await expect(titles).toHaveCount(3);
-    await expect(titles.nth(0)).toHaveText("ConocoPhillips 2024–2025");
-    await expect(titles.nth(1)).toHaveText("ConocoPhillips 2023–2024");
-    await expect(titles.nth(2)).toHaveText("Vaktsoldat – Akershus Festning 2022–2023");
+    await expect(titles.nth(0)).toHaveText("ConocoPhillips");
+    await expect(titles.nth(1)).toHaveText("ConocoPhillips");
+    await expect(titles.nth(2)).toHaveText("Vaktsoldat – Akershus Festning");
   });
 
   test("timeline container is visible in Bakgrunn section", async ({ page }) => {
@@ -179,9 +179,12 @@ test.describe("About section – content", () => {
     await expect(entries).toHaveCount(3);
   });
 
-  test("timeline does not display separate year range labels", async ({ page }) => {
+  test("timeline displays year range labels on the left", async ({ page }) => {
     const dates = page.locator('#bakgrunn .timeline-date');
-    await expect(dates).toHaveCount(0);
+    await expect(dates).toHaveCount(3);
+    await expect(dates.nth(0)).toHaveText("2024–2025");
+    await expect(dates.nth(1)).toHaveText("2023–2024");
+    await expect(dates.nth(2)).toHaveText("2022–2023");
   });
 
   test("timeline markers are visible", async ({ page }) => {
