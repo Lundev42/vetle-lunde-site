@@ -233,10 +233,6 @@
       z-index: 1;
     }
 
-    .timeline-date.date-short {
-      left: -115px;
-    }
-
     .timeline-entry h4.job-title {
       margin-top: 0;
     }
@@ -407,9 +403,8 @@
 
     #om-meg .media-col img {
       width: 100%;
-      max-height: 480px;
+      height: 100%;
       object-fit: cover;
-      object-position: center 80%;
       border-radius: 0;
       display: block;
     }
@@ -422,6 +417,25 @@
       background: var(--card-bg);
       border-radius: 0;
       transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .about-gallery {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 8px;
+    }
+
+    .about-gallery .gallery-main {
+      grid-column: 1 / -1;
+    }
+
+    .about-gallery .gallery-main img {
+      max-height: 360px;
+    }
+
+    .about-gallery .gallery-secondary img {
+      max-height: 200px;
     }
 
     /* ── Study ── */
@@ -1049,17 +1063,31 @@
           <p data-i18n="about.background.text">I 2023 startet jeg på den treårige bachelorgraden Geologi og Geofare ved Høgskulen på Vestlandet i Sogndal. Studiet har gitt meg stor kunnskap og lærerike opplevelser gjennom både teoretisk undervisning og feltarbeid/ekskursjoner. Nå bygger jeg videre på kunnskapen jeg har opparbeidet meg ved å skrive en bacheloroppgave som avslutning på studiet.</p>
         </div>
         <div class="media-col">
-          <figure>
-            <img
-              src="ccdr 2025-08-09 113111.519.JPG"
-              alt="Vetle Øyvind Larsen Lunde"
-              data-i18n-alt="about.img.alt"
-              loading="lazy"
-              width="3024"
-              height="4033"
-            />
-            <figcaption data-i18n="about.caption">Solen går ned, men kartleggingen fortsetter</figcaption>
-          </figure>
+          <div class="about-gallery">
+            <figure class="gallery-main">
+              <img
+                src="IMG_7797.JPG"
+                alt="Vetle Øyvind Larsen Lunde"
+                data-i18n-alt="about.img.alt"
+                loading="lazy"
+              />
+              <figcaption data-i18n="about.caption">Solen går ned, men kartleggingen fortsetter</figcaption>
+            </figure>
+            <figure class="gallery-secondary">
+              <img
+                src="IMG_2172.jpeg"
+                alt="Feltarbeid"
+                loading="lazy"
+              />
+            </figure>
+            <figure class="gallery-secondary">
+              <img
+                src="IMG_6585.jpeg"
+                alt="Feltarbeid"
+                loading="lazy"
+              />
+            </figure>
+          </div>
         </div>
       </div>
     </section>
@@ -1205,7 +1233,7 @@
             <h3 data-i18n="background.job.title">Jobberfaring</h3>
               <div class="timeline">
                 <div class="timeline-entry">
-                  <span class="timeline-date date-short">2025</span>
+                  <span class="timeline-date">2025</span>
                   <div class="timeline-marker"></div>
                   <div class="timeline-entry-with-slider">
                     <div class="timeline-content">
@@ -1221,7 +1249,7 @@
                   </div>
                 </div>
                 <div class="timeline-entry">
-                  <span class="timeline-date date-short">2024</span>
+                  <span class="timeline-date">2024</span>
                   <div class="timeline-marker"></div>
                   <div class="timeline-entry-with-slider">
                     <div class="timeline-content">
