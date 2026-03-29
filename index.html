@@ -388,7 +388,7 @@
     }
 
     #om-meg .section-inner {
-      align-items: flex-start;
+      align-items: stretch;
     }
 
     #om-meg .text-col {
@@ -402,6 +402,7 @@
     #om-meg .media-col {
       flex: 0 1 40%;
       max-width: 400px;
+      display: flex;
     }
 
     #om-meg .media-col figure {
@@ -409,12 +410,13 @@
       border-radius: 0;
       overflow: hidden;
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+      flex: 1;
     }
 
     #om-meg .media-col img {
       width: 100%;
-      height: auto;
-      object-fit: contain;
+      height: 100%;
+      object-fit: cover;
       display: block;
       border-radius: 0;
     }
@@ -436,7 +438,7 @@
       margin: 24px auto 0;
       padding: 0 60px;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1.5fr;
       gap: 16px;
     }
 
