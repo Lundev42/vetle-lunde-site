@@ -402,7 +402,8 @@
     }
 
     #om-meg .section-inner {
-      align-items: start;
+      align-items: center;
+      padding: 40px;
     }
 
     #om-meg .text-col {
@@ -414,8 +415,8 @@
     }
 
     #om-meg .media-col {
-      flex: 0 1 40%;
-      max-width: 400px;
+      flex: 0 1 30%;
+      max-width: 240px;
     }
 
     #om-meg .media-col figure {
@@ -432,8 +433,11 @@
       border-radius: 0;
     }
 
-    #om-meg .media-col figcaption,
-    .about-sub-gallery figcaption {
+    #om-meg .media-col img:hover {
+      transform: none;
+    }
+
+    #om-meg .media-col figcaption {
       text-align: center;
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -443,33 +447,121 @@
       transition: background-color var(--duration-state) var(--ease-out-quart), color var(--duration-state) var(--ease-out-quart);
     }
 
+    /* ── About Sub-Gallery ── */
     .about-sub-gallery {
-      max-width: 900px;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      max-width: 1200px;
       width: 100%;
       margin: 24px auto 0;
-      padding: 0 60px;
-      display: grid;
-      grid-template-columns: 1fr 1.5fr;
-      gap: 16px;
+      padding: 0 40px;
     }
 
-    .about-sub-gallery figure {
+    .about-sub-gallery .gallery-thumb {
+      position: relative;
       margin: 0;
+      flex: 0 1 280px;
+      cursor: pointer;
+      border-radius: 8px;
       overflow: hidden;
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.07);
+      transition: transform var(--duration-state) var(--ease-out-quart), box-shadow var(--duration-state) var(--ease-out-quart);
     }
 
-    .about-sub-gallery img {
+    .about-sub-gallery .gallery-thumb:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 28px rgba(255, 255, 255, 0.12);
+    }
+
+    [data-theme="light"] .about-sub-gallery .gallery-thumb {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    [data-theme="light"] .about-sub-gallery .gallery-thumb:hover {
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .about-sub-gallery .gallery-thumb img {
       width: 100%;
-      height: auto;
-      object-fit: contain;
+      height: 100%;
+      object-fit: cover;
       display: block;
     }
 
-    @media (max-width: 768px) {
-      .about-sub-gallery {
-        grid-template-columns: 1fr;
-        padding: 0 24px;
-      }
+    .about-sub-gallery .gallery-thumb figcaption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      color: #fff;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      text-align: center;
+      transition: opacity var(--duration-state) var(--ease-out-quart);
+    }
+
+    /* ── Lightbox ── */
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.88);
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .lightbox-overlay.active {
+      display: flex;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 2.5rem;
+      cursor: pointer;
+      z-index: 10000;
+      line-height: 1;
+      padding: 4px 12px;
+      transition: opacity var(--duration-state) var(--ease-out-quart);
+    }
+
+    .lightbox-close:hover {
+      opacity: 0.7;
+    }
+
+    .lightbox-content {
+      margin: 0;
+      max-width: 90vw;
+      max-height: 85vh;
+      text-align: center;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      display: block;
+      margin: 0 auto;
+      border-radius: 6px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .lightbox-content figcaption {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      padding: 14px 20px;
+      text-align: center;
     }
 
     /* ── Study ── */
@@ -782,6 +874,13 @@
         white-space: normal;
       }
 
+      #om-meg .section-inner {
+        padding: 24px;
+      }
+      .about-sub-gallery {
+        padding: 0 24px;
+      }
+
     }
 
     /* ── Language toggle ── */
@@ -1048,7 +1147,8 @@
       stroke-width: 2.5;
       stroke-linecap: round;
       stroke-linejoin: round;
-      transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: rotate(0deg);
+      transition: transform var(--duration-layout) var(--ease-out-expo);
     }
 
     .reveal-slider-tab.open .arrow-icon {
@@ -1166,22 +1266,12 @@
         </div>
       </div>
       <div class="about-sub-gallery">
-        <figure class="reveal" style="--i: 0">
-          <img
-            src="IMG_2172.jpeg"
-            alt="Dumdalsgrottene"
-            data-i18n-alt="about.img2172.alt"
-            loading="lazy"
-          />
+        <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
+          <img src="IMG_2172.jpeg" alt="Dumdalsgrottene" data-i18n-alt="about.img2172.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption2172">Å krype gjennom trange marmorganger på tur gjennom de berømte Dumdalsgrottene</figcaption>
         </figure>
-        <figure class="reveal" style="--i: 1">
-          <img
-            src="IMG_6585.jpeg"
-            alt="Feltarbeid på bre"
-            data-i18n-alt="about.img6585.alt"
-            loading="lazy"
-          />
+        <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
+          <img src="IMG_6585.jpeg" alt="Feltarbeid på bre" data-i18n-alt="about.img6585.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption6585">Hva er vel en manns kraft mot en kjempe som har sovet under isen i tusen år?</figcaption>
         </figure>
       </div>
@@ -1451,6 +1541,7 @@
         "about.img8394.alt": "Vetle på fjelltur om vinteren",
         "about.img2172.alt": "Dumdalsgrottene",
         "about.img6585.alt": "Feltarbeid p\u00e5 bre",
+        "about.bilder.label": "Mer",
         "about.background.intro": "Jeg har jobbet som vaktsoldat ved Akershus festning og hatt to sommerjobber i ConocoPhillips, hvor jeg har jobbet med oljerelatert geologi og geofysikk.",
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "Arbeidet mitt besto av \u00e5 hjelpe reservoarkarakteriserings teamet med \u00e5 lage en brukbar biostratigrafisk database. Dette arbeidet st\u00f8tter den geologiske tolkningen etter borekampanjen p\u00e5 gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.",
@@ -1514,6 +1605,7 @@
         "about.img8394.alt": "Vetle on a winter mountain hike",
         "about.img2172.alt": "Dumdals Caves",
         "about.img6585.alt": "Fieldwork on glacier",
+        "about.bilder.label": "More",
         "about.background.intro": "I have worked as a guard soldier at Akershus Fortress and had two summer jobs at ConocoPhillips, where I worked with oil-related geology and geophysics.",
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "My work consisted of helping the reservoir characterisation team to create a usable biostratigraphic database. This work supports the geological interpretation following the drilling campaign on the Tommeliten A gas condensate field, and contributed to the complete model update for 2024/2025. The workflow consisted of data processing in Excel followed by analysis work in Spotfire.",
@@ -1743,7 +1835,44 @@
         }
       });
     })();
+
+    function openLightbox(thumbEl) {
+      var img = thumbEl.querySelector('img');
+      var caption = thumbEl.querySelector('figcaption');
+      var overlay = document.getElementById('lightbox');
+      document.getElementById('lightbox-img').src = img.src;
+      document.getElementById('lightbox-img').alt = img.alt;
+      document.getElementById('lightbox-caption').textContent = caption.textContent;
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      document.querySelector('.lightbox-close').focus();
+    }
+
+    function closeLightbox(e) {
+      if (e.target === document.getElementById('lightbox') || e.target.classList.contains('lightbox-close')) {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var overlay = document.getElementById('lightbox');
+        if (overlay.classList.contains('active')) {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      }
+    });
   </script>
+
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Close">&times;</button>
+    <figure class="lightbox-content">
+      <img id="lightbox-img" src="" alt="" />
+      <figcaption id="lightbox-caption"></figcaption>
+    </figure>
+  </div>
 
 </body>
 </html>
