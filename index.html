@@ -336,7 +336,6 @@
       color: #ffffff;
       margin-bottom: 16px;
       line-height: 1.15;
-      white-space: nowrap;
       text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
     }
 
@@ -814,7 +813,7 @@
     /* ── Responsive – mobile ── */
     @media (max-width: 768px) {
       section {
-        padding: 100px 24px 60px;
+        padding: 80px 20px 40px;
       }
 
       .section-inner {
@@ -888,6 +887,20 @@
       }
       .about-sub-gallery {
         padding: 0 24px;
+      }
+
+      /* Hero caption: stack under content, full-width on small screens */
+      .hero-caption {
+        position: static;
+        bottom: auto;
+        left: auto;
+        z-index: 2;
+        width: 100%;
+        max-width: none;
+        margin: 16px auto 0;
+        padding: 12px;
+        text-align: center;
+        border-radius: 8px;
       }
 
     }
