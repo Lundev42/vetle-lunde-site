@@ -473,7 +473,7 @@ test.describe("Navigation active highlighting", () => {
   test("only one nav link is active at a time", async ({ page }) => {
     const hrefs = ['#hjem', '#om-meg', '#bakgrunn', '#kontakt'];
     for (const href of hrefs) {
-      await page.locator('nav a[href="' + href + '"]').click();
+      await page.locator('nav ul a[href="' + href + '"]').click();
       await page.waitForTimeout(900);
       const activeLinks = page.locator('nav a.nav-active');
       await expect(activeLinks).toHaveCount(1);
@@ -707,7 +707,7 @@ test.describe("Accessibility improvements", () => {
 
   test("below-the-fold images have loading=lazy on index", async ({ page }) => {
     await page.goto(PAGE_URL);
-    const aboutImg = page.locator('#om-meg img[src="IMG_8394.jpeg"]');
+    const aboutImg = page.locator('#om-meg img[src*="IMG_8394.jpeg"]');
     await expect(aboutImg).toHaveAttribute("loading", "lazy");
     const studyImg = page.locator('img[src*="FalkeblikkAS"]');
     await expect(studyImg).toHaveAttribute("loading", "lazy");

@@ -15,7 +15,10 @@ module.exports = defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { browserName: "chromium" },
+      use: {
+        browserName: "chromium",
+        channel: process.env.CI ? undefined : "msedge",
+      },
     },
   ],
 });

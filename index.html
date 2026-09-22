@@ -8,7 +8,7 @@
   <meta property="og:description" content="Portefølje for Vetle Øyvind Larsen Lunde – geologistudent ved Høgskulen på Vestlandet i Sogndal.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://Lundev42.github.io/vetle-lunde-site/">
-  <meta property="og:image" content="https://Lundev42.github.io/vetle-lunde-site/logo.webp">
+  <meta property="og:image" content="https://Lundev42.github.io/vetle-lunde-site/images/logo.webp">
   <meta property="og:locale" content="nb_NO">
   <meta property="og:locale:alternate" content="en_US">
   <meta name="theme-color" content="#0f1117">
@@ -93,8 +93,23 @@
       z-index: 100;
       background: var(--nav-bg);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--nav-border);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 24px;
       transition: background-color var(--duration-state) var(--ease-out-quart), border-color var(--duration-state) var(--ease-out-quart);
+    }
+
+    .nav-brand {
+      display: none;
+      text-decoration: none;
+      color: var(--text-heading);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
     }
 
     nav ul {
@@ -103,7 +118,12 @@
       justify-content: center;
       align-items: center;
       gap: 8px;
-      padding: 10px 20px;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     nav a {
@@ -299,7 +319,7 @@
       text-align: center;
       justify-content: center;
       flex-direction: column;
-      background: url('IMG_7173.JPG') center 42% / cover no-repeat;
+      background: url('images/IMG_7173.JPG') center 42% / cover no-repeat;
       min-height: 100vh;
       padding: 0;
       opacity: 0;
@@ -336,7 +356,6 @@
       color: #ffffff;
       margin-bottom: 16px;
       line-height: 1.15;
-      white-space: nowrap;
       text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
     }
 
@@ -361,7 +380,9 @@
     }
 
     #hjem .subtitle .quote-attr {
-      margin-left: 10em;
+      display: block;
+      text-align: right;
+      margin-top: 4px;
     }
 
     #hjem .scroll-hint {
@@ -811,15 +832,94 @@
       }
     }
 
+    /* ── Hamburger menu button ── */
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      z-index: 110;
+      color: var(--text-secondary);
+      transition: color 0.3s;
+    }
+
+    .hamburger:hover {
+      color: var(--accent);
+    }
+
+    .hamburger svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .hamburger .icon-close { display: none; }
+    .hamburger.active .icon-open { display: none; }
+    .hamburger.active .icon-close { display: block; }
+
     /* ── Responsive – mobile ── */
     @media (max-width: 768px) {
+      nav {
+        justify-content: space-between;
+        padding: 10px 16px;
+      }
+
+      .nav-brand {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .hamburger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      nav ul {
+        position: fixed;
+        top: 52px;
+        left: 0;
+        right: 0;
+        background: var(--bg-primary);
+        border-bottom: 1px solid var(--nav-border);
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 16px 20px 20px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-8px);
+        transition: opacity var(--duration-state) var(--ease-out-quart), transform var(--duration-state) var(--ease-out-quart), visibility var(--duration-state);
+        z-index: 105;
+      }
+
+      nav ul.nav-open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      nav a {
+        display: block;
+        width: 100%;
+        text-align: center;
+        font-size: 1rem;
+        padding: 10px 16px;
+      }
+
       section {
-        padding: 80px 20px 40px;
+        padding: 80px 20px 50px;
       }
 
       .section-inner {
         flex-direction: column;
-        gap: 40px;
+        gap: 32px;
       }
 
       #hjem h1 {
@@ -827,8 +927,27 @@
         white-space: nowrap;
       }
 
+      #hjem .hero-geolog {
+        font-size: 1.5rem;
+      }
+
       #hjem .subtitle {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        padding: 0 8px;
+      }
+
+      #hjem .hero-content {
+        transform: translateY(-20px);
+      }
+
+      .hero-caption {
+        font-size: 0.72rem;
+        bottom: 12px;
+        left: 12px;
+        right: 12px;
+        max-width: none;
+        width: auto;
+        padding: 8px 10px;
       }
 
       .text-col h2 {
@@ -839,14 +958,9 @@
         font-size: 1.2rem;
       }
 
-      nav ul {
-        gap: 4px;
-        flex-wrap: wrap;
-      }
-
-      nav a {
-        font-size: 0.75rem;
-        padding: 6px 12px;
+      .text-col p,
+      .timeline-content p {
+        font-size: 0.95rem;
       }
 
       .study-layout {
@@ -862,33 +976,50 @@
         height: 200px;
       }
 
+      /* Timeline: move dates above entries on mobile */
       .timeline {
-        padding-left: 90px;
+        padding-left: 24px;
       }
 
       .timeline-date {
-        left: -85px;
-        width: 72px;
+        position: relative;
+        left: auto;
+        top: auto;
+        width: auto;
+        text-align: left;
         font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+
+      .timeline-entry {
+        padding-left: 24px;
+        padding-bottom: 28px;
       }
 
       .timeline-entry:not(:last-child)::after {
-        left: -17px;
+        left: -12px;
       }
 
       .timeline-marker {
-        left: -22px;
+        left: -17px;
       }
 
-      #kontakt p {
-        white-space: normal;
+      .timeline-entry-with-slider {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
       }
 
+      .reveal-slider-tab {
+        margin-left: 0;
+        align-self: flex-start;
+      }
+
+      /* About section */
       #om-meg .section-inner {
-        padding: 24px;
-      }
-      .about-sub-gallery {
-        padding: 0 24px;
+        padding: 20px;
       }
 
       /* Hero caption: stack under content, full-width on small screens */
@@ -905,6 +1036,82 @@
         border-radius: 8px;
       }
 
+      #om-meg .media-col {
+        max-width: 180px;
+      }
+
+      .about-sub-gallery {
+        flex-direction: column;
+        align-items: center;
+        padding: 0 20px;
+        gap: 12px;
+      }
+
+      .about-sub-gallery .gallery-thumb {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 320px;
+      }
+
+      /* Bakgrunn section image */
+      #bakgrunn .media-col {
+        flex: 0 0 auto;
+        width: 100%;
+      }
+
+      /* Course table scroll */
+      .accordion-content {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .course-table th,
+      .course-table td {
+        font-size: 0.85rem;
+        padding: 8px 8px;
+      }
+
+      /* Contact section */
+      .contact-links {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .contact-link-btn {
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
+      }
+
+      /* Lightbox mobile */
+      .lightbox-content {
+        max-width: 95vw;
+      }
+
+      .lightbox-close {
+        top: 12px;
+        right: 12px;
+        font-size: 2rem;
+      }
+    }
+
+    /* ── Small phone (≤ 380px) ── */
+    @media (max-width: 380px) {
+      #hjem h1 {
+        font-size: 1.4rem;
+      }
+
+      #hjem .hero-geolog {
+        font-size: 1.3rem;
+      }
+
+      section {
+        padding: 72px 16px 40px;
+      }
+
+      .text-col h2 {
+        font-size: 1.5rem;
+      }
     }
 
     /* ── Language toggle ── */
@@ -1226,18 +1433,25 @@
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <ul>
+    <a href="#hjem" class="nav-brand">🪨 Vetle Lunde</a>
+    <ul id="nav-menu">
       <li><a href="#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="#om-meg" data-i18n="nav.about">Om meg</a></li>
       <li><a href="#bakgrunn" data-i18n="nav.background">Bakgrunn</a></li>
       <li><a href="bacheloroppgave.html" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
       <li><a href="#kontakt" data-i18n="nav.contact">Kontakt</a></li>
-      <li><button class="lang-toggle" data-i18n="lang.switch" aria-label="Switch language">EN</button></li>
-      <li><button class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
+    </ul>
+    <div class="nav-controls">
+      <button class="lang-toggle" data-i18n="lang.switch" aria-label="Switch language">EN</button>
+      <button class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
         <svg class="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
         <svg class="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button></li>
-    </ul>
+      </button>
+      <button class="hamburger" id="hamburger" aria-label="Meny" aria-expanded="false">
+        <svg class="icon-open" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg class="icon-close" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+    </div>
   </nav>
 
   <main id="hovedinnhold">
@@ -1266,7 +1480,7 @@
         <div class="media-col">
           <figure>
             <img
-              src="IMG_8394.jpeg"
+              src="images/IMG_8394.jpeg"
               alt="Vetle på fjelltur om vinteren"
               data-i18n-alt="about.img8394.alt"
               loading="lazy"
@@ -1276,15 +1490,15 @@
       </div>
       <div class="about-sub-gallery">
         <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
-          <img src="IMG_2172.jpeg" alt="Dumdalsgrottene" data-i18n-alt="about.img2172.alt" loading="lazy"/>
+          <img src="images/IMG_2172.jpeg" alt="Dumdalsgrottene" data-i18n-alt="about.img2172.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption2172">Det er ikke uvanlig å måtte krype gjennom trange marmorganger i Dumdalsgrottene</figcaption>
         </figure>
         <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
-          <img src="IMG_7212.JPG" alt="Brurastakken" data-i18n-alt="about.img7212.alt" loading="lazy"/>
+          <img src="images/IMG_7212.JPG" alt="Brurastakken" data-i18n-alt="about.img7212.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption7212">På toppen av Brurastakken kan man se Alden til venstre og Tvibyrge til høyre - to geologiske perler som startet sin reise som oseanisk skorpe i Iapetushavet.</figcaption>
         </figure>
         <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
-          <img src="IMG_6585.jpeg" alt="Feltarbeid på bre" data-i18n-alt="about.img6585.alt" loading="lazy"/>
+          <img src="images/IMG_6585.jpeg" alt="Feltarbeid på bre" data-i18n-alt="about.img6585.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption6585">Hva er vel en manns kraft mot en kjempe som har sovet under isen i tusen år?</figcaption>
         </figure>
       </div>
@@ -1479,7 +1693,7 @@
         <div class="media-col">
           <figure>
             <img
-              src="FalkeblikkAS+-+20210531+Utebilder+HVL+Campus+Sogndal+M2P_0854_WEB.webp"
+              src="images/FalkeblikkAS+-+20210531+Utebilder+HVL+Campus+Sogndal+M2P_0854_WEB.webp"
               alt="Høgskulen på Vestlandet, Campus Sogndal"
               data-i18n-alt="study.hvl.alt"
               loading="lazy"
@@ -1800,7 +2014,7 @@
     /* ── Active nav highlighting ── */
     (function () {
       var sections = document.querySelectorAll('section[id]');
-      var navLinks = document.querySelectorAll('nav a[href^="#"]');
+      var navLinks = document.querySelectorAll('nav ul a[href^="#"]');
       if (!('IntersectionObserver' in window)) return;
 
       var scrollLocked = false;
@@ -1875,6 +2089,36 @@
         }
       }
     });
+
+    /* ── Mobile menu toggle ── */
+    (function () {
+      var hamburger = document.getElementById("hamburger");
+      var navMenu = document.getElementById("nav-menu");
+      if (!hamburger || !navMenu) return;
+
+      function toggleMenu(open) {
+        var isOpen = open !== undefined ? open : !navMenu.classList.contains("nav-open");
+        navMenu.classList.toggle("nav-open", isOpen);
+        hamburger.classList.toggle("active", isOpen);
+        hamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      }
+
+      hamburger.addEventListener("click", function () {
+        toggleMenu();
+      });
+
+      navMenu.querySelectorAll("a").forEach(function (link) {
+        link.addEventListener("click", function () {
+          toggleMenu(false);
+        });
+      });
+
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest("nav") && navMenu.classList.contains("nav-open")) {
+          toggleMenu(false);
+        }
+      });
+    })();
   </script>
 
   <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)" role="dialog" aria-modal="true" aria-label="Image viewer">
