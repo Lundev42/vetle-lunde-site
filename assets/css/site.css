@@ -37,9 +37,11 @@
   --accent-hover: rgba(99, 132, 255, 0.25);
   --accent-bg: rgba(99, 132, 255, 0.15);
   --accent-border: rgba(99, 132, 255, 0.3);
-  --nav-bg: rgba(26, 26, 26, 0.85);
+  --nav-bg: rgba(15, 17, 23, 0.78);
   --nav-border: rgba(255, 255, 255, 0.06);
   --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --radius: 12px;
   --overlay-bg: rgba(0, 0, 0, 0.6);
   --input-bg: rgba(255, 255, 255, 0.05);
   --input-border: rgba(255, 255, 255, 0.12);
@@ -73,7 +75,8 @@
   --accent-border: rgba(74, 99, 204, 0.3);
   --nav-bg: rgba(238, 240, 246, 0.92);
   --nav-border: rgba(0, 0, 0, 0.08);
-  --card-bg: rgba(0, 0, 0, 0.03);
+  --card-bg: rgba(255, 255, 255, 0.6);
+  --card-border: rgba(0, 0, 0, 0.08);
   --overlay-bg: rgba(0, 0, 0, 0.4);
   --input-bg: rgba(0, 0, 0, 0.04);
   --input-border: rgba(0, 0, 0, 0.15);
@@ -133,21 +136,28 @@ nav {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--nav-border);
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 10px 24px;
+  padding: 10px 32px;
   transition: background-color var(--duration-state) var(--ease-out-quart), border-color var(--duration-state) var(--ease-out-quart);
 }
 
 .nav-brand {
-  display: none;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   color: var(--text-heading);
   font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
   border-radius: 6px;
+  transition: color var(--duration-state);
+}
+
+.nav-brand:hover,
+.nav-brand:focus-visible {
+  color: var(--accent);
 }
 
 nav ul {
@@ -323,10 +333,15 @@ section:nth-of-type(even) {
 /* ── Footer ── */
 footer {
   text-align: center;
-  padding: 24px;
-  font-size: 0.75rem;
+  padding: 28px 24px;
+  font-size: 0.8rem;
   color: var(--text-muted);
   border-top: 1px solid var(--nav-border);
+}
+
+footer .footer-sep {
+  margin: 0 8px;
+  opacity: 0.5;
 }
 
 /* ── Accessibility helpers ── */
@@ -382,16 +397,22 @@ footer {
   }
 }
 
+/* ── Responsive – tablet: give the links the full bar ── */
+@media (max-width: 1080px) and (min-width: 769px) {
+  nav {
+    justify-content: center;
+  }
+
+  .nav-brand {
+    display: none;
+  }
+}
+
 /* ── Responsive – mobile navigation ── */
 @media (max-width: 768px) {
   nav {
     justify-content: space-between;
     padding: 8px 16px;
-  }
-
-  .nav-brand {
-    display: inline-flex;
-    align-items: center;
   }
 
   .hamburger {

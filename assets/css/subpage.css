@@ -3,171 +3,266 @@
  * StarSteer). Loaded after site.css.
  */
 
-section {
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  padding: 120px 60px 80px;
+/* ── Page layout ── */
+.page-section {
+  padding: 136px 48px 96px;
 }
 
-/* Follow-up sections don't need to fill the whole screen */
-section + section {
-  min-height: auto;
+.page-section + .page-section {
+  padding-top: 96px;
 }
 
-.section-inner {
-  max-width: 1200px;
-  width: 100%;
+.page-section.alt {
+  background: var(--bg-secondary);
+}
+
+.page-inner {
+  max-width: 1100px;
   margin: 0 auto;
-  display: flex;
-  align-items: flex-start;
-  gap: 60px;
-}
-
-.text-col {
-  flex: 1 1 55%;
-  max-width: 750px;
-}
-
-.section-label {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  border-radius: 20px;
-  padding: 4px 14px;
-  margin-bottom: 16px;
-}
-
-.page-title,
-.text-col h2 {
-  font-size: 2.4rem;
-  font-weight: 700;
-  color: var(--text-heading);
-  line-height: 1.2;
-  margin-bottom: 20px;
-  text-wrap: balance;
-}
-
-.text-col p {
-  font-size: 1.05rem;
-  line-height: 1.75;
-  color: var(--text-muted);
-  margin-bottom: 16px;
-}
-
-.text-col p:last-child {
-  margin-bottom: 0;
 }
 
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 28px;
-  color: var(--accent);
+  margin-bottom: 32px;
+  font-size: 0.85rem;
   font-weight: 500;
+  color: var(--text-secondary);
   text-decoration: none;
   border-radius: 4px;
+  transition: color var(--duration-state) var(--ease-out-quart);
 }
 
-.back-link:hover {
-  text-decoration: underline;
+.back-link svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--duration-state) var(--ease-out-quart);
 }
 
-/* ── Info cards (StarSteer) ── */
+.back-link:hover,
+.back-link:focus-visible {
+  color: var(--accent);
+}
+
+.back-link:hover svg {
+  transform: translateX(-3px);
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  padding: 4px 14px;
+  margin-bottom: 18px;
+}
+
+.page-inner h1,
+.page-inner h2 {
+  color: var(--text-heading);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.page-inner h1 {
+  font-size: 2.75rem;
+  margin-bottom: 24px;
+}
+
+.page-inner h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.page-inner h1::after,
+.page-inner h2::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: 18px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), #a78bfa);
+}
+
+.prose {
+  max-width: 720px;
+}
+
+.prose p {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--text-muted);
+}
+
+.prose p + p {
+  margin-top: 1em;
+}
+
+.prose p.lead {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.prose a,
+.card-value a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-border);
+}
+
+.prose a:hover,
+.card-value a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* ── Fact cards ── */
 .info-cards {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  margin-top: 28px;
+  margin-top: 40px;
 }
 
 .info-card {
+  padding: 18px 20px;
   background: var(--card-bg);
-  border: 1px solid var(--accent-border);
-  border-radius: 14px;
-  padding: 20px 24px;
-  flex: 1 1 200px;
-  min-width: 180px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
   transition: background-color var(--duration-state) var(--ease-out-quart);
 }
 
-.info-card .card-label {
+.card-label {
   font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
   margin-bottom: 6px;
 }
 
-.info-card .card-value {
-  font-size: 0.95rem;
-  color: var(--text-heading);
+.card-value {
+  font-size: 1rem;
   font-weight: 500;
+  color: var(--text-heading);
+  line-height: 1.4;
+}
+
+/* ── Notice (upcoming content) ── */
+.notice {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 40px;
+  padding: 20px 22px;
+  max-width: 720px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius);
+}
+
+.notice-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.notice strong {
+  display: block;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.notice p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
 }
 
 /* ── Gallery (Bacheloroppgave) ── */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  max-width: 800px;
-  margin: 0 auto;
+  gap: 20px;
+  margin-top: 56px;
 }
 
 .gallery-grid figure {
   margin: 0;
+  border-radius: var(--radius);
   overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
 }
 
 .gallery-grid img {
   width: 100%;
   height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
   display: block;
-  transition: transform var(--duration-state) var(--ease-out-quart), box-shadow var(--duration-state) var(--ease-out-quart);
+  transition: transform var(--duration-state) var(--ease-out-quart);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .media-col img:hover {
+    transform: scale(1.02);
+  }
 }
 
 .gallery-grid figcaption {
-  text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  padding: 10px 12px;
-  background: var(--card-bg);
-  transition: background-color var(--duration-state) var(--ease-out-quart), color var(--duration-state) var(--ease-out-quart);
+  padding: 12px 16px;
 }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  section {
-    padding: 96px 20px 56px;
+  .page-section {
+    padding: 96px 20px 64px;
   }
 
-  .section-inner {
-    flex-direction: column;
-    gap: 32px;
+  .page-section + .page-section {
+    padding-top: 64px;
   }
 
-  .page-title,
-  .text-col h2 {
-    font-size: 1.8rem;
+  .page-inner h1 {
+    font-size: 2rem;
   }
 
-  .text-col p {
-    font-size: 0.95rem;
+  .page-inner h2 {
+    font-size: 1.6rem;
   }
 
-  .info-card {
-    min-width: 0;
+  .prose p {
+    font-size: 0.98rem;
+  }
+
+  .prose p.lead {
+    font-size: 1.05rem;
   }
 
   .gallery-grid {
     grid-template-columns: 1fr;
+    margin-top: 40px;
   }
 }

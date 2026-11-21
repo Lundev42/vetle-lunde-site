@@ -33,11 +33,11 @@
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <a href="index.html#hjem" class="nav-brand"><span aria-hidden="true">🪨&nbsp;</span>Vetle Lunde</a>
+    <a href="index.html#hjem" class="nav-brand">Vetle Lunde</a>
     <ul id="nav-menu">
       <li><a href="index.html#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="index.html#om-meg" data-i18n="nav.about">Om meg</a></li>
-      <li><a href="index.html#bakgrunn" data-i18n="nav.background">Bakgrunn</a></li>
+      <li><a href="index.html#bakgrunn" data-i18n="nav.background" class="nav-active" aria-current="page">Bakgrunn</a></li>
       <li><a href="bacheloroppgave.html" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
       <li><a href="index.html#kontakt" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
@@ -56,36 +56,35 @@
 
   <main id="hovedinnhold">
 
-    <!-- StarSteer intro -->
-    <section id="starsteer-intro">
-      <div class="section-inner reveal">
-        <div class="text-col">
+    <section id="starsteer-intro" class="page-section">
+      <div class="page-inner reveal">
+        <a href="conocophillips-2025.html" class="back-link"><svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg><span data-i18n="back.link">Tilbake til ConocoPhillips 2025</span></a>
+        <div class="prose">
           <span class="section-label" data-i18n="starsteer.label">Programvare</span>
-          <h1 class="page-title" data-i18n="starsteer.title">StarSteer</h1>
-          <p data-i18n="starsteer.intro">StarSteer er en spesialisert programvare for retningsboring, utviklet for å designe og modellere brønntrajektorier med høy presisjon. Programvaren er et av bransjens ledende verktøy innen brønnstyring og brukes av geofaglige team verden over.</p>
+          <h1 data-i18n="starsteer.title">StarSteer</h1>
+          <p class="lead" data-i18n="starsteer.intro">StarSteer er en spesialisert programvare for retningsboring, utviklet for å designe og modellere brønntrajektorier med høy presisjon. Programvaren er et av bransjens ledende verktøy innen brønnstyring og brukes av geofaglige team verden over.</p>
           <p data-i18n="starsteer.intro2">Under praksisperioden min hos ConocoPhillips benyttet jeg StarSteer som del av arbeidet med å utvikle et bibliotek av re-styrte brønner på Ekofiskfeltet i Nordsjøen.</p>
-          <div class="info-cards">
-            <div class="info-card">
-              <div class="card-label" data-i18n="starsteer.card1.label">Bruk</div>
-              <div class="card-value" data-i18n="starsteer.card1.value">Retningsboring</div>
-            </div>
-            <div class="info-card">
-              <div class="card-label" data-i18n="starsteer.card2.label">Felt</div>
-              <div class="card-value" data-i18n="starsteer.card2.value">Ekofisk, Nordsjøen</div>
-            </div>
-            <div class="info-card">
-              <div class="card-label" data-i18n="starsteer.card3.label">Selskap</div>
-              <div class="card-value">ConocoPhillips</div>
-            </div>
+        </div>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="card-label" data-i18n="starsteer.card1.label">Bruk</div>
+            <div class="card-value" data-i18n="starsteer.card1.value">Retningsboring</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label" data-i18n="starsteer.card2.label">Felt</div>
+            <div class="card-value" data-i18n="starsteer.card2.value">Ekofisk, Nordsjøen</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label" data-i18n="starsteer.card3.label">Selskap</div>
+            <div class="card-value">ConocoPhillips</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- StarSteer details -->
-    <section id="starsteer-detaljer">
-      <div class="section-inner reveal">
-        <div class="text-col">
+    <section id="starsteer-detaljer" class="page-section alt">
+      <div class="page-inner reveal">
+        <div class="prose">
           <span class="section-label" data-i18n="starsteer.details.label">Funksjonalitet</span>
           <h2 data-i18n="starsteer.details.title">Hvordan fungerer StarSteer?</h2>
           <p data-i18n="starsteer.details.p1">StarSteer gjør det mulig å designe brønntrajektorier i 3D og integrere geologiske data direkte i planleggingsprosessen. Programvaren støtter import av biostratigrafiske tolkninger, bildelogganalyser og geofysiske logger som tetthet og resistivitet (CPI).</p>
@@ -98,7 +97,7 @@
   </main>
 
   <footer>
-    &copy; 2026 Vetle Lunde
+    &copy; 2026 Vetle Lunde<span class="footer-sep" aria-hidden="true">·</span><span data-i18n="footer.text">Geologi og Geofare</span>
   </footer>
 
   <script type="application/json" id="i18n-data">
@@ -122,7 +121,7 @@
         "starsteer.details.label": "Funksjonalitet",
         "starsteer.details.title": "Hvordan fungerer StarSteer?",
         "starsteer.details.p1": "StarSteer gjør det mulig å designe brønntrajektorier i 3D og integrere geologiske data direkte i planleggingsprosessen. Programvaren støtter import av biostratigrafiske tolkninger, bildelogganalyser og geofysiske logger som tetthet og resistivitet (CPI).",
-        "starsteer.details.p2": "Ved å sammenstille disse datakildene kan geofaglige team identifisere strukturelle avvik i geomodeller og planlegge presise korreksjonsbaner for re-styring av eksisterende brønner. Dette er avgørende for å opprettholde produksjonseffektiviteten på modne felt som Ekofisk.",
+        "starsteer.details.p2": "Ved å sammenstille disse datakildene kan geofaglige team identifisere strukturelle avvik i geomodeller og planlegge presise korreksjonsbaner for re-styring av eksisterende brønner. Dette er avgjørende for å opprettholde produksjonseffektiviteten på modne felt som Ekofisk.",
         "starsteer.details.p3": "I mitt arbeid brukte jeg StarSteer til å korrelere tetthet- og resistivitetslogger på tvers av brønner, identifisere avvik mot Petrel-geomodellen og utarbeide et bibliotek av veldokumenterte re-styringsscenarier. Resultatet støtter implementeringen av sanntidsoperasjoner og forbedrer treffsikkerheten for fremtidige brønner på Ekofisk og Eldfisk-feltene.",
         "page.title": "StarSteer – Vetle Lunde",
         "meta.description": "StarSteer – programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips på Ekofiskfeltet.",
@@ -131,7 +130,9 @@
         "theme.toggle.dark": "Bytt til lyst tema",
         "theme.toggle.light": "Bytt til mørkt tema",
         "lang.aria": "Bytt språk til engelsk",
-        "nav.menu": "Meny"
+        "nav.menu": "Meny",
+        "footer.text": "Geologi og Geofare",
+        "back.link": "Tilbake til ConocoPhillips 2025"
       },
       "en": {
         "nav.home": "Home",
@@ -142,18 +143,18 @@
         "nav.aria.label": "Main navigation",
         "starsteer.label": "Software",
         "starsteer.title": "StarSteer",
-        "starsteer.intro": "StarSteer is a specialised directional drilling software designed for planning and modelling wellbore trajectories with high precision. It is one of the industry’s leading tools for well steering and is used by geoscience teams worldwide.",
-        "starsteer.intro2": "During my internship at ConocoPhillips I used StarSteer as part of the work to develop a library of re-steered wells on the Ekofisk field in the North Sea.",
-        "starsteer.card1.label": "Application",
+        "starsteer.intro": "StarSteer is specialised directional drilling software, developed to design and model well trajectories with high precision. It is one of the industry’s leading geosteering tools and is used by geoscience teams around the world.",
+        "starsteer.intro2": "During my internship at ConocoPhillips I used StarSteer as part of developing a library of re-steered wells on the Ekofisk field in the North Sea.",
+        "starsteer.card1.label": "Use",
         "starsteer.card1.value": "Directional drilling",
         "starsteer.card2.label": "Field",
         "starsteer.card2.value": "Ekofisk, North Sea",
         "starsteer.card3.label": "Company",
         "starsteer.details.label": "Functionality",
         "starsteer.details.title": "How does StarSteer work?",
-        "starsteer.details.p1": "StarSteer enables the design of wellbore trajectories in 3D and allows geological data to be integrated directly into the planning workflow. The software supports import of biostratigraphic interpretations, image log analyses and geophysical logs such as density and resistivity (CPI).",
-        "starsteer.details.p2": "By combining these data sources, geoscience teams can identify structural discrepancies in geomodels and plan precise correction paths for re-steering existing wells. This is critical for maintaining production efficiency on mature fields such as Ekofisk.",
-        "starsteer.details.p3": "In my work I used StarSteer to correlate density and resistivity logs across wells, identify discrepancies against the Petrel geomodel, and compile a library of well-documented re-steering scenarios. The results support the implementation of real-time operations and improve the accuracy of future wells on the Ekofisk and Eldfisk fields.",
+        "starsteer.details.p1": "StarSteer makes it possible to design well trajectories in 3D and integrate geological data directly into the planning process. The software supports importing biostratigraphic interpretations, image log analyses and geophysical logs such as density and resistivity (CPI).",
+        "starsteer.details.p2": "By combining these data sources, geoscience teams can identify structural discrepancies in geomodels and plan precise correction paths for re-steering existing wells. This is essential for maintaining production efficiency on mature fields such as Ekofisk.",
+        "starsteer.details.p3": "In my work I used StarSteer to correlate density and resistivity logs across wells, identify discrepancies against the Petrel geomodel and build a library of well-documented re-steering scenarios. The result supports the implementation of real-time operations and improves the accuracy of future wells on the Ekofisk and Eldfisk fields.",
         "page.title": "StarSteer – Vetle Lunde",
         "meta.description": "StarSteer – directional drilling software used by Vetle Lunde at ConocoPhillips on the Ekofisk field.",
         "skip.link": "Skip to main content",
@@ -161,7 +162,9 @@
         "theme.toggle.dark": "Switch to light mode",
         "theme.toggle.light": "Switch to dark mode",
         "lang.aria": "Switch language to Norwegian",
-        "nav.menu": "Menu"
+        "nav.menu": "Menu",
+        "footer.text": "Geology and Geo-Hazards",
+        "back.link": "Back to ConocoPhillips 2025"
       }
     }
   </script>

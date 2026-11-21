@@ -30,11 +30,9 @@
   <style>
     /* ── Sections (shared) ── */
     section {
-      min-height: 100vh;
-      min-height: 100dvh;
       display: flex;
       align-items: center;
-      padding: 120px 60px 80px;
+      padding: 120px 48px;
     }
 
     .section-inner {
@@ -74,7 +72,18 @@
       font-weight: 700;
       color: var(--text-heading);
       line-height: 1.2;
-      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+      margin-bottom: 28px;
+    }
+
+    .text-col h2::after {
+      content: '';
+      display: block;
+      width: 48px;
+      height: 3px;
+      margin-top: 16px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), #a78bfa);
     }
 
     .text-col h3 {
@@ -256,8 +265,9 @@
       font-size: 3.4rem;
       font-weight: 700;
       color: #ffffff;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       line-height: 1.15;
+      letter-spacing: -0.02em;
       text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
     }
 
@@ -288,13 +298,23 @@
     }
 
     #hjem .scroll-hint {
-      display: block;
+      display: inline-block;
       margin-top: 24px;
       font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.75);
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      transition: color var(--duration-state) var(--ease-out-quart), background var(--duration-state) var(--ease-out-quart);
       animation: scroll-bounce 2.4s linear infinite;
+    }
+
+    #hjem .scroll-hint:hover,
+    #hjem .scroll-hint:focus-visible {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
     }
 
     @keyframes scroll-bounce {
@@ -327,27 +347,24 @@
 
     #om-meg .section-inner {
       align-items: center;
-      padding: 40px;
+      justify-content: space-between;
     }
 
     #om-meg .text-col {
       min-width: 0;
     }
 
-    #om-meg .timeline {
-      flex: 0 0 100%;
-    }
-
     #om-meg .media-col {
-      flex: 0 1 30%;
-      max-width: 240px;
+      flex: 0 1 320px;
+      max-width: 320px;
     }
 
     #om-meg .media-col figure {
       margin: 0;
-      border-radius: 0;
+      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 4px 24px rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.06);
     }
 
     [data-theme="light"] #om-meg .media-col figure {
@@ -377,30 +394,38 @@
 
     /* ── About Sub-Gallery ── */
     .about-sub-gallery {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
       max-width: 1200px;
       width: 100%;
-      margin: 24px auto 0;
-      padding: 0 40px;
+      margin: 64px auto 0;
     }
 
     .about-sub-gallery .gallery-thumb {
       position: relative;
       margin: 0;
-      flex: 0 1 187px;
-      cursor: pointer;
-      border-radius: 8px;
+      aspect-ratio: 4 / 3;
+      cursor: zoom-in;
+      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
       transition: transform var(--duration-state) var(--ease-out-quart), box-shadow var(--duration-state) var(--ease-out-quart);
+    }
+
+    .about-sub-gallery .gallery-thumb img {
+      transition: transform var(--duration-layout) var(--ease-out-quart);
     }
 
     @media (hover: hover) and (pointer: fine) {
       .about-sub-gallery .gallery-thumb:hover {
-        transform: scale(1.03);
-        box-shadow: 0 8px 28px rgba(255, 255, 255, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+      }
+
+      .about-sub-gallery .gallery-thumb:hover img {
+        transform: scale(1.04);
       }
     }
 
@@ -428,15 +453,13 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 10px 12px;
-      font-size: 0.8rem;
+      padding: 32px 16px 14px;
+      font-size: 0.85rem;
+      line-height: 1.45;
       color: #fff;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-      text-align: center;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+      text-align: left;
       transition: opacity var(--duration-state) var(--ease-out-quart);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       opacity: 1;
     }
 
@@ -603,11 +626,16 @@
     }
 
     #bakgrunn .media-col {
-      flex: 0 0 420px;
+      flex: 0 0 400px;
+      position: sticky;
+      top: 96px;
     }
 
     #bakgrunn .media-col figure {
       margin: 0;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--card-border);
     }
 
     #bakgrunn .media-col img {
@@ -707,8 +735,9 @@
     }
 
     /* ── Contact / Footer ── */
-    #kontakt {
-      min-height: 50vh;
+    #kontakt .text-col h2::after {
+      margin-left: auto;
+      margin-right: auto;
     }
 
     #kontakt .section-inner {
@@ -767,7 +796,7 @@
     /* ── Responsive – mobile ── */
     @media (max-width: 768px) {
       section {
-        padding: 80px 20px 50px;
+        padding: 80px 20px;
       }
 
       .section-inner {
@@ -861,22 +890,6 @@
         left: -17px;
       }
 
-      .timeline-entry-with-slider {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-
-      .reveal-slider-tab {
-        margin-left: 0;
-        align-self: flex-start;
-      }
-
-      /* About section */
-      #om-meg .section-inner {
-        padding: 20px;
-      }
-
       /* Hero caption: stack under content, full-width on small screens */
       .hero-caption {
         position: static;
@@ -892,26 +905,23 @@
       }
 
       #om-meg .media-col {
-        max-width: 180px;
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 260px;
+        align-self: center;
       }
 
       .about-sub-gallery {
-        flex-direction: column;
-        align-items: center;
-        padding: 0 20px;
-        gap: 12px;
-      }
-
-      .about-sub-gallery .gallery-thumb {
-        flex: 0 0 auto;
-        width: 100%;
-        max-width: 320px;
+        grid-template-columns: 1fr;
+        margin-top: 40px;
+        gap: 16px;
       }
 
       /* Bakgrunn section image */
       #bakgrunn .media-col {
         flex: 0 0 auto;
         width: 100%;
+        position: static;
       }
 
       /* Course table scroll */
@@ -1027,25 +1037,26 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 18px;
+      padding: 12px 22px;
       font-size: 0.95rem;
       font-weight: 500;
       color: #fff;
-      background: #2a2d35;
-      border: 3px solid #3a3d45;
+      background: #252831;
+      border: 1px solid #3a3e4a;
       border-radius: 10px;
       cursor: pointer;
       text-decoration: none;
       letter-spacing: 0.02em;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       transition: color var(--duration-state) ease, background var(--duration-state) ease, border-color var(--duration-state) ease, transform 160ms var(--ease-out-quart);
       position: relative;
     }
 
     .contact-link-btn:hover,
     .contact-link-btn:focus-visible {
-      color: #000;
+      color: #0f1117;
       background: #fff;
-      border-color: #3a3d45;
+      border-color: #fff;
     }
 
     .contact-link-btn:active {
@@ -1066,47 +1077,53 @@
 
     .timeline-entry-with-slider {
       display: flex;
-      align-items: center;
-      gap: 0;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
       position: relative;
     }
 
     .timeline-entry-with-slider .timeline-content {
-      flex: 1;
       min-width: 0;
     }
 
-    /* ── Horizontal Reveal Slider ── */
+    /* ── "Read more" link ── */
     .reveal-slider-tab {
-      flex-shrink: 0;
-      width: 36px;
-      height: 36px;
-      background: transparent;
-      border: 3px solid var(--accent);
-      border-radius: 50%;
-      cursor: pointer;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      transition: background var(--duration-state) var(--ease-out-quart), border-color var(--duration-state) var(--ease-out-quart);
-      margin-left: 12px;
-      padding: 0;
+      gap: 6px;
+      padding: 7px 14px 7px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 999px;
+      cursor: pointer;
       text-decoration: none;
+      transition: background var(--duration-state) var(--ease-out-quart), border-color var(--duration-state) var(--ease-out-quart);
     }
 
-    .reveal-slider-tab:hover {
+    .reveal-slider-tab:hover,
+    .reveal-slider-tab:focus-visible {
       background: var(--accent-hover);
+      border-color: var(--accent);
     }
 
     .reveal-slider-tab .arrow-icon {
       display: block;
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       fill: none;
-      stroke: var(--accent);
+      stroke: currentColor;
       stroke-width: 2.5;
       stroke-linecap: round;
       stroke-linejoin: round;
+      transition: transform var(--duration-state) var(--ease-out-quart);
+    }
+
+    .reveal-slider-tab:hover .arrow-icon {
+      transform: translateX(3px);
     }
   </style>
 </head>
@@ -1116,7 +1133,7 @@
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <a href="#hjem" class="nav-brand"><span aria-hidden="true">🪨&nbsp;</span>Vetle Lunde</a>
+    <a href="#hjem" class="nav-brand">Vetle Lunde</a>
     <ul id="nav-menu">
       <li><a href="#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="#om-meg" data-i18n="nav.about">Om meg</a></li>
@@ -1146,7 +1163,7 @@
         <p class="hero-geolog" data-i18n="hero.geolog">geolog</p>
         <h1 data-i18n="hero.title">Vetle Øyvind Larsen Lunde</h1>
         <p class="subtitle" data-i18n-html="hero.subtitle">Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class="quote-attr">&ndash; Henrik Ibsen</span></p>
-        <span class="scroll-hint" data-i18n="hero.scroll">↓ Scroll ned for å lese mer</span>
+        <a href="#om-meg" class="scroll-hint" data-i18n="hero.scroll">↓ Scroll ned for å lese mer</a>
       </div>
       <div class="hero-caption" data-i18n="hero.caption">På vei opp Galdhøgpiggen får man en fin utsikt over Visdalen, hvor fjellet Hellstuguhøe (2072 moh) markerer seg i midten av bildet.</div>
     </section>
@@ -1339,6 +1356,7 @@
                       <p data-i18n-html="about.job2.text">Som en del av Well Delivery-teamet arbeidet jeg med å utvikle et omfattende bibliotek av re-styrte brønner på Ekofiskfeltet. Arbeidet ble utført i programvaren <a href="https://www.rogii.com/products/starsteer" target="_blank" rel="noopener noreferrer">StarSteer</a> ved å integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Formålet var å forbedre treffsikkerheten for fremtidige brønner og støtte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til å identifisere avvik i strukturelle geomodeller (Petrel) for målrettet modellforbedring på Ekofisk og Eldfisk-feltene.</p>
                     </div>
                     <a href="conocophillips-2025.html" class="reveal-slider-tab" aria-label="Les mer om ConocoPhillips 2025" data-i18n-aria-label="about.job2.more">
+                      <span data-i18n="about.readmore">Les mer</span>
                       <svg class="arrow-icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                     </a>
                   </div>
@@ -1352,6 +1370,7 @@
                       <p data-i18n="about.job1.text">Arbeidet mitt besto av å hjelpe reservoarkarakteriserings teamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.</p>
                     </div>
                     <a href="conocophillips-2024.html" class="reveal-slider-tab" aria-label="Les mer om ConocoPhillips 2024" data-i18n-aria-label="about.job1.more">
+                      <span data-i18n="about.readmore">Les mer</span>
                       <svg class="arrow-icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                     </a>
                   </div>
@@ -1420,11 +1439,10 @@
   </main>
 
   <footer>
-    &copy; 2026 Vetle Lunde
+    &copy; 2026 Vetle Lunde<span class="footer-sep" aria-hidden="true">·</span><span data-i18n="footer.text">Geologi og Geofare</span>
   </footer>
 
   <script type="application/json" id="i18n-data">
-
     {
       "nb": {
         "nav.home": "Hjem",
@@ -1435,7 +1453,7 @@
         "nav.aria.label": "Hovednavigasjon",
         "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geolog",
-        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
+        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen</span>",
         "hero.scroll": "↓ Scroll ned for å lese mer",
         "hero.caption": "På vei opp Galdhøgpiggen får man en fin utsikt over Visdalen, hvor fjellet Hellstuguhøe (2072 moh) markerer seg i midten av bildet.",
         "about.title": "Om meg",
@@ -1452,7 +1470,7 @@
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "Arbeidet mitt besto av å hjelpe reservoarkarakteriserings teamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.",
         "about.job2.title": "ConocoPhillips",
-        "about.job2.text": "Som en del av Well Delivery-teamet arbeidet jeg med å utvikle et omfattende bibliotek av re-styrte brønner på Ekofiskfeltet. Arbeidet ble utført i programvaren <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer<\/a> ved å integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Formålet var å forbedre treffsikkerheten for fremtidige brønner og støtte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til å identifisere avvik i strukturelle geomodeller (Petrel) for målrettet modellforbedring på Ekofisk og Eldfisk-feltene.",
+        "about.job2.text": "Som en del av Well Delivery-teamet arbeidet jeg med å utvikle et omfattende bibliotek av re-styrte brønner på Ekofiskfeltet. Arbeidet ble utført i programvaren <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer</a> ved å integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Formålet var å forbedre treffsikkerheten for fremtidige brønner og støtte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til å identifisere avvik i strukturelle geomodeller (Petrel) for målrettet modellforbedring på Ekofisk og Eldfisk-feltene.",
         "about.job0.title": "Vaktsoldat – Akershus Festning",
         "about.job0.text": "Tjenestegjorde som vaktsoldat ved Akershus festning i Oslo. Her jobbet vi med å ivareta sikkerhet gjennom døgnkontinuerlig vakthold. Hovedoppgavene inkluderer portvakt, streifvakter (patruljering) og flaggpost, samt bistand ved arrangementer. Tjenesten innebar tett kontakt med sivile på en av Oslo's største turistattraksjoner.",
         "about.job_ren.title": "Renovasjonen IKS",
@@ -1464,7 +1482,7 @@
         "study.hvl.alt": "Høgskulen på Vestlandet, Campus Sogndal",
         "study.hvl.caption": "Høgskulen på Vestlandet, Campus Sogndal",
         "study.accordion.title": "Oppnådd faglig kompetanse",
-        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Emnekode<\/th><th scope=\"col\">Emnenavn<\/th><th scope=\"col\">Studiepoeng<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Matematikk for naturfag<\/td><td>10 sp<\/td><\/tr><tr><td>GE406<\/td><td>Geologi grunnkurs<\/td><td>10 sp<\/td><\/tr><tr><td>GE413<\/td><td>Kartlære og GIS<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Innføring i fysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogi og petrografi<\/td><td>10 sp<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Strukturgeologi og tektonikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE407<\/td><td>Anvendt geofysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE486<\/td><td>Glasialgeologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 sp<\/td><\/tr><tr><td>GE484<\/td><td>Geofare og skredkartlegging<\/td><td>10 sp<\/td><\/tr><tr><td>GE481<\/td><td>Ingeniørgeologi, geoteknikk og overvåkning av ustabile fjellsider<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeologi<\/td><td>10 sp<\/td><\/tr><tr><td>ING202<\/td><td>Programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>ME420<\/td><td>Statistikk<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snø og snøskred<\/td><td>10 sp<\/td><\/tr><tr><td>ING301<\/td><td>Datateknologi og videregående programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>GE491<\/td><td>Bacheloroppgave i geologi<\/td><td>20 sp<\/td><\/tr><\/tbody><\/table>",
+        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Emnekode</th><th scope=\"col\">Emnenavn</th><th scope=\"col\">Studiepoeng</th></tr></thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1</th></tr><tr><td>MA414</td><td>Matematikk for naturfag</td><td>10 sp</td></tr><tr><td>GE406</td><td>Geologi grunnkurs</td><td>10 sp</td></tr><tr><td>GE413</td><td>Kartlære og GIS</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2</th></tr><tr><td>FY400</td><td>Innføring i fysikk</td><td>10 sp</td></tr><tr><td>GE408</td><td>Mineralogi og petrografi</td><td>10 sp</td></tr><tr><td>GE436</td><td>Sedimentologi</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3</th></tr><tr><td>GE414</td><td>Strukturgeologi og tektonikk</td><td>10 sp</td></tr><tr><td>GE407</td><td>Anvendt geofysikk</td><td>10 sp</td></tr><tr><td>GE486</td><td>Glasialgeologi</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4</th></tr><tr><td>GE483</td><td>Climate Change</td><td>10 sp</td></tr><tr><td>GE484</td><td>Geofare og skredkartlegging</td><td>10 sp</td></tr><tr><td>GE481</td><td>Ingeniørgeologi, geoteknikk og overvåkning av ustabile fjellsider</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5</th></tr><tr><td>GE482</td><td>Hydrogeologi</td><td>10 sp</td></tr><tr><td>ING202</td><td>Programmering for ingeniører</td><td>5 sp</td></tr><tr><td>ME420</td><td>Statistikk</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6</th></tr><tr><td>GE448</td><td>Snø og snøskred</td><td>10 sp</td></tr><tr><td>ING301</td><td>Datateknologi og videregående programmering for ingeniører</td><td>5 sp</td></tr><tr><td>GE491</td><td>Bacheloroppgave i geologi</td><td>20 sp</td></tr></tbody></table>",
         "contact.title": "Ta kontakt",
         "contact.text": "Har du noen spørsmål eller vil komme i kontakt? Ikke nøl med å sende meg en mail!",
         "contact.email": "E-post",
@@ -1484,7 +1502,9 @@
         "contact.github.aria": "GitHub",
         "contact.linkedin.aria": "LinkedIn",
         "lightbox.label": "Bildevisning",
-        "lightbox.close": "Lukk"
+        "lightbox.close": "Lukk",
+        "about.readmore": "Les mer",
+        "footer.text": "Geologi og Geofare"
       },
       "en": {
         "nav.home": "Home",
@@ -1495,7 +1515,7 @@
         "nav.aria.label": "Main navigation",
         "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geologist",
-        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
+        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen</span>",
         "hero.scroll": "↓ Scroll down to read more",
         "hero.caption": "On the way up Galdhøpiggen, one gets a nice view over Visdalen, where the mountain Hellstuguhøe (2072 m a.s.l.) stands out in the centre of the image.",
         "about.title": "About me",
@@ -1512,7 +1532,7 @@
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "My work consisted of helping the reservoir characterisation team to create a usable biostratigraphic database. This work supports the geological interpretation following the drilling campaign on the Tommeliten A gas condensate field, and contributed to the complete model update for 2024/2025. The workflow consisted of data processing in Excel followed by analysis work in Spotfire.",
         "about.job2.title": "ConocoPhillips",
-        "about.job2.text": "As part of the Well Delivery team, I worked on developing a comprehensive library of re-steered wells on the Ekofisk field. The work was carried out in the <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer<\/a> software by integrating biostratigraphy, image log interpretations and geophysical logs (CPI). The purpose was to improve the accuracy of future wells and support the implementation of real-time operations in 2025. The project involved advanced correlation and analysis of density and resistivity logs, as well as using the output to identify discrepancies in structural geomodels (Petrel) for targeted model improvement on the Ekofisk and Eldfisk fields.",
+        "about.job2.text": "As part of the Well Delivery team, I worked on developing a comprehensive library of re-steered wells on the Ekofisk field. The work was carried out in the <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer</a> software by integrating biostratigraphy, image log interpretations and geophysical logs (CPI). The purpose was to improve the accuracy of future wells and support the implementation of real-time operations in 2025. The project involved advanced correlation and analysis of density and resistivity logs, as well as using the output to identify discrepancies in structural geomodels (Petrel) for targeted model improvement on the Ekofisk and Eldfisk fields.",
         "about.job0.title": "Guard Soldier – Akershus Fortress",
         "about.job0.text": "Served as a guard soldier at Akershus Fortress in Oslo. We worked to maintain security through round-the-clock guard duty. Main tasks included gate guard, patrol rounds and flag post, as well as assistance at events. The service involved close contact with civilians at one of Oslo's largest tourist attractions.",
         "about.job_ren.title": "Renovasjonen IKS",
@@ -1524,7 +1544,7 @@
         "study.hvl.alt": "Western Norway University of Applied Sciences, Campus Sogndal",
         "study.hvl.caption": "Western Norway University of Applied Sciences, Campus Sogndal",
         "study.accordion.title": "Achieved Academic Competence",
-        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Course Code<\/th><th scope=\"col\">Course Name<\/th><th scope=\"col\">Credits<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Mathematics for Natural Sciences<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE406<\/td><td>Basic Geology<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE413<\/td><td>Cartography and GIS<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Introduction to Physics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogy and Petrography<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Structural Geology and Tectonics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE407<\/td><td>Applied Geophysics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE486<\/td><td>Glacial Geology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE484<\/td><td>Geohazards and Landslide Mapping<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE481<\/td><td>Engineering Geology, Geotechnics and Monitoring of Unstable Rock Slopes<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeology<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING202<\/td><td>Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>ME420<\/td><td>Statistics<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snow and Avalanches<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING301<\/td><td>Data Technology and Advanced Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>GE491<\/td><td>Bachelor Thesis in Geology<\/td><td>20 ECTS<\/td><\/tr><\/tbody><\/table>",
+        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Course Code</th><th scope=\"col\">Course Name</th><th scope=\"col\">Credits</th></tr></thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1</th></tr><tr><td>MA414</td><td>Mathematics for Natural Sciences</td><td>10 ECTS</td></tr><tr><td>GE406</td><td>Basic Geology</td><td>10 ECTS</td></tr><tr><td>GE413</td><td>Cartography and GIS</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2</th></tr><tr><td>FY400</td><td>Introduction to Physics</td><td>10 ECTS</td></tr><tr><td>GE408</td><td>Mineralogy and Petrography</td><td>10 ECTS</td></tr><tr><td>GE436</td><td>Sedimentology</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3</th></tr><tr><td>GE414</td><td>Structural Geology and Tectonics</td><td>10 ECTS</td></tr><tr><td>GE407</td><td>Applied Geophysics</td><td>10 ECTS</td></tr><tr><td>GE486</td><td>Glacial Geology</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4</th></tr><tr><td>GE483</td><td>Climate Change</td><td>10 ECTS</td></tr><tr><td>GE484</td><td>Geohazards and Landslide Mapping</td><td>10 ECTS</td></tr><tr><td>GE481</td><td>Engineering Geology, Geotechnics and Monitoring of Unstable Rock Slopes</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5</th></tr><tr><td>GE482</td><td>Hydrogeology</td><td>10 ECTS</td></tr><tr><td>ING202</td><td>Programming for Engineers</td><td>5 ECTS</td></tr><tr><td>ME420</td><td>Statistics</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6</th></tr><tr><td>GE448</td><td>Snow and Avalanches</td><td>10 ECTS</td></tr><tr><td>ING301</td><td>Data Technology and Advanced Programming for Engineers</td><td>5 ECTS</td></tr><tr><td>GE491</td><td>Bachelor Thesis in Geology</td><td>20 ECTS</td></tr></tbody></table>",
         "contact.title": "Get in touch",
         "contact.text": "Do you have any questions or want to get in touch? Don’t hesitate to send me an email!",
         "contact.email": "Email",
@@ -1544,7 +1564,9 @@
         "contact.github.aria": "GitHub",
         "contact.linkedin.aria": "LinkedIn",
         "lightbox.label": "Image viewer",
-        "lightbox.close": "Close"
+        "lightbox.close": "Close",
+        "about.readmore": "Read more",
+        "footer.text": "Geology and Geo-Hazards"
       }
     }
   </script>

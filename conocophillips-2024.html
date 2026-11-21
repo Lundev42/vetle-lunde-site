@@ -33,11 +33,11 @@
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <a href="index.html#hjem" class="nav-brand"><span aria-hidden="true">🪨&nbsp;</span>Vetle Lunde</a>
+    <a href="index.html#hjem" class="nav-brand">Vetle Lunde</a>
     <ul id="nav-menu">
       <li><a href="index.html#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="index.html#om-meg" data-i18n="nav.about">Om meg</a></li>
-      <li><a href="index.html#bakgrunn" data-i18n="nav.background">Bakgrunn</a></li>
+      <li><a href="index.html#bakgrunn" data-i18n="nav.background" class="nav-active" aria-current="page">Bakgrunn</a></li>
       <li><a href="bacheloroppgave.html" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
       <li><a href="index.html#kontakt" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
@@ -56,14 +56,34 @@
 
   <main id="hovedinnhold">
 
-    <!-- ConocoPhillips 2024 intro -->
-    <section id="conocophillips-2024-intro">
-      <div class="section-inner reveal">
-        <div class="text-col">
+    <section id="conocophillips-2024-intro" class="page-section">
+      <div class="page-inner reveal">
+        <a href="index.html#bakgrunn" class="back-link"><svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg><span data-i18n="back.link">Tilbake til bakgrunn</span></a>
+        <div class="prose">
           <span class="section-label" data-i18n="cop2024.label">ConocoPhillips 2024</span>
-          <h1 class="page-title" data-i18n="cop2024.title">End of Internship Presentation 2024</h1>
-          <p data-i18n="cop2024.intro">Innhold kommer snart.</p>
-          <a class="back-link" href="index.html#bakgrunn" data-i18n="back.link">← Tilbake til jobberfaring</a>
+          <h1 data-i18n="cop2024.title">Sommerpraksis 2024</h1>
+          <p class="lead" data-i18n="cop2024.text">Arbeidet mitt besto av å hjelpe reservoarkarakteriseringsteamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.</p>
+        </div>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="card-label" data-i18n="cop2024.fact1.label">Team</div>
+            <div class="card-value" data-i18n="cop2024.fact1.value">Reservoarkarakterisering</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label" data-i18n="cop2024.fact2.label">Felt</div>
+            <div class="card-value" data-i18n="cop2024.fact2.value">Tommeliten A</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label" data-i18n="cop2024.fact3.label">Verktøy</div>
+            <div class="card-value">Excel, Spotfire</div>
+          </div>
+        </div>
+        <div class="notice">
+          <svg class="notice-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+          <div>
+            <strong data-i18n="cop2024.notice.title">Sluttpresentasjon</strong>
+            <p data-i18n="cop2024.notice.text">Presentasjonen jeg holdt ved slutten av praksisperioden i 2024 blir publisert her snart.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -71,7 +91,7 @@
   </main>
 
   <footer>
-    &copy; 2026 Vetle Lunde
+    &copy; 2026 Vetle Lunde<span class="footer-sep" aria-hidden="true">·</span><span data-i18n="footer.text">Geologi og Geofare</span>
   </footer>
 
   <script type="application/json" id="i18n-data">
@@ -84,8 +104,7 @@
         "nav.contact": "Kontakt",
         "nav.aria.label": "Hovednavigasjon",
         "cop2024.label": "ConocoPhillips 2024",
-        "cop2024.title": "End of Internship Presentation 2024",
-        "cop2024.intro": "Innhold kommer snart.",
+        "cop2024.title": "Sommerpraksis 2024",
         "page.title": "ConocoPhillips 2024 – Vetle Lunde",
         "meta.description": "ConocoPhillips 2024 – Vetle Lunde sin arbeidserfaring hos ConocoPhillips i 2024.",
         "skip.link": "Hopp til hovedinnhold",
@@ -94,7 +113,16 @@
         "theme.toggle.light": "Bytt til mørkt tema",
         "lang.aria": "Bytt språk til engelsk",
         "nav.menu": "Meny",
-        "back.link": "← Tilbake til jobberfaring"
+        "back.link": "Tilbake til bakgrunn",
+        "footer.text": "Geologi og Geofare",
+        "cop2024.text": "Arbeidet mitt besto av å hjelpe reservoarkarakteriseringsteamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.",
+        "cop2024.fact1.label": "Team",
+        "cop2024.fact1.value": "Reservoarkarakterisering",
+        "cop2024.fact2.label": "Felt",
+        "cop2024.fact2.value": "Tommeliten A",
+        "cop2024.fact3.label": "Verktøy",
+        "cop2024.notice.title": "Sluttpresentasjon",
+        "cop2024.notice.text": "Presentasjonen jeg holdt ved slutten av praksisperioden i 2024 blir publisert her snart."
       },
       "en": {
         "nav.home": "Home",
@@ -104,8 +132,7 @@
         "nav.contact": "Contact",
         "nav.aria.label": "Main navigation",
         "cop2024.label": "ConocoPhillips 2024",
-        "cop2024.title": "End of Internship Presentation 2024",
-        "cop2024.intro": "Content coming soon.",
+        "cop2024.title": "Summer internship 2024",
         "page.title": "ConocoPhillips 2024 – Vetle Lunde",
         "meta.description": "ConocoPhillips 2024 – Vetle Lunde's work experience at ConocoPhillips in 2024.",
         "skip.link": "Skip to main content",
@@ -114,7 +141,16 @@
         "theme.toggle.light": "Switch to dark mode",
         "lang.aria": "Switch language to Norwegian",
         "nav.menu": "Menu",
-        "back.link": "← Back to work experience"
+        "back.link": "Back to background",
+        "footer.text": "Geology and Geo-Hazards",
+        "cop2024.text": "My work consisted of helping the reservoir characterisation team to create a usable biostratigraphic database. This work supports the geological interpretation following the drilling campaign on the Tommeliten A gas condensate field, and contributed to the complete model update for 2024/2025. The workflow consisted of data processing in Excel followed by analysis work in Spotfire.",
+        "cop2024.fact1.label": "Team",
+        "cop2024.fact1.value": "Reservoir Characterisation",
+        "cop2024.fact2.label": "Field",
+        "cop2024.fact2.value": "Tommeliten A",
+        "cop2024.fact3.label": "Tools",
+        "cop2024.notice.title": "End-of-internship presentation",
+        "cop2024.notice.text": "The presentation I gave at the end of my 2024 internship will be published here soon."
       }
     }
   </script>

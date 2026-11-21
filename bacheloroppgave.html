@@ -24,29 +24,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🪨</text></svg>">
   <link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/site.css">
-  <link rel="stylesheet" href="assets/css/subpage.css">
-  <style>
-    #bachelor .section-inner {
-      flex-direction: column;
-      align-items: center;
-      gap: 40px;
-    }
-
-    #bachelor .page-title {
-      text-align: center;
-      margin-bottom: 0;
-    }
-
-    #bachelor .text-col {
-      text-align: center;
-      max-width: 70ch;
-      flex: none;
-    }
-
-    #bachelor .media-col {
-      width: 100%;
-    }
-  </style>
+  <link rel="stylesheet" href="assets/css/subpage.css">
   <script src="assets/js/theme-init.js"></script>
 </head>
 <body class="no-transition">
@@ -55,7 +33,7 @@
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <a href="index.html#hjem" class="nav-brand"><span aria-hidden="true">🪨&nbsp;</span>Vetle Lunde</a>
+    <a href="index.html#hjem" class="nav-brand">Vetle Lunde</a>
     <ul id="nav-menu">
       <li><a href="index.html#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="index.html#om-meg" data-i18n="nav.about">Om meg</a></li>
@@ -78,12 +56,27 @@
 
   <main id="hovedinnhold">
 
-    <!-- Bachelor thesis -->
-    <section id="bachelor">
-      <div class="section-inner reveal">
-        <h1 class="page-title" data-i18n="bachelor.title">Bacheloroppgave</h1>
-        <div class="text-col">
-          <p data-i18n="bachelor.text">Oppgaven undersøker de metasedimentære bergartene i Gulagruppen og Funnsjøgruppen i den sørøstlige delen av Trondheimsdekkekomplekset. Målet er å bedre forstå forskjellene mellom disse enhetene, siden grensen mellom dem er usikker og dårlig kartlagt. Studien er en del av NGUs MERØ-prosjekt, som skal forbedre berggrunnskartene i Trøndelag.</p>
+    <section id="bachelor" class="page-section">
+      <div class="page-inner reveal">
+        <a href="index.html" class="back-link"><svg aria-hidden="true" viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg><span data-i18n="back.link">Tilbake til forsiden</span></a>
+        <div class="prose">
+          <span class="section-label" data-i18n="bachelor.label">Bachelor · Geologi og Geofare</span>
+          <h1 data-i18n="bachelor.title">Bacheloroppgave</h1>
+          <p class="lead" data-i18n="bachelor.text">Oppgaven undersøker de metasedimentære bergartene i Gulagruppen og Funnsjøgruppen i den sørøstlige delen av Trondheimsdekkekomplekset. Målet er å bedre forstå forskjellene mellom disse enhetene, siden grensen mellom dem er usikker og dårlig kartlagt. Studien er en del av NGUs MERØ-prosjekt, som skal forbedre berggrunnskartene i Trøndelag.</p>
+        </div>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="card-label" data-i18n="bachelor.fact1.label">Område</div>
+            <div class="card-value" data-i18n="bachelor.fact1.value">Sørøstlige Trondheimsdekkekompleks</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label" data-i18n="bachelor.fact2.label">Bergartsenheter</div>
+            <div class="card-value" data-i18n="bachelor.fact2.value">Gulagruppen og Funnsjøgruppen</div>
+          </div>
+          <div class="info-card">
+            <div class="card-label" data-i18n="bachelor.fact3.label">Prosjekt</div>
+            <div class="card-value" data-i18n="bachelor.fact3.value">NGU – MERØ</div>
+          </div>
         </div>
         <div class="media-col">
           <div class="gallery-grid">
@@ -119,7 +112,7 @@
   </main>
 
   <footer>
-    &copy; 2026 Vetle Lunde
+    &copy; 2026 Vetle Lunde<span class="footer-sep" aria-hidden="true">·</span><span data-i18n="footer.text">Geologi og Geofare</span>
   </footer>
 
   <script type="application/json" id="i18n-data">
@@ -144,7 +137,16 @@
         "theme.toggle.dark": "Bytt til lyst tema",
         "theme.toggle.light": "Bytt til mørkt tema",
         "lang.aria": "Bytt språk til engelsk",
-        "nav.menu": "Meny"
+        "nav.menu": "Meny",
+        "footer.text": "Geologi og Geofare",
+        "back.link": "Tilbake til forsiden",
+        "bachelor.label": "Bachelor · Geologi og Geofare",
+        "bachelor.fact1.label": "Område",
+        "bachelor.fact1.value": "Sørøstlige Trondheimsdekkekompleks",
+        "bachelor.fact2.label": "Bergartsenheter",
+        "bachelor.fact2.value": "Gulagruppen og Funnsjøgruppen",
+        "bachelor.fact3.label": "Prosjekt",
+        "bachelor.fact3.value": "NGU – MERØ"
       },
       "en": {
         "nav.home": "Home",
@@ -166,7 +168,16 @@
         "theme.toggle.dark": "Switch to light mode",
         "theme.toggle.light": "Switch to dark mode",
         "lang.aria": "Switch language to Norwegian",
-        "nav.menu": "Menu"
+        "nav.menu": "Menu",
+        "footer.text": "Geology and Geo-Hazards",
+        "back.link": "Back to home",
+        "bachelor.label": "Bachelor · Geology and Geo-Hazards",
+        "bachelor.fact1.label": "Area",
+        "bachelor.fact1.value": "Southeastern Trondheim Nappe Complex",
+        "bachelor.fact2.label": "Rock units",
+        "bachelor.fact2.value": "Gula Group and Funnsjø Group",
+        "bachelor.fact3.label": "Project",
+        "bachelor.fact3.value": "NGU – MERØ"
       }
     }
   </script>

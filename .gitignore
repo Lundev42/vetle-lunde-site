@@ -3,3 +3,6 @@ test-results/
 playwright-report/
 blob-report/
 _site/
+
+# Local Claude Code settings
+.claude/
