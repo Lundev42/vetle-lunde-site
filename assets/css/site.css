@@ -1,0 +1,465 @@
+/*
+ * Shared styles for every page on the site: fonts, colour tokens, navigation,
+ * language/theme toggles, footer, accessibility helpers and reveal animation.
+ * Page-specific layout stays in each page's own <style> block.
+ */
+
+/* ── Self-hosted fonts (latin subset, SIL Open Font License) ──
+   Served from this site instead of Google Fonts: no third-party request,
+   no visitor IP shared with Google, and one fewer connection on load. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('../fonts/inter-latin-var.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Courgette';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/courgette-latin.woff2') format('woff2');
+}
+
+/* ── Design tokens ── */
+:root {
+  color-scheme: dark;
+  --bg-primary: #0f1117;
+  --bg-secondary: #181a20;
+  --text-primary: #c0c8d8;
+  --text-secondary: #a0a8c0;
+  --text-muted: #9ca3b8;
+  --text-heading: #e8ecf4;
+  --accent: #6384ff;
+  --accent-strong: #3b54c7;
+  --accent-hover: rgba(99, 132, 255, 0.25);
+  --accent-bg: rgba(99, 132, 255, 0.15);
+  --accent-border: rgba(99, 132, 255, 0.3);
+  --nav-bg: rgba(26, 26, 26, 0.85);
+  --nav-border: rgba(255, 255, 255, 0.06);
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --overlay-bg: rgba(0, 0, 0, 0.6);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --focus-ring: #8aa2ff;
+
+  /* Motion tokens */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-instant: 150ms;
+  --duration-state: 250ms;
+  --duration-layout: 400ms;
+  --duration-entrance: 600ms;
+
+  --nav-height: 56px;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg-primary: #eef0f6;
+  --bg-secondary: #e1e4ec;
+  --text-primary: #23272f;
+  --text-secondary: #474d5c;
+  /* Darkened from #6b7280 so body text meets WCAG AA (4.5:1) on both light backgrounds */
+  --text-muted: #525866;
+  --text-heading: #1a1d24;
+  --accent: #4a63cc;
+  --accent-strong: #3b54c7;
+  --accent-hover: rgba(74, 99, 204, 0.18);
+  --accent-bg: rgba(74, 99, 204, 0.10);
+  --accent-border: rgba(74, 99, 204, 0.3);
+  --nav-bg: rgba(238, 240, 246, 0.92);
+  --nav-border: rgba(0, 0, 0, 0.08);
+  --card-bg: rgba(0, 0, 0, 0.03);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --input-bg: rgba(0, 0, 0, 0.04);
+  --input-border: rgba(0, 0, 0, 0.15);
+  --focus-ring: #3b54c7;
+}
+
+/* ── Reset & base ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Keep in-page anchor targets clear of the fixed navigation bar */
+  scroll-padding-top: var(--nav-height);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--duration-state) var(--ease-out-quart), color var(--duration-state) var(--ease-out-quart);
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+}
+
+/* One consistent, clearly visible keyboard focus indicator site-wide */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ── Navigation ── */
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--nav-border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 24px;
+  transition: background-color var(--duration-state) var(--ease-out-quart), border-color var(--duration-state) var(--ease-out-quart);
+}
+
+.nav-brand {
+  display: none;
+  text-decoration: none;
+  color: var(--text-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  border-radius: 6px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+nav ul a {
+  display: inline-block;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 24px;
+  transition: color var(--duration-state), background var(--duration-state), transform var(--duration-instant);
+}
+
+nav ul a:hover,
+nav ul a:focus-visible {
+  color: #fff;
+  background: var(--accent-bg);
+}
+
+nav ul a:active {
+  transform: scale(0.96);
+}
+
+/* Active navigation state */
+nav a.nav-active {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+[data-theme="light"] nav a.nav-active {
+  color: var(--accent);
+  background: var(--accent-hover);
+}
+
+[data-theme="light"] nav a:hover,
+[data-theme="light"] nav a:focus-visible {
+  color: var(--accent);
+  background: var(--accent-hover);
+}
+
+/* ── Language & theme toggles ── */
+.lang-toggle,
+.theme-toggle {
+  background: var(--accent-bg);
+  color: var(--text-secondary);
+  border: 2px solid var(--accent-border);
+  font-family: inherit;
+  font-size: 0.75rem;
+  border-radius: 24px;
+  cursor: pointer;
+  min-height: 32px;
+  transition: color var(--duration-state), background var(--duration-state), border-color var(--duration-state), transform var(--duration-instant);
+}
+
+.lang-toggle {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+}
+
+.theme-toggle {
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.lang-toggle:hover,
+.lang-toggle:focus-visible,
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  color: #fff;
+  background: var(--accent-hover);
+  border-color: #fff;
+}
+
+[data-theme="light"] .lang-toggle:hover,
+[data-theme="light"] .lang-toggle:focus-visible,
+[data-theme="light"] .theme-toggle:hover,
+[data-theme="light"] .theme-toggle:focus-visible {
+  color: var(--accent);
+  border-color: #000;
+}
+
+.lang-toggle:active,
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.theme-toggle svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Icon visibility is driven purely by the theme attribute (no inline styles) */
+.theme-icon-sun { display: none; }
+[data-theme="light"] .theme-icon-moon { display: none; }
+[data-theme="light"] .theme-icon-sun { display: inline; }
+
+/* Sun icon: golden yellow in light mode */
+[data-theme="light"] .theme-toggle .theme-icon-sun {
+  stroke: #f59e0b;
+  fill: #f59e0b;
+}
+
+/* Moon icon: soft silver fill in dark mode */
+.theme-toggle .theme-icon-moon {
+  fill: #c0c8d8;
+  stroke: #c0c8d8;
+}
+
+/* ── Hamburger menu button (mobile) ── */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  transition: color var(--duration-state), background var(--duration-state);
+}
+
+.hamburger:hover {
+  color: var(--text-heading);
+  background: var(--accent-bg);
+}
+
+.hamburger svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+}
+
+.hamburger .icon-close { display: none; }
+.hamburger.active .icon-open { display: none; }
+.hamburger.active .icon-close { display: block; }
+
+/* ── Shared section scaffolding ── */
+section:nth-of-type(even) {
+  background: var(--bg-secondary);
+}
+
+/* ── Footer ── */
+footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--nav-border);
+}
+
+/* ── Accessibility helpers ── */
+.skip-link {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 200;
+  background: var(--accent-strong);
+  color: #fff;
+  padding: 12px 24px;
+  font-size: 1rem;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  transform: translateY(-120%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Scroll reveal ──
+   Only hidden when JavaScript is running (html.js is set in theme-init.js),
+   so content is never invisible if scripts fail to load. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--duration-entrance) var(--ease-out-expo), transform var(--duration-entrance) var(--ease-out-expo);
+}
+
+.js .reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Responsive – laptop ── */
+@media (max-width: 1440px) {
+  nav ul a {
+    font-size: 0.8rem;
+    padding: 5px 12px;
+  }
+}
+
+/* ── Responsive – mobile navigation ── */
+@media (max-width: 768px) {
+  nav {
+    justify-content: space-between;
+    padding: 8px 16px;
+  }
+
+  .nav-brand {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  nav ul {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    max-height: calc(100vh - var(--nav-height));
+    max-height: calc(100dvh - var(--nav-height));
+    overflow-y: auto;
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--nav-border);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 20px 20px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: opacity var(--duration-state) var(--ease-out-quart), transform var(--duration-state) var(--ease-out-quart), visibility var(--duration-state);
+    z-index: 105;
+  }
+
+  nav ul.nav-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  nav ul li {
+    width: 100%;
+  }
+
+  nav ul a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+    padding: 12px 16px;
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .js .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Suppress transitions during initial page load to prevent glitchy flashes */
+.no-transition,
+.no-transition *,
+.no-transition *::before,
+.no-transition *::after {
+  transition: none !important;
+}

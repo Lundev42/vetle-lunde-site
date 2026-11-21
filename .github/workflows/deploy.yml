@@ -27,16 +27,29 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      # Publish only the public website files. Tests, tooling, the unused
+      # contact.php and the original full-size photos (which still contain
+      # camera/GPS metadata) stay in the repository but are not deployed.
+      - name: Assemble site
+        run: |
+          mkdir -p _site/images
+          cp *.html robots.txt sitemap.xml _site/
+          cp -r assets _site/
+          cp -r images/optimized _site/images/
+          cp images/og-image.jpg _site/images/
+          touch _site/.nojekyll
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: '_site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

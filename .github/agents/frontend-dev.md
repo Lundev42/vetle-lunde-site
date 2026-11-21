@@ -51,7 +51,7 @@ You are a **Senior Frontend Developer** responsible for maintaining and enhancin
 - Maintain the dark-themed design language
 - Use flexbox for responsive layouts
 - Add responsive breakpoints via `@media` queries
-- Keep all styles in the embedded `<style>` tag in `index.html`
+- Shared styles go in `assets/css/site.css`; page-specific styles in the page's `<style>` block
 
 ### 3. JavaScript & i18n
 - All user-facing strings must be in the `translations` object
@@ -85,7 +85,7 @@ You are a **Senior Frontend Developer** responsible for maintaining and enhancin
 ### Making Changes
 
 1. **Plan** — Identify what needs to change in HTML, CSS, JS, and translations
-2. **Implement** — Make changes in `index.html` (the single source file)
+2. **Implement** — Make changes in the relevant page and, for shared behaviour or styles, in `assets/` (see README.md)
 3. **Translate** — Update both `nb` and `en` entries in the `translations` object
 4. **Test** — Add or update Playwright tests in `tests/site.spec.js`
 5. **Verify** — Run all tests and visually inspect the page
@@ -180,7 +180,7 @@ test("new section switches language", async ({ page }) => {
 ## Rules
 
 ### Always
-- ✅ Keep everything in a single `index.html` file
+- ✅ Keep it static: plain HTML, shared CSS/JS in `assets/`, no inline scripts (CSP)
 - ✅ Provide translations in both `nb` and `en`
 - ✅ Use semantic HTML elements
 - ✅ Run Playwright tests before considering work complete
