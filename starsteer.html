@@ -8,497 +8,50 @@
   <meta property="og:description" content="StarSteer – programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips på Ekofiskfeltet.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://Lundev42.github.io/vetle-lunde-site/starsteer.html">
-  <meta property="og:image" content="https://Lundev42.github.io/vetle-lunde-site/images/logo.webp">
+  <meta property="og:image" content="https://Lundev42.github.io/vetle-lunde-site/images/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Utsikt over Visdalen fra Galdhøpiggen">
+  <meta property="og:site_name" content="Vetle Lunde">
   <meta property="og:locale" content="nb_NO">
   <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#0f1117">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; upgrade-insecure-requests">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="canonical" href="https://Lundev42.github.io/vetle-lunde-site/starsteer.html">
   <title>StarSteer – Vetle Lunde</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🪨</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Courgette&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
-  <style>
-    :root {
-      --bg-primary: #0f1117;
-      --bg-secondary: #181a20;
-      --text-primary: #c0c8d8;
-      --text-secondary: #a0a8c0;
-      --text-muted: #9ca3b8;
-      --text-heading: #e8ecf4;
-      --accent: #6384ff;
-      --accent-hover: rgba(99, 132, 255, 0.25);
-      --accent-bg: rgba(99, 132, 255, 0.15);
-      --accent-border: rgba(99, 132, 255, 0.3);
-      --nav-bg: rgba(26, 26, 26, 0.85);
-      --nav-border: rgba(255, 255, 255, 0.06);
-      --card-bg: rgba(255, 255, 255, 0.04);
-      --overlay-bg: rgba(0, 0, 0, 0.6);
-      --input-bg: rgba(255, 255, 255, 0.05);
-      --input-border: rgba(255, 255, 255, 0.12);
-    }
-
-    [data-theme="light"] {
-      --bg-primary: #eef0f6;
-      --bg-secondary: #e1e4ec;
-      --text-primary: #23272f;
-      --text-secondary: #4a5060;
-      --text-muted: #6b7280;
-      --text-heading: #1a1d24;
-      --accent: #4a63cc;
-      --accent-hover: rgba(74, 99, 204, 0.18);
-      --accent-bg: rgba(74, 99, 204, 0.10);
-      --accent-border: rgba(74, 99, 204, 0.3);
-      --nav-bg: rgba(238, 240, 246, 0.92);
-      --nav-border: rgba(0, 0, 0, 0.08);
-      --card-bg: rgba(0, 0, 0, 0.03);
-      --overlay-bg: rgba(0, 0, 0, 0.4);
-      --input-bg: rgba(0, 0, 0, 0.04);
-      --input-border: rgba(0, 0, 0, 0.15);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
-      color: var(--text-primary);
-      background: var(--bg-primary);
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    /* ── Navigation ── */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 100;
-      background: var(--nav-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--nav-border);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 16px;
-      padding: 10px 24px;
-      transition: background-color 0.3s ease, border-color 0.3s ease;
-    }
-
-    .nav-brand {
-      display: none;
-      text-decoration: none;
-      color: var(--text-heading);
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hamburger {
-      display: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-      color: var(--text-secondary);
-      border-radius: 8px;
-      transition: color 0.3s, background 0.3s;
-    }
-
-    .hamburger:hover {
-      color: var(--text-heading);
-      background: var(--accent-bg);
-    }
-
-    .hamburger svg {
-      width: 22px;
-      height: 22px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      display: block;
-    }
-
-    .hamburger .icon-close { display: none; }
-    .hamburger.active .icon-open { display: none; }
-    .hamburger.active .icon-close { display: block; }
-
-    nav a {
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      padding: 8px 18px;
-      border-radius: 24px;
-      transition: color 0.3s, background 0.3s;
-    }
-
-    nav a:hover,
-    nav a:focus-visible {
-      color: #fff;
-      background: var(--accent-bg);
-    }
-
-    /* ── Sections (shared) ── */
-    section {
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      align-items: center;
-      padding: 120px 60px 80px;
-    }
-
-    .section-inner {
-      max-width: 1200px;
-      width: 100%;
-      margin: 0 auto;
-      display: flex;
-      align-items: flex-start;
-      gap: 60px;
-    }
-
-    .text-col {
-      flex: 1 1 55%;
-      max-width: 750px;
-    }
-
-    .section-label {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: var(--accent-bg);
-      border: 1px solid var(--accent-border);
-      border-radius: 20px;
-      padding: 4px 14px;
-      margin-bottom: 16px;
-    }
-
-    .text-col h2 {
-      font-size: 2.4rem;
-      font-weight: 700;
-      color: var(--text-heading);
-      line-height: 1.2;
-      margin-bottom: 20px;
-    }
-
-    .text-col p {
-      font-size: 1.05rem;
-      line-height: 1.75;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-
-    .text-col p:last-child {
-      margin-bottom: 0;
-    }
-
-    /* ── Info cards ── */
-    .info-cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-top: 28px;
-    }
-
-    .info-card {
-      background: var(--card-bg);
-      border: 1px solid var(--accent-border);
-      border-radius: 14px;
-      padding: 20px 24px;
-      flex: 1 1 200px;
-      min-width: 180px;
-      transition: background-color 0.3s ease;
-    }
-
-    .info-card .card-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 6px;
-    }
-
-    .info-card .card-value {
-      font-size: 0.95rem;
-      color: var(--text-heading);
-      font-weight: 500;
-    }
-
-    /* ── Contact / Footer ── */
-    footer {
-      text-align: center;
-      padding: 24px;
-      font-size: 0.75rem;
-      color: #7a82a0;
-      border-top: 1px solid var(--nav-border);
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
-      section {
-        padding: 100px 24px 60px;
-      }
-
-      .section-inner {
-        flex-direction: column;
-        gap: 40px;
-      }
-
-      .text-col h2 {
-        font-size: 1.8rem;
-      }
-
-      nav {
-        justify-content: space-between;
-        padding: 10px 16px;
-      }
-
-      .nav-brand {
-        display: inline-flex;
-        align-items: center;
-      }
-
-      .hamburger {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      nav ul {
-        position: fixed;
-        top: 52px;
-        left: 0;
-        right: 0;
-        background: var(--bg-primary);
-        border-bottom: 1px solid var(--nav-border);
-        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        padding: 16px 20px 20px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-8px);
-        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
-        z-index: 105;
-      }
-
-      nav ul.nav-open {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-      }
-
-      nav a {
-        display: block;
-        width: 100%;
-        text-align: center;
-        font-size: 1rem;
-        padding: 10px 16px;
-      }
-    }
-
-    /* ── Language toggle ── */
-    .lang-toggle {
-      background: var(--accent-bg);
-      color: var(--text-secondary);
-      border: 2px solid var(--accent-border);
-      font-family: inherit;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      padding: 6px 14px;
-      border-radius: 24px;
-      cursor: pointer;
-      transition: color 0.3s, background 0.3s, border-color 0.3s;
-    }
-
-    .lang-toggle:hover,
-    .lang-toggle:focus-visible {
-      color: #fff;
-      background: var(--accent-hover);
-      border-color: #fff;
-    }
-
-    /* ── Theme toggle ── */
-    .theme-toggle {
-      background: var(--accent-bg);
-      color: var(--text-secondary);
-      border: 2px solid var(--accent-border);
-      font-family: inherit;
-      font-size: 0.75rem;
-      padding: 6px 10px;
-      border-radius: 24px;
-      cursor: pointer;
-      transition: color 0.3s, background 0.3s, border-color 0.3s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-
-    .theme-toggle:hover,
-    .theme-toggle:focus-visible {
-      color: #fff;
-      background: var(--accent-hover);
-      border-color: #fff;
-    }
-
-    .theme-toggle svg {
-      width: 16px;
-      height: 16px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    [data-theme="light"] .theme-icon-moon { display: none; }
-    [data-theme="light"] .theme-icon-sun { display: inline !important; }
-
-    /* Sun icon: golden yellow in light mode */
-    [data-theme="light"] .theme-toggle .theme-icon-sun {
-      stroke: #f59e0b;
-      fill: #f59e0b;
-    }
-
-    /* Moon icon: soft silver fill in dark mode */
-    .theme-toggle .theme-icon-moon {
-      fill: #c0c8d8;
-      stroke: #c0c8d8;
-    }
-
-    [data-theme="light"] nav a:hover,
-    [data-theme="light"] nav a:focus-visible {
-      color: var(--accent);
-      background: var(--accent-hover);
-    }
-
-    [data-theme="light"] .theme-toggle:hover,
-    [data-theme="light"] .theme-toggle:focus-visible {
-      color: var(--accent);
-      border-color: #000;
-    }
-
-    [data-theme="light"] .lang-toggle:hover,
-    [data-theme="light"] .lang-toggle:focus-visible {
-      color: var(--accent);
-      border-color: #000;
-    }
-
-    /* ── Skip-to-content (a11y) ── */
-    .skip-link {
-      position: absolute;
-      left: -9999px;
-      top: 0;
-      z-index: 200;
-      background: #6384ff;
-      color: #fff;
-      padding: 12px 24px;
-      font-size: 1rem;
-      text-decoration: none;
-      border-radius: 0 0 8px 0;
-    }
-
-    .skip-link:focus {
-      left: 0;
-    }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    /* ── Scroll reveal animations ── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── Active navigation state ── */
-    nav a.nav-active {
-      color: var(--accent);
-      background: var(--accent-bg);
-    }
-
-    /* ── Alternating section backgrounds ── */
-    section:nth-of-type(even) {
-      background: var(--bg-secondary);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
-  </style>
+  <link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/site.css">
+  <link rel="stylesheet" href="assets/css/subpage.css">
+  <script src="assets/js/theme-init.js"></script>
 </head>
-<body>
+<body class="no-transition">
 
   <a href="#hovedinnhold" class="skip-link" data-i18n="skip.link">Hopp til hovedinnhold</a>
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <ul>
+    <a href="index.html#hjem" class="nav-brand"><span aria-hidden="true">🪨&nbsp;</span>Vetle Lunde</a>
+    <ul id="nav-menu">
       <li><a href="index.html#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="index.html#om-meg" data-i18n="nav.about">Om meg</a></li>
       <li><a href="index.html#bakgrunn" data-i18n="nav.background">Bakgrunn</a></li>
       <li><a href="bacheloroppgave.html" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
       <li><a href="index.html#kontakt" data-i18n="nav.contact">Kontakt</a></li>
-      <li><button class="lang-toggle" data-i18n="lang.switch" aria-label="Switch language">EN</button></li>
-      <li><button class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
-        <svg class="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-        <svg class="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button></li>
     </ul>
+    <div class="nav-controls">
+      <button type="button" class="lang-toggle" data-i18n="lang.switch" data-i18n-aria-label="lang.aria" aria-label="Bytt språk til engelsk">EN</button>
+      <button type="button" class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
+        <svg class="theme-icon-moon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <svg class="theme-icon-sun" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button type="button" class="hamburger" id="hamburger" aria-label="Meny" data-i18n-aria-label="nav.menu" aria-expanded="false" aria-controls="nav-menu">
+        <svg class="icon-open" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg class="icon-close" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      </button>
+    </div>
   </nav>
 
   <main id="hovedinnhold">
@@ -506,10 +59,9 @@
     <!-- StarSteer intro -->
     <section id="starsteer-intro">
       <div class="section-inner reveal">
-        <h1 class="sr-only" data-i18n="page.title">StarSteer – Vetle Lunde</h1>
         <div class="text-col">
           <span class="section-label" data-i18n="starsteer.label">Programvare</span>
-          <h2 data-i18n="starsteer.title">StarSteer</h2>
+          <h1 class="page-title" data-i18n="starsteer.title">StarSteer</h1>
           <p data-i18n="starsteer.intro">StarSteer er en spesialisert programvare for retningsboring, utviklet for å designe og modellere brønntrajektorier med høy presisjon. Programvaren er et av bransjens ledende verktøy innen brønnstyring og brukes av geofaglige team verden over.</p>
           <p data-i18n="starsteer.intro2">Under praksisperioden min hos ConocoPhillips benyttet jeg StarSteer som del av arbeidet med å utvikle et bibliotek av re-styrte brønner på Ekofiskfeltet i Nordsjøen.</p>
           <div class="info-cards">
@@ -549,9 +101,9 @@
     &copy; 2026 Vetle Lunde
   </footer>
 
-  <script>
-    var translations = {
-      nb: {
+  <script type="application/json" id="i18n-data">
+    {
+      "nb": {
         "nav.home": "Hjem",
         "nav.about": "Om meg",
         "nav.background": "Bakgrunn",
@@ -560,27 +112,28 @@
         "nav.aria.label": "Hovednavigasjon",
         "starsteer.label": "Programvare",
         "starsteer.title": "StarSteer",
-        "starsteer.intro": "StarSteer er en spesialisert programvare for retningsboring, utviklet for \u00e5 designe og modellere br\u00f8nntrajektorier med h\u00f8y presisjon. Programvaren er et av bransjens ledende verkt\u00f8y innen br\u00f8nnstyring og brukes av geofaglige team verden over.",
-        "starsteer.intro2": "Under praksisperioden min hos ConocoPhillips benyttet jeg StarSteer som del av arbeidet med \u00e5 utvikle et bibliotek av re-styrte br\u00f8nner p\u00e5 Ekofiskfeltet i Nordsj\u00f8en.",
+        "starsteer.intro": "StarSteer er en spesialisert programvare for retningsboring, utviklet for å designe og modellere brønntrajektorier med høy presisjon. Programvaren er et av bransjens ledende verktøy innen brønnstyring og brukes av geofaglige team verden over.",
+        "starsteer.intro2": "Under praksisperioden min hos ConocoPhillips benyttet jeg StarSteer som del av arbeidet med å utvikle et bibliotek av re-styrte brønner på Ekofiskfeltet i Nordsjøen.",
         "starsteer.card1.label": "Bruk",
         "starsteer.card1.value": "Retningsboring",
         "starsteer.card2.label": "Felt",
-        "starsteer.card2.value": "Ekofisk, Nordsj\u00f8en",
+        "starsteer.card2.value": "Ekofisk, Nordsjøen",
         "starsteer.card3.label": "Selskap",
         "starsteer.details.label": "Funksjonalitet",
         "starsteer.details.title": "Hvordan fungerer StarSteer?",
-        "starsteer.details.p1": "StarSteer gj\u00f8r det mulig \u00e5 designe br\u00f8nntrajektorier i 3D og integrere geologiske data direkte i planleggingsprosessen. Programvaren st\u00f8tter import av biostratigrafiske tolkninger, bildelogganalyser og geofysiske logger som tetthet og resistivitet (CPI).",
-        "starsteer.details.p2": "Ved \u00e5 sammenstille disse datakildene kan geofaglige team identifisere strukturelle avvik i geomodeller og planlegge presise korreksjonsbaner for re-styring av eksisterende br\u00f8nner. Dette er avg\u00f8rende for \u00e5 opprettholde produksjonseffektiviteten p\u00e5 modne felt som Ekofisk.",
-        "starsteer.details.p3": "I mitt arbeid brukte jeg StarSteer til \u00e5 korrelere tetthet- og resistivitetslogger p\u00e5 tvers av br\u00f8nner, identifisere avvik mot Petrel-geomodellen og utarbeide et bibliotek av veldokumenterte re-styringsscenarier. Resultatet st\u00f8tter implementeringen av sanntidsoperasjoner og forbedrer treffsikkerheten for fremtidige br\u00f8nner p\u00e5 Ekofisk og Eldfisk-feltene.",
-        "footer.text": "Geologi og Geofare",
-        "page.title": "StarSteer \u2013 Vetle Lunde",
-        "meta.description": "StarSteer \u2013 programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips p\u00e5 Ekofiskfeltet.",
+        "starsteer.details.p1": "StarSteer gjør det mulig å designe brønntrajektorier i 3D og integrere geologiske data direkte i planleggingsprosessen. Programvaren støtter import av biostratigrafiske tolkninger, bildelogganalyser og geofysiske logger som tetthet og resistivitet (CPI).",
+        "starsteer.details.p2": "Ved å sammenstille disse datakildene kan geofaglige team identifisere strukturelle avvik i geomodeller og planlegge presise korreksjonsbaner for re-styring av eksisterende brønner. Dette er avgørende for å opprettholde produksjonseffektiviteten på modne felt som Ekofisk.",
+        "starsteer.details.p3": "I mitt arbeid brukte jeg StarSteer til å korrelere tetthet- og resistivitetslogger på tvers av brønner, identifisere avvik mot Petrel-geomodellen og utarbeide et bibliotek av veldokumenterte re-styringsscenarier. Resultatet støtter implementeringen av sanntidsoperasjoner og forbedrer treffsikkerheten for fremtidige brønner på Ekofisk og Eldfisk-feltene.",
+        "page.title": "StarSteer – Vetle Lunde",
+        "meta.description": "StarSteer – programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips på Ekofiskfeltet.",
         "skip.link": "Hopp til hovedinnhold",
         "lang.switch": "EN",
         "theme.toggle.dark": "Bytt til lyst tema",
-        "theme.toggle.light": "Bytt til m\u00f8rkt tema"
+        "theme.toggle.light": "Bytt til mørkt tema",
+        "lang.aria": "Bytt språk til engelsk",
+        "nav.menu": "Meny"
       },
-      en: {
+      "en": {
         "nav.home": "Home",
         "nav.about": "About me",
         "nav.background": "Background",
@@ -589,7 +142,7 @@
         "nav.aria.label": "Main navigation",
         "starsteer.label": "Software",
         "starsteer.title": "StarSteer",
-        "starsteer.intro": "StarSteer is a specialised directional drilling software designed for planning and modelling wellbore trajectories with high precision. It is one of the industry\u2019s leading tools for well steering and is used by geoscience teams worldwide.",
+        "starsteer.intro": "StarSteer is a specialised directional drilling software designed for planning and modelling wellbore trajectories with high precision. It is one of the industry’s leading tools for well steering and is used by geoscience teams worldwide.",
         "starsteer.intro2": "During my internship at ConocoPhillips I used StarSteer as part of the work to develop a library of re-steered wells on the Ekofisk field in the North Sea.",
         "starsteer.card1.label": "Application",
         "starsteer.card1.value": "Directional drilling",
@@ -601,185 +154,18 @@
         "starsteer.details.p1": "StarSteer enables the design of wellbore trajectories in 3D and allows geological data to be integrated directly into the planning workflow. The software supports import of biostratigraphic interpretations, image log analyses and geophysical logs such as density and resistivity (CPI).",
         "starsteer.details.p2": "By combining these data sources, geoscience teams can identify structural discrepancies in geomodels and plan precise correction paths for re-steering existing wells. This is critical for maintaining production efficiency on mature fields such as Ekofisk.",
         "starsteer.details.p3": "In my work I used StarSteer to correlate density and resistivity logs across wells, identify discrepancies against the Petrel geomodel, and compile a library of well-documented re-steering scenarios. The results support the implementation of real-time operations and improve the accuracy of future wells on the Ekofisk and Eldfisk fields.",
-        "footer.text": "Geology and Geo-Hazards",
-        "page.title": "StarSteer \u2013 Vetle Lunde",
-        "meta.description": "StarSteer \u2013 directional drilling software used by Vetle Lunde at ConocoPhillips on the Ekofisk field.",
+        "page.title": "StarSteer – Vetle Lunde",
+        "meta.description": "StarSteer – directional drilling software used by Vetle Lunde at ConocoPhillips on the Ekofisk field.",
         "skip.link": "Skip to main content",
         "lang.switch": "NO",
         "theme.toggle.dark": "Switch to light mode",
-        "theme.toggle.light": "Switch to dark mode"
+        "theme.toggle.light": "Switch to dark mode",
+        "lang.aria": "Switch language to Norwegian",
+        "nav.menu": "Menu"
       }
-    };
-
-    function setLanguage(lang) {
-      document.documentElement.lang = lang;
-      try { localStorage.setItem("lang", lang); } catch (e) { /* ignore */ }
-
-      var dict = translations[lang];
-      if (!dict) return;
-
-      document.title = dict["page.title"] || document.title;
-
-      var metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc && dict["meta.description"]) metaDesc.setAttribute("content", dict["meta.description"]);
-
-      var ogTitle = document.querySelector('meta[property="og:title"]');
-      if (ogTitle) ogTitle.setAttribute("content", dict["page.title"] || "");
-
-      var ogDesc = document.querySelector('meta[property="og:description"]');
-      if (ogDesc && dict["meta.description"]) ogDesc.setAttribute("content", dict["meta.description"]);
-
-      var ogLocale = document.querySelector('meta[property="og:locale"]');
-      if (ogLocale) ogLocale.setAttribute("content", lang === "en" ? "en_US" : "nb_NO");
-
-      var ogLocaleAlt = document.querySelector('meta[property="og:locale:alternate"]');
-      if (ogLocaleAlt) ogLocaleAlt.setAttribute("content", lang === "en" ? "nb_NO" : "en_US");
-
-      document.querySelectorAll("[data-i18n]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n");
-        if (dict[key] != null) el.textContent = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-html");
-        if (dict[key] != null) el.innerHTML = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-alt");
-        if (dict[key] != null) el.alt = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-placeholder");
-        if (dict[key] != null) el.placeholder = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-aria-label]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-aria-label");
-        if (dict[key] != null) el.setAttribute("aria-label", dict[key]);
-      });
     }
-
-    document.querySelector(".lang-toggle").addEventListener("click", function () {
-      var current = document.documentElement.lang === "en" ? "nb" : "en";
-      setLanguage(current);
-    });
-
-    (function () {
-      var saved;
-      try { saved = localStorage.getItem("lang"); } catch (e) { /* ignore */ }
-      if (saved && translations[saved]) {
-        setLanguage(saved);
-      }
-    })();
-
-    /* ── Theme toggle logic ── */
-    (function () {
-      var toggle = document.getElementById("theme-toggle");
-      var htmlEl = document.documentElement;
-      var moonIcon = toggle.querySelector(".theme-icon-moon");
-      var sunIcon = toggle.querySelector(".theme-icon-sun");
-
-      function applyTheme(theme) {
-        htmlEl.setAttribute("data-theme", theme);
-        try { localStorage.setItem("theme", theme); } catch (e) { /* ignore */ }
-
-        var ariaKey;
-        if (theme === "light") {
-          moonIcon.style.display = "none";
-          sunIcon.style.display = "inline";
-          ariaKey = "theme.toggle.light";
-        } else {
-          moonIcon.style.display = "inline";
-          sunIcon.style.display = "none";
-          ariaKey = "theme.toggle.dark";
-        }
-        toggle.setAttribute("data-i18n-aria-label", ariaKey);
-        var dict = translations[htmlEl.lang] || translations["nb"];
-        if (dict[ariaKey] != null) toggle.setAttribute("aria-label", dict[ariaKey]);
-      }
-
-      toggle.addEventListener("click", function () {
-        var current = htmlEl.getAttribute("data-theme") === "light" ? "dark" : "light";
-        applyTheme(current);
-      });
-
-      // Initialize: localStorage > system preference > default (dark)
-      var saved;
-      try { saved = localStorage.getItem("theme"); } catch (e) { /* ignore */ }
-      if (saved === "light" || saved === "dark") {
-        applyTheme(saved);
-      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
-        applyTheme("light");
-      } else {
-        applyTheme("dark");
-      }
-    })();
-
-    /* ── Scroll reveal ── */
-    (function () {
-      var reveals = document.querySelectorAll('.reveal');
-      if ('IntersectionObserver' in window) {
-        var obs = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
-              obs.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.15 });
-        reveals.forEach(function (el) { obs.observe(el); });
-      } else {
-        reveals.forEach(function (el) { el.classList.add('visible'); });
-      }
-    })();
-
-    /* ── Active nav highlighting ── */
-    (function () {
-      var sections = document.querySelectorAll('section[id]');
-      var navLinks = document.querySelectorAll('nav a[href^="#"]');
-      if (!('IntersectionObserver' in window)) return;
-
-      var scrollLocked = false;
-
-      function setActive(id) {
-        navLinks.forEach(function (link) {
-          link.classList.remove('nav-active');
-          if (link.getAttribute('href') === '#' + id) {
-            link.classList.add('nav-active');
-          }
-        });
-      }
-
-      var lastSection = sections[sections.length - 1];
-
-      var observer = new IntersectionObserver(function (entries) {
-        if (scrollLocked) return;
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            setActive(entry.target.id);
-          }
-        });
-      }, { rootMargin: '-20% 0px -60% 0px' });
-      sections.forEach(function (s) { observer.observe(s); });
-
-      navLinks.forEach(function (link) {
-        link.addEventListener('click', function () {
-          var id = link.getAttribute('href').substring(1);
-          setActive(id);
-          scrollLocked = true;
-          setTimeout(function () { scrollLocked = false; }, 800);
-        });
-      });
-
-      window.addEventListener('scroll', function () {
-        if (!scrollLocked && (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 2)) {
-          setActive(lastSection.id);
-        }
-      });
-    })();
   </script>
+  <script src="assets/js/site.js" defer></script>
 
 </body>
 </html>

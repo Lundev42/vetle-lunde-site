@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lundev42.github.io/vetle-lunde-site/sitemap.xml

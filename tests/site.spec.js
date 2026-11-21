@@ -1,11 +1,12 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 
-const PAGE_URL = "file://" + require("path").resolve(__dirname, "../index.html");
-const BACHELOR_URL = "file://" + require("path").resolve(__dirname, "../bacheloroppgave.html");
-const STARSTEER_URL = "file://" + require("path").resolve(__dirname, "../starsteer.html");
-const COP2025_URL = "file://" + require("path").resolve(__dirname, "../conocophillips-2025.html");
-const COP2024_URL = "file://" + require("path").resolve(__dirname, "../conocophillips-2024.html");
+// Paths are resolved against baseURL (see playwright.config.js)
+const PAGE_URL = "/index.html";
+const BACHELOR_URL = "/bacheloroppgave.html";
+const STARSTEER_URL = "/starsteer.html";
+const COP2025_URL = "/conocophillips-2025.html";
+const COP2024_URL = "/conocophillips-2024.html";
 
 test.describe("Bacheloroppgave section", () => {
   test.beforeEach(async ({ page }) => {
@@ -21,8 +22,9 @@ test.describe("Bacheloroppgave section", () => {
     const images = page.locator("#bachelor .gallery-grid img");
     const src1 = await images.nth(0).getAttribute("src");
     const src2 = await images.nth(1).getAttribute("src");
-    expect(src1).toContain("IMG_3906.JPG");
-    expect(src2).toContain("IMG_7509.jpeg");
+    // Optimised WebP copies of IMG_3906.JPG and IMG_7509.jpeg
+    expect(src1).toContain("images/optimized/bachelor-trondelag");
+    expect(src2).toContain("images/optimized/bachelor-fjellsider");
   });
 
   test("first image has caption 'Den vakre naturen i Trøndelag'", async ({ page }) => {
@@ -41,11 +43,11 @@ test.describe("Hero section", () => {
     await page.goto(PAGE_URL);
   });
 
-  test("has a background image using IMG_7173.JPG", async ({ page }) => {
+  test("has a background image (optimised copy of IMG_7173.JPG)", async ({ page }) => {
     const bg = await page.locator("#hjem").evaluate((el) =>
       getComputedStyle(el).backgroundImage
     );
-    expect(bg).toContain("IMG_7173.JPG");
+    expect(bg).toContain("hero-galdhopiggen");
   });
 
   test("has a dark overlay for readability", async ({ page }) => {
@@ -350,19 +352,19 @@ test.describe("Contact section link buttons", () => {
   });
 
   test("email button has envelope icon", async ({ page }) => {
-    const icon = page.locator('.contact-link-btn[href^="mailto:"] i.fa-envelope');
+    const icon = page.locator('.contact-link-btn[href^="mailto:"] svg.icon-envelope');
     await expect(icon).toBeAttached();
     await expect(icon).toHaveAttribute("aria-hidden", "true");
   });
 
   test("GitHub button has GitHub icon", async ({ page }) => {
-    const icon = page.locator('.contact-link-btn[href*="github.com"] i.fa-github');
+    const icon = page.locator('.contact-link-btn[href*="github.com"] svg.icon-github');
     await expect(icon).toBeAttached();
     await expect(icon).toHaveAttribute("aria-hidden", "true");
   });
 
   test("LinkedIn button has LinkedIn icon", async ({ page }) => {
-    const icon = page.locator('.contact-link-btn[href*="linkedin.com"] i.fa-linkedin');
+    const icon = page.locator('.contact-link-btn[href*="linkedin.com"] svg.icon-linkedin');
     await expect(icon).toBeAttached();
     await expect(icon).toHaveAttribute("aria-hidden", "true");
   });
@@ -370,7 +372,7 @@ test.describe("Contact section link buttons", () => {
   test("icons appear before text in buttons", async ({ page }) => {
     const emailBtn = page.locator('.contact-link-btn[href^="mailto:"]');
     const firstChild = emailBtn.locator('> :first-child');
-    await expect(firstChild).toHaveClass(/fa-envelope/);
+    await expect(firstChild).toHaveClass(/icon-envelope/);
   });
 });
 
@@ -707,9 +709,9 @@ test.describe("Accessibility improvements", () => {
 
   test("below-the-fold images have loading=lazy on index", async ({ page }) => {
     await page.goto(PAGE_URL);
-    const aboutImg = page.locator('#om-meg img[src*="IMG_8394.jpeg"]');
+    const aboutImg = page.locator('#om-meg img[src*="vetle-vinter"]');
     await expect(aboutImg).toHaveAttribute("loading", "lazy");
-    const studyImg = page.locator('img[src*="FalkeblikkAS"]');
+    const studyImg = page.locator('img[src*="hvl-campus-sogndal"]');
     await expect(studyImg).toHaveAttribute("loading", "lazy");
   });
 
@@ -722,7 +724,7 @@ test.describe("Accessibility improvements", () => {
 
   test("images have width and height attributes on index", async ({ page }) => {
     await page.goto(PAGE_URL);
-    const hvlImg = page.locator('img[src*="FalkeblikkAS"]');
+    const hvlImg = page.locator('img[src*="hvl-campus-sogndal"]');
     await expect(hvlImg).toHaveAttribute("width");
     await expect(hvlImg).toHaveAttribute("height");
   });
@@ -827,11 +829,15 @@ test.describe('Motion design (impeccable skill)', function () {
       var sheets = document.styleSheets;
       for (var s = 0; s < sheets.length; s++) {
         try {
-          var rules = sheets[s].cssRules;
-          for (var r = 0; r < rules.length; r++) {
-            if (rules[r].selectorText && rules[r].selectorText.indexOf('.media-col img:hover') !== -1) {
+          // Look inside @media blocks too (hover motion is gated behind
+          // @media (hover: hover) and (pointer: fine))
+          var stack = Array.prototype.slice.call(sheets[s].cssRules);
+          while (stack.length) {
+            var rule = stack.pop();
+            if (rule.selectorText && rule.selectorText.indexOf('.media-col img:hover') !== -1) {
               return true;
             }
+            if (rule.cssRules) stack.push.apply(stack, Array.prototype.slice.call(rule.cssRules));
           }
         } catch (e) {}
       }

@@ -8,142 +8,26 @@
   <meta property="og:description" content="Portefølje for Vetle Øyvind Larsen Lunde – geologistudent ved Høgskulen på Vestlandet i Sogndal.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://Lundev42.github.io/vetle-lunde-site/">
-  <meta property="og:image" content="https://Lundev42.github.io/vetle-lunde-site/images/logo.webp">
+  <meta property="og:image" content="https://Lundev42.github.io/vetle-lunde-site/images/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Utsikt over Visdalen fra Galdhøpiggen">
+  <meta property="og:site_name" content="Vetle Lunde">
   <meta property="og:locale" content="nb_NO">
   <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#0f1117">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; upgrade-insecure-requests">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="canonical" href="https://Lundev42.github.io/vetle-lunde-site/">
   <title>Vetle – Geologi og Geofare</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🪨</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Courgette&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="preload" href="assets/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" as="image" type="image/webp" href="images/optimized/hero-galdhopiggen-2000.webp" media="(min-width: 1201px)">
+  <link rel="preload" as="image" type="image/webp" href="images/optimized/hero-galdhopiggen-1200.webp" media="(max-width: 1200px)">
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/js/theme-init.js"></script>
   <style>
-    :root {
-      --bg-primary: #0f1117;
-      --bg-secondary: #181a20;
-      --text-primary: #c0c8d8;
-      --text-secondary: #a0a8c0;
-      --text-muted: #9ca3b8;
-      --text-heading: #e8ecf4;
-      --accent: #6384ff;
-      --accent-hover: rgba(99, 132, 255, 0.25);
-      --accent-bg: rgba(99, 132, 255, 0.15);
-      --accent-border: rgba(99, 132, 255, 0.3);
-      --nav-bg: rgba(26, 26, 26, 0.85);
-      --nav-border: rgba(255, 255, 255, 0.06);
-      --card-bg: rgba(255, 255, 255, 0.04);
-      --overlay-bg: rgba(0, 0, 0, 0.6);
-      --input-bg: rgba(255, 255, 255, 0.05);
-      --input-border: rgba(255, 255, 255, 0.12);
-
-      /* Motion tokens (impeccable/motion-design) */
-      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-      --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
-      --duration-instant: 150ms;
-      --duration-state: 250ms;
-      --duration-layout: 400ms;
-      --duration-entrance: 600ms;
-    }
-
-    [data-theme="light"] {
-      --bg-primary: #eef0f6;
-      --bg-secondary: #e1e4ec;
-      --text-primary: #23272f;
-      --text-secondary: #4a5060;
-      --text-muted: #6b7280;
-      --text-heading: #1a1d24;
-      --accent: #4a63cc;
-      --accent-hover: rgba(74, 99, 204, 0.18);
-      --accent-bg: rgba(74, 99, 204, 0.10);
-      --accent-border: rgba(74, 99, 204, 0.3);
-      --nav-bg: rgba(238, 240, 246, 0.92);
-      --nav-border: rgba(0, 0, 0, 0.08);
-      --card-bg: rgba(0, 0, 0, 0.03);
-      --overlay-bg: rgba(0, 0, 0, 0.4);
-      --input-bg: rgba(0, 0, 0, 0.04);
-      --input-border: rgba(0, 0, 0, 0.15);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Inter', Arial, Helvetica, sans-serif;
-      color: var(--text-primary);
-      background: var(--bg-primary);
-      transition: background-color var(--duration-state) var(--ease-out-quart), color var(--duration-state) var(--ease-out-quart);
-    }
-
-    /* ── Navigation ── */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 100;
-      background: var(--nav-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--nav-border);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 16px;
-      padding: 10px 24px;
-      transition: background-color var(--duration-state) var(--ease-out-quart), border-color var(--duration-state) var(--ease-out-quart);
-    }
-
-    .nav-brand {
-      display: none;
-      text-decoration: none;
-      color: var(--text-heading);
-      font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .nav-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      padding: 6px 14px;
-      border-radius: 24px;
-      transition: color 0.3s, background 0.3s;
-    }
-
-    nav a:hover,
-    nav a:focus-visible {
-      color: #fff;
-      background: var(--accent-bg);
-    }
-
     /* ── Sections (shared) ── */
     section {
       min-height: 100vh;
@@ -287,6 +171,10 @@
       color: var(--text-muted);
     }
 
+    .text-col p + p {
+      margin-top: 0.85em;
+    }
+
     .timeline-content p a {
       color: var(--accent);
       text-decoration: none;
@@ -308,9 +196,12 @@
       transition: box-shadow var(--duration-state) var(--ease-out-quart), transform var(--duration-state) var(--ease-out-quart);
     }
 
-    .media-col img:hover {
-      transform: scale(1.02);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    /* Hover motion only on devices that really hover (touch fires false hovers on tap) */
+    @media (hover: hover) and (pointer: fine) {
+      .media-col img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      }
     }
 
     /* ── Hero section ── */
@@ -319,14 +210,25 @@
       text-align: center;
       justify-content: center;
       flex-direction: column;
-      background: url('images/IMG_7173.JPG') center 42% / cover no-repeat;
+      /* Optimised copy of images/IMG_7173.JPG (EXIF stripped, WebP) */
+      background: #1b1f27 url('images/optimized/hero-galdhopiggen-2000.webp') center 42% / cover no-repeat;
       min-height: 100vh;
+      min-height: 100svh;
       padding: 0;
+    }
+
+    @media (max-width: 1200px) {
+      #hjem {
+        background-image: url('images/optimized/hero-galdhopiggen-1200.webp');
+      }
+    }
+
+    .js #hjem {
       opacity: 0;
       transition: opacity var(--duration-layout) var(--ease-out-expo);
     }
 
-    #hjem.loaded {
+    .js #hjem.loaded {
       opacity: 1;
     }
 
@@ -495,9 +397,15 @@
       transition: transform var(--duration-state) var(--ease-out-quart), box-shadow var(--duration-state) var(--ease-out-quart);
     }
 
-    .about-sub-gallery .gallery-thumb:hover {
-      transform: scale(1.03);
-      box-shadow: 0 8px 28px rgba(255, 255, 255, 0.12);
+    @media (hover: hover) and (pointer: fine) {
+      .about-sub-gallery .gallery-thumb:hover {
+        transform: scale(1.03);
+        box-shadow: 0 8px 28px rgba(255, 255, 255, 0.12);
+      }
+    }
+
+    .about-sub-gallery .gallery-thumb:active {
+      transform: scale(0.98);
     }
 
     [data-theme="light"] .about-sub-gallery .gallery-thumb {
@@ -533,23 +441,31 @@
     }
 
     /* ── Lightbox ── */
+    /* Native <dialog>: rendered in the top layer, traps focus, closes on Escape */
     .lightbox-overlay {
-      display: none;
       position: fixed;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
-      z-index: 9999;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 0;
+      border: none;
       background: rgba(0, 0, 0, 0.88);
-      align-items: center;
-      justify-content: center;
+      color: #fff;
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
     }
 
-    .lightbox-overlay.active {
+    .lightbox-overlay[open] {
       display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-overlay::backdrop {
+      background: transparent;
     }
 
     .lightbox-close {
@@ -564,11 +480,16 @@
       z-index: 10000;
       line-height: 1;
       padding: 4px 12px;
+      border-radius: 8px;
       transition: opacity var(--duration-state) var(--ease-out-quart);
     }
 
     .lightbox-close:hover {
       opacity: 0.7;
+    }
+
+    .lightbox-close:focus-visible {
+      outline-color: #fff;
     }
 
     .lightbox-content {
@@ -578,8 +499,26 @@
       text-align: center;
     }
 
+    /* Entrance: fade + slight scale from 0.96 (never from 0), ease-out, ~220ms */
+    .lightbox-overlay[open] {
+      animation: lightbox-fade 220ms var(--ease-out-quart);
+    }
+
+    .lightbox-overlay[open] .lightbox-content {
+      animation: lightbox-in 220ms var(--ease-out-quart);
+    }
+
+    @keyframes lightbox-fade {
+      from { opacity: 0; }
+    }
+
+    @keyframes lightbox-in {
+      from { opacity: 0; transform: scale(0.96); }
+    }
+
     .lightbox-content img {
       max-width: 100%;
+      height: auto;
       max-height: 80vh;
       display: block;
       margin: 0 auto;
@@ -787,6 +726,13 @@
       white-space: nowrap;
     }
 
+    /* On narrow screens the single-line sentence would overflow the page */
+    @media (max-width: 900px) {
+      #kontakt p {
+        white-space: normal;
+      }
+    }
+
     #kontakt a:not(.contact-link-btn) {
       color: var(--accent);
       text-decoration: none;
@@ -796,24 +742,9 @@
       text-decoration: underline;
     }
 
-    footer {
-      text-align: center;
-      padding: 24px;
-      font-size: 0.75rem;
-      color: #7a82a0;
-      border-top: 1px solid var(--nav-border);
-    }
 
     /* ── Responsive – laptop ── */
     @media (max-width: 1440px) {
-      nav ul {
-        padding: 8px 16px;
-      }
-
-      nav a {
-        font-size: 0.8rem;
-        padding: 5px 12px;
-      }
 
       #hjem h1 {
         font-size: 2.8rem;
@@ -832,87 +763,9 @@
       }
     }
 
-    /* ── Hamburger menu button ── */
-    .hamburger {
-      display: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 6px;
-      z-index: 110;
-      color: var(--text-secondary);
-      transition: color 0.3s;
-    }
-
-    .hamburger:hover {
-      color: var(--accent);
-    }
-
-    .hamburger svg {
-      width: 24px;
-      height: 24px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .hamburger .icon-close { display: none; }
-    .hamburger.active .icon-open { display: none; }
-    .hamburger.active .icon-close { display: block; }
 
     /* ── Responsive – mobile ── */
     @media (max-width: 768px) {
-      nav {
-        justify-content: space-between;
-        padding: 10px 16px;
-      }
-
-      .nav-brand {
-        display: inline-flex;
-        align-items: center;
-      }
-
-      .hamburger {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      nav ul {
-        position: fixed;
-        top: 52px;
-        left: 0;
-        right: 0;
-        background: var(--bg-primary);
-        border-bottom: 1px solid var(--nav-border);
-        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        padding: 16px 20px 20px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-8px);
-        transition: opacity var(--duration-state) var(--ease-out-quart), transform var(--duration-state) var(--ease-out-quart), visibility var(--duration-state);
-        z-index: 105;
-      }
-
-      nav ul.nav-open {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-      }
-
-      nav a {
-        display: block;
-        width: 100%;
-        text-align: center;
-        font-size: 1rem;
-        padding: 10px 16px;
-      }
-
       section {
         padding: 80px 20px 50px;
       }
@@ -923,7 +776,9 @@
       }
 
       #hjem h1 {
-        font-size: 1.8rem;
+        /* Scales with the viewport so the full name stays on one line
+           without overflowing on small phones */
+        font-size: clamp(1.2rem, 6.6vw, 1.8rem);
         white-space: nowrap;
       }
 
@@ -1097,8 +952,8 @@
 
     /* ── Small phone (≤ 380px) ── */
     @media (max-width: 380px) {
-      #hjem h1 {
-        font-size: 1.4rem;
+      #hjem .hero-content {
+        padding: 0 12px;
       }
 
       #hjem .hero-geolog {
@@ -1112,95 +967,6 @@
       .text-col h2 {
         font-size: 1.5rem;
       }
-    }
-
-    /* ── Language toggle ── */
-    .lang-toggle {
-      background: var(--accent-bg);
-      color: var(--text-secondary);
-      border: 2px solid var(--accent-border);
-      font-family: inherit;
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      padding: 6px 14px;
-      border-radius: 24px;
-      cursor: pointer;
-      transition: color 0.3s, background 0.3s, border-color 0.3s;
-    }
-
-    .lang-toggle:hover,
-    .lang-toggle:focus-visible {
-      color: #fff;
-      background: var(--accent-hover);
-      border-color: #fff;
-    }
-
-    /* ── Theme toggle ── */
-    .theme-toggle {
-      background: var(--accent-bg);
-      color: var(--text-secondary);
-      border: 2px solid var(--accent-border);
-      font-family: inherit;
-      font-size: 0.75rem;
-      padding: 6px 10px;
-      border-radius: 24px;
-      cursor: pointer;
-      transition: color 0.3s, background 0.3s, border-color 0.3s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-
-    .theme-toggle:hover,
-    .theme-toggle:focus-visible {
-      color: #fff;
-      background: var(--accent-hover);
-      border-color: #fff;
-    }
-
-    .theme-toggle svg {
-      width: 16px;
-      height: 16px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    [data-theme="light"] .theme-icon-moon { display: none; }
-    [data-theme="light"] .theme-icon-sun { display: inline !important; }
-
-    /* Sun icon: golden yellow in light mode */
-    [data-theme="light"] .theme-toggle .theme-icon-sun {
-      stroke: #f59e0b;
-      fill: #f59e0b;
-    }
-
-    /* Moon icon: soft silver fill in dark mode */
-    .theme-toggle .theme-icon-moon {
-      fill: #c0c8d8;
-      stroke: #c0c8d8;
-    }
-
-    [data-theme="light"] nav a:hover,
-    [data-theme="light"] nav a:focus-visible {
-      color: var(--accent);
-      background: var(--accent-hover);
-    }
-
-    [data-theme="light"] .theme-toggle:hover,
-    [data-theme="light"] .theme-toggle:focus-visible {
-      color: var(--accent);
-      border-color: #000;
-    }
-
-    [data-theme="light"] .lang-toggle:hover,
-    [data-theme="light"] .lang-toggle:focus-visible {
-      color: var(--accent);
-      border-color: #000;
     }
 
     [data-theme="light"] .contact-link-btn {
@@ -1247,23 +1013,6 @@
       object-fit: cover;
     }
 
-    /* ── Skip-to-content (a11y) ── */
-    .skip-link {
-      position: absolute;
-      left: -9999px;
-      top: 0;
-      z-index: 200;
-      background: #6384ff;
-      color: #fff;
-      padding: 12px 24px;
-      font-size: 1rem;
-      text-decoration: none;
-      border-radius: 0 0 8px 0;
-    }
-
-    .skip-link:focus {
-      left: 0;
-    }
 
     /* ── Contact link buttons ── */
     .contact-links {
@@ -1288,7 +1037,7 @@
       cursor: pointer;
       text-decoration: none;
       letter-spacing: 0.02em;
-      transition: color 0.25s, background 0.25s, border-color 0.25s;
+      transition: color var(--duration-state) ease, background var(--duration-state) ease, border-color var(--duration-state) ease, transform 160ms var(--ease-out-quart);
       position: relative;
     }
 
@@ -1303,55 +1052,16 @@
       transform: scale(0.97);
     }
 
-    nav a:active {
-      transform: scale(0.96);
-    }
-
-    .lang-toggle:active,
-    .theme-toggle:active {
-      transform: scale(0.95);
-    }
 
     .accordion summary:active {
       filter: brightness(1.1);
     }
 
-    .contact-link-btn i {
+    .contact-link-btn .icon {
       flex-shrink: 0;
-      font-size: 1.4em;
-    }
-
-    /* ── Scroll reveal animations ── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity var(--duration-entrance) var(--ease-out-expo), transform var(--duration-entrance) var(--ease-out-expo);
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Staggered reveal: children use --i for cascade delay */
-    .reveal[style*="--i"] {
-      transition-delay: calc(var(--i, 0) * 80ms);
-    }
-
-    /* ── Active navigation state ── */
-    nav a.nav-active {
-      color: var(--accent);
-      background: var(--accent-bg);
-    }
-
-    [data-theme="light"] nav a.nav-active {
-      color: var(--accent);
-      background: var(--accent-hover);
-    }
-
-    /* ── Alternating section backgrounds ── */
-    section:nth-of-type(even) {
-      background: var(--bg-secondary);
+      width: 1.4em;
+      height: 1.4em;
+      fill: currentColor;
     }
 
     .timeline-entry-with-slider {
@@ -1398,34 +1108,7 @@
       stroke-linecap: round;
       stroke-linejoin: round;
     }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
-    /* Suppress transitions during initial page load to prevent glitchy flashes */
-    .no-transition,
-    .no-transition *,
-    .no-transition *::before,
-    .no-transition *::after {
-      transition: none !important;
-    }
   </style>
-  <script>
-    /* Apply saved theme before first paint to avoid a flash of wrong theme */
-    (function () {
-      try {
-        var saved = localStorage.getItem("theme");
-        if (saved === "light") {
-          document.documentElement.setAttribute("data-theme", "light");
-        }
-      } catch (e) { /* ignore */ }
-    })();
-  </script>
 </head>
 <body class="no-transition">
 
@@ -1433,7 +1116,7 @@
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <a href="#hjem" class="nav-brand">🪨 Vetle Lunde</a>
+    <a href="#hjem" class="nav-brand"><span aria-hidden="true">🪨&nbsp;</span>Vetle Lunde</a>
     <ul id="nav-menu">
       <li><a href="#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="#om-meg" data-i18n="nav.about">Om meg</a></li>
@@ -1442,14 +1125,14 @@
       <li><a href="#kontakt" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
     <div class="nav-controls">
-      <button class="lang-toggle" data-i18n="lang.switch" aria-label="Switch language">EN</button>
-      <button class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
-        <svg class="theme-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-        <svg class="theme-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <button type="button" class="lang-toggle" data-i18n="lang.switch" data-i18n-aria-label="lang.aria" aria-label="Bytt språk til engelsk">EN</button>
+      <button type="button" class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
+        <svg class="theme-icon-moon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <svg class="theme-icon-sun" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
-      <button class="hamburger" id="hamburger" aria-label="Meny" aria-expanded="false">
-        <svg class="icon-open" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        <svg class="icon-close" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+      <button type="button" class="hamburger" id="hamburger" aria-label="Meny" data-i18n-aria-label="nav.menu" aria-expanded="false" aria-controls="nav-menu">
+        <svg class="icon-open" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg class="icon-close" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
       </button>
     </div>
   </nav>
@@ -1480,25 +1163,28 @@
         <div class="media-col">
           <figure>
             <img
-              src="images/IMG_8394.jpeg"
+              src="images/optimized/vetle-vinter-600.webp"
               alt="Vetle på fjelltur om vinteren"
               data-i18n-alt="about.img8394.alt"
               loading="lazy"
+              decoding="async"
+              width="600"
+              height="711"
             />
           </figure>
         </div>
       </div>
       <div class="about-sub-gallery">
-        <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
-          <img src="images/IMG_2172.jpeg" alt="Dumdalsgrottene" data-i18n-alt="about.img2172.alt" loading="lazy"/>
+        <figure class="gallery-thumb" tabindex="0" role="button" aria-haspopup="dialog" data-lightbox data-full="images/optimized/dumdalsgrottene-900.webp">
+          <img src="images/optimized/dumdalsgrottene-600.webp" width="600" height="800" decoding="async" alt="Dumdalsgrottene" data-i18n-alt="about.img2172.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption2172">Det er ikke uvanlig å måtte krype gjennom trange marmorganger i Dumdalsgrottene</figcaption>
         </figure>
-        <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
-          <img src="images/IMG_7212.JPG" alt="Brurastakken" data-i18n-alt="about.img7212.alt" loading="lazy"/>
+        <figure class="gallery-thumb" tabindex="0" role="button" aria-haspopup="dialog" data-lightbox data-full="images/optimized/brurastakken-1200.webp">
+          <img src="images/optimized/brurastakken-600.webp" width="600" height="1067" decoding="async" alt="Brurastakken" data-i18n-alt="about.img7212.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption7212">På toppen av Brurastakken kan man se Alden til venstre og Tvibyrge til høyre - to geologiske perler som startet sin reise som oseanisk skorpe i Iapetushavet.</figcaption>
         </figure>
-        <figure class="gallery-thumb" tabindex="0" onclick="openLightbox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox(this);}">
-          <img src="images/IMG_6585.jpeg" alt="Feltarbeid på bre" data-i18n-alt="about.img6585.alt" loading="lazy"/>
+        <figure class="gallery-thumb" tabindex="0" role="button" aria-haspopup="dialog" data-lightbox data-full="images/optimized/feltarbeid-bre-1600.webp">
+          <img src="images/optimized/feltarbeid-bre-600.webp" width="600" height="450" decoding="async" alt="Feltarbeid på bre" data-i18n-alt="about.img6585.alt" loading="lazy"/>
           <figcaption data-i18n="about.caption6585">Hva er vel en manns kraft mot en kjempe som har sovet under isen i tusen år?</figcaption>
         </figure>
       </div>
@@ -1652,7 +1338,7 @@
                       <h4 class="job-title" data-i18n="about.job2.title">ConocoPhillips</h4>
                       <p data-i18n-html="about.job2.text">Som en del av Well Delivery-teamet arbeidet jeg med å utvikle et omfattende bibliotek av re-styrte brønner på Ekofiskfeltet. Arbeidet ble utført i programvaren <a href="https://www.rogii.com/products/starsteer" target="_blank" rel="noopener noreferrer">StarSteer</a> ved å integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Formålet var å forbedre treffsikkerheten for fremtidige brønner og støtte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til å identifisere avvik i strukturelle geomodeller (Petrel) for målrettet modellforbedring på Ekofisk og Eldfisk-feltene.</p>
                     </div>
-                    <a href="conocophillips-2025.html" class="reveal-slider-tab" aria-label="Les mer">
+                    <a href="conocophillips-2025.html" class="reveal-slider-tab" aria-label="Les mer om ConocoPhillips 2025" data-i18n-aria-label="about.job2.more">
                       <svg class="arrow-icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                     </a>
                   </div>
@@ -1665,7 +1351,7 @@
                       <h4 class="job-title" data-i18n="about.job1.title">ConocoPhillips</h4>
                       <p data-i18n="about.job1.text">Arbeidet mitt besto av å hjelpe reservoarkarakteriserings teamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.</p>
                     </div>
-                    <a href="conocophillips-2024.html" class="reveal-slider-tab" aria-label="Les mer">
+                    <a href="conocophillips-2024.html" class="reveal-slider-tab" aria-label="Les mer om ConocoPhillips 2024" data-i18n-aria-label="about.job1.more">
                       <svg class="arrow-icon" aria-hidden="true" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
                     </a>
                   </div>
@@ -1693,12 +1379,13 @@
         <div class="media-col">
           <figure>
             <img
-              src="images/FalkeblikkAS+-+20210531+Utebilder+HVL+Campus+Sogndal+M2P_0854_WEB.webp"
+              src="images/optimized/hvl-campus-sogndal-1000.webp"
               alt="Høgskulen på Vestlandet, Campus Sogndal"
               data-i18n-alt="study.hvl.alt"
               loading="lazy"
-              width="1200"
-              height="900"
+              decoding="async"
+              width="1000"
+              height="666"
             />
             <figcaption data-i18n="study.hvl.caption">Høgskulen på Vestlandet, Campus Sogndal</figcaption>
           </figure>
@@ -1713,16 +1400,16 @@
           <h2 data-i18n="contact.title">Ta kontakt</h2>
           <p data-i18n="contact.text">Har du noen spørsmål eller vil komme i kontakt? Ikke nøl med å sende meg en mail!</p>
           <div class="contact-links">
-            <a href="mailto:vetleoyvind@yahoo.com" class="contact-link-btn" aria-label="Send e-post">
-              <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+            <a href="mailto:vetleoyvind@yahoo.com" class="contact-link-btn" aria-label="Send e-post" data-i18n-aria-label="contact.email.aria">
+              <svg class="icon icon-envelope" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M3.5 4h17A1.5 1.5 0 0 1 22 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5v-13A1.5 1.5 0 0 1 3.5 4Zm.9 2L12 11.45 19.6 6H4.4ZM20 7.6l-7.42 5.33a1 1 0 0 1-1.16 0L4 7.6V18h16V7.6Z"/></svg>
               <span data-i18n="contact.email">E-post</span>
             </a>
-            <a href="https://github.com/Lundev42" target="_blank" rel="noopener noreferrer" class="contact-link-btn" aria-label="GitHub">
-              <i class="fa-brands fa-github" aria-hidden="true"></i>
+            <a href="https://github.com/Lundev42" target="_blank" rel="noopener noreferrer" class="contact-link-btn" aria-label="GitHub" data-i18n-aria-label="contact.github.aria">
+              <svg class="icon icon-github" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
               <span data-i18n="contact.github">GitHub</span>
             </a>
-            <a href="https://www.linkedin.com/in/vetle-lunde-3844753b6/" target="_blank" rel="noopener noreferrer" class="contact-link-btn" aria-label="LinkedIn">
-              <i class="fa-brands fa-linkedin" aria-hidden="true"></i>
+            <a href="https://www.linkedin.com/in/vetle-lunde-3844753b6/" target="_blank" rel="noopener noreferrer" class="contact-link-btn" aria-label="LinkedIn" data-i18n-aria-label="contact.linkedin.aria">
+              <svg class="icon icon-linkedin" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
               <span data-i18n="contact.linkedin">LinkedIn</span>
             </a>
           </div>
@@ -1736,398 +1423,140 @@
     &copy; 2026 Vetle Lunde
   </footer>
 
-  <script>
-    var translations = {
-      nb: {
+  <script type="application/json" id="i18n-data">
+
+    {
+      "nb": {
         "nav.home": "Hjem",
         "nav.about": "Om meg",
         "nav.background": "Bakgrunn",
         "nav.bachelor": "Bacheloroppgave",
         "nav.contact": "Kontakt",
         "nav.aria.label": "Hovednavigasjon",
-        "hero.title": "Vetle \u00d8yvind Larsen Lunde",
+        "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geolog",
-        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">\u2013 Henrik Ibsen</span>",
-        "hero.scroll": "\u2193 Scroll ned for \u00e5 lese mer",
+        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
+        "hero.scroll": "↓ Scroll ned for å lese mer",
         "hero.caption": "På vei opp Galdhøgpiggen får man en fin utsikt over Visdalen, hvor fjellet Hellstuguhøe (2072 moh) markerer seg i midten av bildet.",
         "about.title": "Om meg",
         "about.text": "Hei, mitt navn er Vetle! Jeg er 23 år og kommer fra Stavanger.",
         "about.text2": "Siden barndommen har jeg hatt en stor interesse for geologi. Ønsket om å forstå hvorfor landskapet ser ut slik som det gjør, har vært en viktig drivkraft i min interesse for faget.",
-        "about.img.alt": "Vetle Øyvind Larsen Lunde",
         "about.background.text": "I 2023 startet jeg på den treårige bachelorgraden Geologi og Geofare ved Høgskulen på Vestlandet i Sogndal. Studiet har gitt meg stor kunnskap og lærerike opplevelser gjennom både teoretisk undervisning og feltarbeid/ekskursjoner. Nå bygger jeg videre på kunnskapen jeg har opparbeidet meg ved å skrive en bacheloroppgave som avslutning på studiet.",
-        "about.caption": "Solen g\u00e5r ned, men kartleggingen fortsetter",
-        "about.caption8394": "En vinterdag på fjelltur med utsikt over snøkledde fjell",
-        "about.caption2172": "Det er ikke uvanlig \u00e5 m\u00e5tte krype gjennom trange marmorganger i Dumdalsgrottene",
-        "about.caption7212": "P\u00e5 toppen av Brurastakken kan man se Alden til venstre og Tvibyrge til h\u00f8yre - to geologiske perler som startet sin reise som oseanisk skorpe i Iapetushavet.",
-        "about.caption6585": "Hva er vel en manns kraft mot en kjempe som har sovet under isen i tusen \u00e5r?",
+        "about.caption2172": "Det er ikke uvanlig å måtte krype gjennom trange marmorganger i Dumdalsgrottene",
+        "about.caption7212": "På toppen av Brurastakken kan man se Alden til venstre og Tvibyrge til høyre - to geologiske perler som startet sin reise som oseanisk skorpe i Iapetushavet.",
+        "about.caption6585": "Hva er vel en manns kraft mot en kjempe som har sovet under isen i tusen år?",
         "about.img8394.alt": "Vetle på fjelltur om vinteren",
         "about.img2172.alt": "Dumdalsgrottene",
-        "about.img6585.alt": "Feltarbeid p\u00e5 bre",
+        "about.img6585.alt": "Feltarbeid på bre",
         "about.img7212.alt": "Brurastakken",
-        "about.bilder.label": "Mer",
-        "about.background.intro": "Jeg har jobbet som vaktsoldat ved Akershus festning og hatt to sommerjobber i ConocoPhillips, hvor jeg har jobbet med oljerelatert geologi og geofysikk.",
         "about.job1.title": "ConocoPhillips",
-        "about.job1.text": "Arbeidet mitt besto av \u00e5 hjelpe reservoarkarakteriserings teamet med \u00e5 lage en brukbar biostratigrafisk database. Dette arbeidet st\u00f8tter den geologiske tolkningen etter borekampanjen p\u00e5 gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.",
+        "about.job1.text": "Arbeidet mitt besto av å hjelpe reservoarkarakteriserings teamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.",
         "about.job2.title": "ConocoPhillips",
-        "about.conocophillips.logo.alt": "ConocoPhillips logo",
-        "about.job2.text": "Som en del av Well Delivery-teamet arbeidet jeg med \u00e5 utvikle et omfattende bibliotek av re-styrte br\u00f8nner p\u00e5 Ekofiskfeltet. Arbeidet ble utf\u00f8rt i programvaren <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer</a> ved \u00e5 integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Form\u00e5let var \u00e5 forbedre treffsikkerheten for fremtidige br\u00f8nner og st\u00f8tte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til \u00e5 identifisere avvik i strukturelle geomodeller (Petrel) for m\u00e5lrettet modellforbedring p\u00e5 Ekofisk og Eldfisk-feltene.",
-        "about.job0.title": "Vaktsoldat \u2013 Akershus Festning",
-        "about.job0.text": "Tjenestegjorde som vaktsoldat ved Akershus festning i Oslo. Her jobbet vi med \u00e5 ivareta sikkerhet gjennom d\u00f8gnkontinuerlig vakthold. Hovedoppgavene inkluderer portvakt, streifvakter (patruljering) og flaggpost, samt bistand ved arrangementer. Tjenesten innebar tett kontakt med sivile p\u00e5 en av Oslo's st\u00f8rste turistattraksjoner.",
+        "about.job2.text": "Som en del av Well Delivery-teamet arbeidet jeg med å utvikle et omfattende bibliotek av re-styrte brønner på Ekofiskfeltet. Arbeidet ble utført i programvaren <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer<\/a> ved å integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Formålet var å forbedre treffsikkerheten for fremtidige brønner og støtte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til å identifisere avvik i strukturelle geomodeller (Petrel) for målrettet modellforbedring på Ekofisk og Eldfisk-feltene.",
+        "about.job0.title": "Vaktsoldat – Akershus Festning",
+        "about.job0.text": "Tjenestegjorde som vaktsoldat ved Akershus festning i Oslo. Her jobbet vi med å ivareta sikkerhet gjennom døgnkontinuerlig vakthold. Hovedoppgavene inkluderer portvakt, streifvakter (patruljering) og flaggpost, samt bistand ved arrangementer. Tjenesten innebar tett kontakt med sivile på en av Oslo's største turistattraksjoner.",
         "about.job_ren.title": "Renovasjonen IKS",
-        "about.job_ren.text": "Som en sommerjobb i coronatiden jobbet jeg med avfallsh\u00e5ndtering, b\u00e5de husholdning, elektronisk og annet diverse. Jobben startet tidlig og innebar mye fysisk arbeid, samt samhandling med kollegaer.",
+        "about.job_ren.text": "Som en sommerjobb i coronatiden jobbet jeg med avfallshåndtering, både husholdning, elektronisk og annet diverse. Jobben startet tidlig og innebar mye fysisk arbeid, samt samhandling med kollegaer.",
         "background.title": "Bakgrunn",
-        "background.study.button": "Bsc. Geologi og Geofare",
         "background.study.title": "Faglig bakgrunn",
-        "background.job.button": "Jobberfaring",
         "background.job.title": "Jobberfaring",
-        "study.text": "Jeg studerer Geologi og geofare, Norges fremste bachelorprogram innen geofag, som i b\u00e5de 2022 og 2023 ble k\u00e5ret til landets beste i Studiebarometeret. Studiet utmerker seg med sitt unike fokus p\u00e5 geofare og arealplanlegging, og som student her drar jeg nytte av et l\u00e6ringsmilj\u00f8 i norgestoppen med tett oppf\u00f8lging fra fagmilj\u00f8et. Med min bakgrunn fra dette studiet har jeg opparbeidet meg solid kompetanse p\u00e5 \u00e5 l\u00f8se komplekse geologiske problemstillinger i praksis.",
+        "study.text": "Jeg studerer Geologi og geofare, Norges fremste bachelorprogram innen geofag, som i både 2022 og 2023 ble kåret til landets beste i Studiebarometeret. Studiet utmerker seg med sitt unike fokus på geofare og arealplanlegging, og som student her drar jeg nytte av et læringsmiljø i norgestoppen med tett oppfølging fra fagmiljøet. Med min bakgrunn fra dette studiet har jeg opparbeidet meg solid kompetanse på å løse komplekse geologiske problemstillinger i praksis.",
         "study.hvl.alt": "Høgskulen på Vestlandet, Campus Sogndal",
         "study.hvl.caption": "Høgskulen på Vestlandet, Campus Sogndal",
         "study.accordion.title": "Oppnådd faglig kompetanse",
-        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Emnekode</th><th scope=\"col\">Emnenavn</th><th scope=\"col\">Studiepoeng</th></tr></thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1</th></tr><tr><td>MA414</td><td>Matematikk for naturfag</td><td>10 sp</td></tr><tr><td>GE406</td><td>Geologi grunnkurs</td><td>10 sp</td></tr><tr><td>GE413</td><td>Kartlære og GIS</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2</th></tr><tr><td>FY400</td><td>Innføring i fysikk</td><td>10 sp</td></tr><tr><td>GE408</td><td>Mineralogi og petrografi</td><td>10 sp</td></tr><tr><td>GE436</td><td>Sedimentologi</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3</th></tr><tr><td>GE414</td><td>Strukturgeologi og tektonikk</td><td>10 sp</td></tr><tr><td>GE407</td><td>Anvendt geofysikk</td><td>10 sp</td></tr><tr><td>GE486</td><td>Glasialgeologi</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4</th></tr><tr><td>GE483</td><td>Climate Change</td><td>10 sp</td></tr><tr><td>GE484</td><td>Geofare og skredkartlegging</td><td>10 sp</td></tr><tr><td>GE481</td><td>Ingeniørgeologi, geoteknikk og overvåkning av ustabile fjellsider</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5</th></tr><tr><td>GE482</td><td>Hydrogeologi</td><td>10 sp</td></tr><tr><td>ING202</td><td>Programmering for ingeniører</td><td>5 sp</td></tr><tr><td>ME420</td><td>Statistikk</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6</th></tr><tr><td>GE448</td><td>Snø og snøskred</td><td>10 sp</td></tr><tr><td>ING301</td><td>Datateknologi og videregående programmering for ingeniører</td><td>5 sp</td></tr><tr><td>GE491</td><td>Bacheloroppgave i geologi</td><td>20 sp</td></tr></tbody></table>",
-        "bachelor.title": "Bacheloroppgave",
-        "bachelor.text": "Oppgaven unders\u00f8ker de metasediment\u00e6re bergartene i Gulagruppen og Funnsj\u00f8gruppen i den s\u00f8r\u00f8stlige delen av Trondheimsdekkekomplekset. M\u00e5let er \u00e5 bedre forst\u00e5 forskjellene mellom disse enhetene, siden grensen mellom dem er usikker og d\u00e5rlig kartlagt. Studien er en del av NGUs MER\u00d8-prosjekt, som skal forbedre berggrunnskartene i Tr\u00f8ndelag.",
-        "bachelor.img1.alt": "Bacheloroppgave \u2013 feltarbeid bilde 1",
-        "bachelor.img2.alt": "Bacheloroppgave \u2013 feltarbeid bilde 2",
-        "bachelor.caption1": "Den vakre naturen i Tr\u00f8ndelag",
-        "bachelor.caption2": "Bratte fjellsider",
+        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Emnekode<\/th><th scope=\"col\">Emnenavn<\/th><th scope=\"col\">Studiepoeng<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Matematikk for naturfag<\/td><td>10 sp<\/td><\/tr><tr><td>GE406<\/td><td>Geologi grunnkurs<\/td><td>10 sp<\/td><\/tr><tr><td>GE413<\/td><td>Kartlære og GIS<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Innføring i fysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogi og petrografi<\/td><td>10 sp<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Strukturgeologi og tektonikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE407<\/td><td>Anvendt geofysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE486<\/td><td>Glasialgeologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 sp<\/td><\/tr><tr><td>GE484<\/td><td>Geofare og skredkartlegging<\/td><td>10 sp<\/td><\/tr><tr><td>GE481<\/td><td>Ingeniørgeologi, geoteknikk og overvåkning av ustabile fjellsider<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeologi<\/td><td>10 sp<\/td><\/tr><tr><td>ING202<\/td><td>Programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>ME420<\/td><td>Statistikk<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snø og snøskred<\/td><td>10 sp<\/td><\/tr><tr><td>ING301<\/td><td>Datateknologi og videregående programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>GE491<\/td><td>Bacheloroppgave i geologi<\/td><td>20 sp<\/td><\/tr><\/tbody><\/table>",
         "contact.title": "Ta kontakt",
-        "contact.text": "Har du noen sp\u00f8rsm\u00e5l eller vil komme i kontakt? Ikke n\u00f8l med \u00e5 sende meg en mail!",
+        "contact.text": "Har du noen spørsmål eller vil komme i kontakt? Ikke nøl med å sende meg en mail!",
         "contact.email": "E-post",
         "contact.github": "GitHub",
         "contact.linkedin": "LinkedIn",
-        "footer.text": "Geologi og Geofare",
-        "page.title": "Vetle \u2013 Geologi og Geofare",
+        "page.title": "Vetle – Geologi og Geofare",
         "meta.description": "Portefølje for Vetle Øyvind Larsen Lunde – geologistudent ved Høgskulen på Vestlandet i Sogndal. Geologi og Geofare.",
         "skip.link": "Hopp til hovedinnhold",
         "lang.switch": "EN",
         "theme.toggle.dark": "Bytt til lyst tema",
-        "theme.toggle.light": "Bytt til m\u00f8rkt tema"
+        "theme.toggle.light": "Bytt til mørkt tema",
+        "lang.aria": "Bytt språk til engelsk",
+        "nav.menu": "Meny",
+        "about.job2.more": "Les mer om ConocoPhillips 2025",
+        "about.job1.more": "Les mer om ConocoPhillips 2024",
+        "contact.email.aria": "Send e-post",
+        "contact.github.aria": "GitHub",
+        "contact.linkedin.aria": "LinkedIn",
+        "lightbox.label": "Bildevisning",
+        "lightbox.close": "Lukk"
       },
-      en: {
+      "en": {
         "nav.home": "Home",
         "nav.about": "About me",
         "nav.background": "Background",
         "nav.bachelor": "Bachelor Thesis",
         "nav.contact": "Contact",
         "nav.aria.label": "Main navigation",
-        "hero.title": "Vetle \u00d8yvind Larsen Lunde",
+        "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geologist",
-        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">\u2013 Henrik Ibsen</span>",
-        "hero.scroll": "\u2193 Scroll down to read more",
+        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
+        "hero.scroll": "↓ Scroll down to read more",
         "hero.caption": "On the way up Galdhøpiggen, one gets a nice view over Visdalen, where the mountain Hellstuguhøe (2072 m a.s.l.) stands out in the centre of the image.",
         "about.title": "About me",
-        "about.text": "Hi, my name is Vetle! I\u2019m 23 years old and from Stavanger.",
-        "about.text2": "Since childhood, I\u2019ve had a great interest in geology. The desire to understand why the landscape looks the way it does has been an important driving force in my interest in the subject.",
-        "about.img.alt": "Vetle Øyvind Larsen Lunde",
-        "about.background.text": "In 2023, I started the three-year bachelor\u2019s degree in Geology and Geo-Hazards at the Western Norway University of Applied Sciences in Sogndal. The programme has given me great knowledge and rewarding experiences through both theoretical teaching and fieldwork/excursions. I am now building on the knowledge I have acquired by writing a bachelor\u2019s thesis as the conclusion of my studies.",
-        "about.caption": "The sun sets, but the mapping continues",
-        "about.caption8394": "A winter day hiking with a view over snow-covered mountains",
+        "about.text": "Hi, my name is Vetle! I’m 23 years old and from Stavanger.",
+        "about.text2": "Since childhood, I’ve had a great interest in geology. The desire to understand why the landscape looks the way it does has been an important driving force in my interest in the subject.",
+        "about.background.text": "In 2023, I started the three-year bachelor’s degree in Geology and Geo-Hazards at the Western Norway University of Applied Sciences in Sogndal. The programme has given me great knowledge and rewarding experiences through both theoretical teaching and fieldwork/excursions. I am now building on the knowledge I have acquired by writing a bachelor’s thesis as the conclusion of my studies.",
         "about.caption2172": "It is not uncommon to have to crawl through narrow marble passages in the Dumdals Caves",
-        "about.caption7212": "From the top of Brurastakken you can see Alden to the left and Tvibyrge to the right \u2013 two geological gems that began their journey as oceanic crust in the Iapetus Ocean.",
-        "about.caption6585": "What is a man\u2019s strength against a giant that has slept under the ice for a thousand years?",
+        "about.caption7212": "From the top of Brurastakken you can see Alden to the left and Tvibyrge to the right – two geological gems that began their journey as oceanic crust in the Iapetus Ocean.",
+        "about.caption6585": "What is a man’s strength against a giant that has slept under the ice for a thousand years?",
         "about.img8394.alt": "Vetle on a winter mountain hike",
         "about.img2172.alt": "Dumdals Caves",
         "about.img6585.alt": "Fieldwork on glacier",
         "about.img7212.alt": "Brurastakken",
-        "about.bilder.label": "More",
-        "about.background.intro": "I have worked as a guard soldier at Akershus Fortress and had two summer jobs at ConocoPhillips, where I worked with oil-related geology and geophysics.",
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "My work consisted of helping the reservoir characterisation team to create a usable biostratigraphic database. This work supports the geological interpretation following the drilling campaign on the Tommeliten A gas condensate field, and contributed to the complete model update for 2024/2025. The workflow consisted of data processing in Excel followed by analysis work in Spotfire.",
         "about.job2.title": "ConocoPhillips",
-        "about.conocophillips.logo.alt": "ConocoPhillips logo",
-        "about.job2.text": "As part of the Well Delivery team, I worked on developing a comprehensive library of re-steered wells on the Ekofisk field. The work was carried out in the <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer</a> software by integrating biostratigraphy, image log interpretations and geophysical logs (CPI). The purpose was to improve the accuracy of future wells and support the implementation of real-time operations in 2025. The project involved advanced correlation and analysis of density and resistivity logs, as well as using the output to identify discrepancies in structural geomodels (Petrel) for targeted model improvement on the Ekofisk and Eldfisk fields.",
-        "about.job0.title": "Guard Soldier \u2013 Akershus Fortress",
+        "about.job2.text": "As part of the Well Delivery team, I worked on developing a comprehensive library of re-steered wells on the Ekofisk field. The work was carried out in the <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer<\/a> software by integrating biostratigraphy, image log interpretations and geophysical logs (CPI). The purpose was to improve the accuracy of future wells and support the implementation of real-time operations in 2025. The project involved advanced correlation and analysis of density and resistivity logs, as well as using the output to identify discrepancies in structural geomodels (Petrel) for targeted model improvement on the Ekofisk and Eldfisk fields.",
+        "about.job0.title": "Guard Soldier – Akershus Fortress",
         "about.job0.text": "Served as a guard soldier at Akershus Fortress in Oslo. We worked to maintain security through round-the-clock guard duty. Main tasks included gate guard, patrol rounds and flag post, as well as assistance at events. The service involved close contact with civilians at one of Oslo's largest tourist attractions.",
         "about.job_ren.title": "Renovasjonen IKS",
         "about.job_ren.text": "As a summer job during the COVID period, I worked with waste management, including household, electronic and other miscellaneous waste. The job started early and involved a lot of physical work, as well as collaboration with colleagues.",
         "background.title": "Background",
-        "background.study.button": "Bsc. Geology and Geo-Hazards",
         "background.study.title": "Academic background",
-        "background.job.button": "Work Experience",
         "background.job.title": "Work Experience",
-        "study.text": "I study Geology and Geo-Hazards, Norway\u2019s leading bachelor\u2019s programme in geoscience, which was voted the best in the country in the Studiebarometeret survey in both 2022 and 2023. The programme stands out with its unique focus on geo-hazards and land-use planning, and as a student here I benefit from a top-tier learning environment with close support from the academic staff. With my background from this programme, I have developed solid expertise in solving complex geological problems in practice.",
+        "study.text": "I study Geology and Geo-Hazards, Norway’s leading bachelor’s programme in geoscience, which was voted the best in the country in the Studiebarometeret survey in both 2022 and 2023. The programme stands out with its unique focus on geo-hazards and land-use planning, and as a student here I benefit from a top-tier learning environment with close support from the academic staff. With my background from this programme, I have developed solid expertise in solving complex geological problems in practice.",
         "study.hvl.alt": "Western Norway University of Applied Sciences, Campus Sogndal",
         "study.hvl.caption": "Western Norway University of Applied Sciences, Campus Sogndal",
         "study.accordion.title": "Achieved Academic Competence",
-        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Course Code</th><th scope=\"col\">Course Name</th><th scope=\"col\">Credits</th></tr></thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1</th></tr><tr><td>MA414</td><td>Mathematics for Natural Sciences</td><td>10 ECTS</td></tr><tr><td>GE406</td><td>Basic Geology</td><td>10 ECTS</td></tr><tr><td>GE413</td><td>Cartography and GIS</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2</th></tr><tr><td>FY400</td><td>Introduction to Physics</td><td>10 ECTS</td></tr><tr><td>GE408</td><td>Mineralogy and Petrography</td><td>10 ECTS</td></tr><tr><td>GE436</td><td>Sedimentology</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3</th></tr><tr><td>GE414</td><td>Structural Geology and Tectonics</td><td>10 ECTS</td></tr><tr><td>GE407</td><td>Applied Geophysics</td><td>10 ECTS</td></tr><tr><td>GE486</td><td>Glacial Geology</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4</th></tr><tr><td>GE483</td><td>Climate Change</td><td>10 ECTS</td></tr><tr><td>GE484</td><td>Geohazards and Landslide Mapping</td><td>10 ECTS</td></tr><tr><td>GE481</td><td>Engineering Geology, Geotechnics and Monitoring of Unstable Rock Slopes</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5</th></tr><tr><td>GE482</td><td>Hydrogeology</td><td>10 ECTS</td></tr><tr><td>ING202</td><td>Programming for Engineers</td><td>5 ECTS</td></tr><tr><td>ME420</td><td>Statistics</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6</th></tr><tr><td>GE448</td><td>Snow and Avalanches</td><td>10 ECTS</td></tr><tr><td>ING301</td><td>Data Technology and Advanced Programming for Engineers</td><td>5 ECTS</td></tr><tr><td>GE491</td><td>Bachelor Thesis in Geology</td><td>20 ECTS</td></tr></tbody></table>",
-        "bachelor.title": "Bachelor Thesis",
-        "bachelor.text": "The thesis examines the metasedimentary rocks of the Gula Group and the Funnsj\u00f8 Group in the southeastern part of the Trondheim Nappe Complex. The aim is to better understand the differences between these units, as the boundary between them is uncertain and poorly mapped. The study is part of NGU\u2019s MER\u00d8 project, which aims to improve the bedrock maps of Tr\u00f8ndelag.",
-        "bachelor.img1.alt": "Bachelor thesis \u2013 fieldwork photo 1",
-        "bachelor.img2.alt": "Bachelor thesis \u2013 fieldwork photo 2",
-        "bachelor.caption1": "The beautiful nature of Tr\u00f8ndelag",
-        "bachelor.caption2": "Steep mountain sides",
+        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Course Code<\/th><th scope=\"col\">Course Name<\/th><th scope=\"col\">Credits<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Mathematics for Natural Sciences<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE406<\/td><td>Basic Geology<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE413<\/td><td>Cartography and GIS<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Introduction to Physics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogy and Petrography<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Structural Geology and Tectonics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE407<\/td><td>Applied Geophysics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE486<\/td><td>Glacial Geology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE484<\/td><td>Geohazards and Landslide Mapping<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE481<\/td><td>Engineering Geology, Geotechnics and Monitoring of Unstable Rock Slopes<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeology<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING202<\/td><td>Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>ME420<\/td><td>Statistics<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snow and Avalanches<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING301<\/td><td>Data Technology and Advanced Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>GE491<\/td><td>Bachelor Thesis in Geology<\/td><td>20 ECTS<\/td><\/tr><\/tbody><\/table>",
         "contact.title": "Get in touch",
-        "contact.text": "Do you have any questions or want to get in touch? Don\u2019t hesitate to send me an email!",
+        "contact.text": "Do you have any questions or want to get in touch? Don’t hesitate to send me an email!",
         "contact.email": "Email",
         "contact.github": "GitHub",
         "contact.linkedin": "LinkedIn",
-        "footer.text": "Geology and Geo-Hazards",
-        "page.title": "Vetle \u2013 Geology and Geo-Hazards",
+        "page.title": "Vetle – Geology and Geo-Hazards",
         "meta.description": "Portfolio of Vetle Øyvind Larsen Lunde – geology student at Western Norway University of Applied Sciences in Sogndal. Geology and Geo-Hazards.",
         "skip.link": "Skip to main content",
         "lang.switch": "NO",
         "theme.toggle.dark": "Switch to light mode",
-        "theme.toggle.light": "Switch to dark mode"
-      }
-    };
-
-    function setLanguage(lang) {
-      document.documentElement.lang = lang;
-      try { localStorage.setItem("lang", lang); } catch (e) { /* ignore */ }
-
-      var dict = translations[lang];
-      if (!dict) return;
-
-      document.title = dict["page.title"] || document.title;
-
-      var metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc && dict["meta.description"]) metaDesc.setAttribute("content", dict["meta.description"]);
-
-      var ogTitle = document.querySelector('meta[property="og:title"]');
-      if (ogTitle) ogTitle.setAttribute("content", dict["page.title"] || "");
-
-      var ogDesc = document.querySelector('meta[property="og:description"]');
-      if (ogDesc && dict["meta.description"]) ogDesc.setAttribute("content", dict["meta.description"]);
-
-      var ogLocale = document.querySelector('meta[property="og:locale"]');
-      if (ogLocale) ogLocale.setAttribute("content", lang === "en" ? "en_US" : "nb_NO");
-
-      var ogLocaleAlt = document.querySelector('meta[property="og:locale:alternate"]');
-      if (ogLocaleAlt) ogLocaleAlt.setAttribute("content", lang === "en" ? "nb_NO" : "en_US");
-
-      document.querySelectorAll("[data-i18n]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n");
-        if (dict[key] != null) el.textContent = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-html]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-html");
-        if (dict[key] != null) el.innerHTML = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-alt]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-alt");
-        if (dict[key] != null) el.alt = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-placeholder");
-        if (dict[key] != null) el.placeholder = dict[key];
-      });
-
-      document.querySelectorAll("[data-i18n-aria-label]").forEach(function (el) {
-        var key = el.getAttribute("data-i18n-aria-label");
-        if (dict[key] != null) el.setAttribute("aria-label", dict[key]);
-      });
-    }
-
-    document.querySelector(".lang-toggle").addEventListener("click", function () {
-      var current = document.documentElement.lang === "en" ? "nb" : "en";
-      setLanguage(current);
-    });
-
-    (function () {
-      var saved;
-      try { saved = localStorage.getItem("lang"); } catch (e) { /* ignore */ }
-      if (saved && translations[saved]) {
-        setLanguage(saved);
-      }
-    })();
-
-    /* ── Theme toggle logic ── */
-    (function () {
-      var toggle = document.getElementById("theme-toggle");
-      var htmlEl = document.documentElement;
-      var moonIcon = toggle.querySelector(".theme-icon-moon");
-      var sunIcon = toggle.querySelector(".theme-icon-sun");
-
-      function applyTheme(theme) {
-        htmlEl.setAttribute("data-theme", theme);
-        try { localStorage.setItem("theme", theme); } catch (e) { /* ignore */ }
-
-        var ariaKey;
-        if (theme === "light") {
-          moonIcon.style.display = "none";
-          sunIcon.style.display = "inline";
-          ariaKey = "theme.toggle.light";
-        } else {
-          moonIcon.style.display = "inline";
-          sunIcon.style.display = "none";
-          ariaKey = "theme.toggle.dark";
-        }
-        toggle.setAttribute("data-i18n-aria-label", ariaKey);
-        var dict = translations[htmlEl.lang] || translations["nb"];
-        if (dict[ariaKey] != null) toggle.setAttribute("aria-label", dict[ariaKey]);
-      }
-
-      toggle.addEventListener("click", function () {
-        var current = htmlEl.getAttribute("data-theme") === "light" ? "dark" : "light";
-        applyTheme(current);
-      });
-
-      // Initialize: localStorage > system preference > default (dark)
-      var saved;
-      try { saved = localStorage.getItem("theme"); } catch (e) { /* ignore */ }
-      if (saved === "light" || saved === "dark") {
-        applyTheme(saved);
-      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) {
-        applyTheme("light");
-      } else {
-        applyTheme("dark");
-      }
-    })();
-
-    /* ── Remove no-transition class after theme is applied ── */
-    requestAnimationFrame(function () {
-      document.body.classList.remove('no-transition');
-    });
-
-    /* ── Hero fade-in ── */
-    (function () {
-      var hero = document.getElementById('hjem');
-      if (hero) {
-        requestAnimationFrame(function () {
-          hero.classList.add('loaded');
-        });
-      }
-    })();
-
-    /* ── Scroll reveal ── */
-    (function () {
-      var reveals = document.querySelectorAll('.reveal');
-      if ('IntersectionObserver' in window) {
-        var obs = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
-              obs.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.15 });
-        reveals.forEach(function (el) { obs.observe(el); });
-      } else {
-        reveals.forEach(function (el) { el.classList.add('visible'); });
-      }
-    })();
-
-    /* ── Active nav highlighting ── */
-    (function () {
-      var sections = document.querySelectorAll('section[id]');
-      var navLinks = document.querySelectorAll('nav ul a[href^="#"]');
-      if (!('IntersectionObserver' in window)) return;
-
-      var scrollLocked = false;
-
-      function setActive(id) {
-        navLinks.forEach(function (link) {
-          link.classList.remove('nav-active');
-          if (link.getAttribute('href') === '#' + id) {
-            link.classList.add('nav-active');
-          }
-        });
-      }
-
-      var lastSection = sections[sections.length - 1];
-
-      /* Detection strip occupies 20 %–40 % from the top of the viewport. */
-      var observer = new IntersectionObserver(function (entries) {
-        if (scrollLocked) return;
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            setActive(entry.target.id);
-          }
-        });
-      }, { rootMargin: '-20% 0px -60% 0px' });
-      sections.forEach(function (s) { observer.observe(s); });
-
-      /* When a nav link is clicked, immediately highlight it and suppress
-         the scroll-to-bottom override during the smooth-scroll animation. */
-      navLinks.forEach(function (link) {
-        link.addEventListener('click', function () {
-          var id = link.getAttribute('href').substring(1);
-          setActive(id);
-          scrollLocked = true;
-          setTimeout(function () { scrollLocked = false; }, 800);
-        });
-      });
-
-      /* When scrolled to the bottom of the page, activate the last section
-         even if it is too short to reach the observer's detection zone. */
-      window.addEventListener('scroll', function () {
-        if (!scrollLocked && (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 2)) {
-          setActive(lastSection.id);
-        }
-      });
-    })();
-
-    function openLightbox(thumbEl) {
-      var img = thumbEl.querySelector('img');
-      var caption = thumbEl.querySelector('figcaption');
-      var overlay = document.getElementById('lightbox');
-      document.getElementById('lightbox-img').src = img.src;
-      document.getElementById('lightbox-img').alt = img.alt;
-      document.getElementById('lightbox-caption').textContent = caption.textContent;
-      overlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-      document.querySelector('.lightbox-close').focus();
-    }
-
-    function closeLightbox(e) {
-      if (e.target === document.getElementById('lightbox') || e.target.classList.contains('lightbox-close')) {
-        document.getElementById('lightbox').classList.remove('active');
-        document.body.style.overflow = '';
+        "theme.toggle.light": "Switch to dark mode",
+        "lang.aria": "Switch language to Norwegian",
+        "nav.menu": "Menu",
+        "about.job2.more": "Read more about ConocoPhillips 2025",
+        "about.job1.more": "Read more about ConocoPhillips 2024",
+        "contact.email.aria": "Send email",
+        "contact.github.aria": "GitHub",
+        "contact.linkedin.aria": "LinkedIn",
+        "lightbox.label": "Image viewer",
+        "lightbox.close": "Close"
       }
     }
-
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        var overlay = document.getElementById('lightbox');
-        if (overlay.classList.contains('active')) {
-          overlay.classList.remove('active');
-          document.body.style.overflow = '';
-        }
-      }
-    });
-
-    /* ── Mobile menu toggle ── */
-    (function () {
-      var hamburger = document.getElementById("hamburger");
-      var navMenu = document.getElementById("nav-menu");
-      if (!hamburger || !navMenu) return;
-
-      function toggleMenu(open) {
-        var isOpen = open !== undefined ? open : !navMenu.classList.contains("nav-open");
-        navMenu.classList.toggle("nav-open", isOpen);
-        hamburger.classList.toggle("active", isOpen);
-        hamburger.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      }
-
-      hamburger.addEventListener("click", function () {
-        toggleMenu();
-      });
-
-      navMenu.querySelectorAll("a").forEach(function (link) {
-        link.addEventListener("click", function () {
-          toggleMenu(false);
-        });
-      });
-
-      document.addEventListener("click", function (e) {
-        if (!e.target.closest("nav") && navMenu.classList.contains("nav-open")) {
-          toggleMenu(false);
-        }
-      });
-    })();
   </script>
+  <script src="assets/js/site.js" defer></script>
 
-  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)" role="dialog" aria-modal="true" aria-label="Image viewer">
-    <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Close">&times;</button>
+  <dialog class="lightbox-overlay" id="lightbox" aria-label="Bildevisning" data-i18n-aria-label="lightbox.label">
+    <button type="button" class="lightbox-close" aria-label="Lukk" data-i18n-aria-label="lightbox.close">&times;</button>
     <figure class="lightbox-content">
-      <img id="lightbox-img" src="" alt="" />
+      <img id="lightbox-img" alt="">
       <figcaption id="lightbox-caption"></figcaption>
     </figure>
-  </div>
+  </dialog>
 
 </body>
 </html>
