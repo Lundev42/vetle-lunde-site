@@ -143,21 +143,27 @@ nav {
   transition: background-color var(--duration-state) var(--ease-out-quart), border-color var(--duration-state) var(--ease-out-quart);
 }
 
+/* Home link: a rock emoji instead of a name */
 .nav-brand {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   text-decoration: none;
-  color: var(--text-heading);
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.01em;
-  border-radius: 6px;
-  transition: color var(--duration-state);
+  font-size: 1.45rem;
+  line-height: 1;
+  border-radius: 50%;
+  transition: background-color var(--duration-state), transform 160ms var(--ease-out-quart);
 }
 
 .nav-brand:hover,
 .nav-brand:focus-visible {
-  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.nav-brand:active {
+  transform: scale(0.94);
 }
 
 nav ul {
