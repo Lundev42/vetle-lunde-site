@@ -309,17 +309,8 @@
       color: rgba(255, 255, 255, 0.75);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      text-decoration: none;
       padding: 8px 16px;
-      border-radius: 999px;
-      transition: color var(--duration-state) var(--ease-out-quart), background var(--duration-state) var(--ease-out-quart);
       animation: scroll-bounce 2.4s linear infinite;
-    }
-
-    #hjem .scroll-hint:hover,
-    #hjem .scroll-hint:focus-visible {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.1);
     }
 
     @keyframes scroll-bounce {
@@ -626,12 +617,49 @@
     }
 
     #bakgrunn .text-col {
+      /* Width of the campus photo column and the gap before it. Every block
+         in the section shares the same left column, but only the BSc block
+         actually has the photo beside it. */
+      --bg-media-w: min(38%, 400px);
+      --bg-gap: 48px;
       max-width: 100%;
-      flex: 1 1 55%;
+      flex: 1 1 100%;
+    }
+
+    /* BSc text + campus photo side by side. The photo is sticky inside this
+       grid row only, so it scrolls away once the BSc block ends. */
+    .degree-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--bg-media-w);
+      column-gap: var(--bg-gap);
+      align-items: start;
+    }
+
+    /* Blocks without the photo keep the same text width as the BSc block */
+    .degree-narrow {
+      max-width: calc(100% - var(--bg-media-w) - var(--bg-gap));
+    }
+
+    .degree + .degree,
+    .degree-row + .degree {
+      margin-top: 40px;
+    }
+
+    .text-col h4.degree-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-heading);
+      line-height: 1.3;
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+
+    .accordion-placeholder {
+      margin: 0;
+      color: var(--text-muted);
     }
 
     #bakgrunn .media-col {
-      flex: 0 0 400px;
       position: sticky;
       top: 96px;
     }
@@ -922,9 +950,17 @@
         gap: 16px;
       }
 
-      /* Bakgrunn section image */
+      /* Bakgrunn: stack the BSc text and campus photo */
+      .degree-row {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 24px;
+      }
+
+      .degree-narrow {
+        max-width: none;
+      }
+
       #bakgrunn .media-col {
-        flex: 0 0 auto;
         width: 100%;
         position: static;
       }
@@ -1130,50 +1166,6 @@
     .reveal-slider-tab:hover .arrow-icon {
       transform: translateX(3px);
     }
-
-    /* ── Link to the geology introduction ── */
-    .geo-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 24px;
-      padding: 10px 16px 10px 14px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text-heading);
-      text-decoration: none;
-      background: var(--accent-bg);
-      border: 1px solid var(--accent-border);
-      border-radius: 999px;
-      transition: background var(--duration-state) ease, border-color var(--duration-state) ease, transform 160ms var(--ease-out-quart);
-    }
-
-    .geo-cta svg {
-      width: 16px;
-      height: 16px;
-      fill: none;
-      stroke: var(--accent);
-      stroke-width: 2.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      transition: transform var(--duration-state) var(--ease-out-quart);
-    }
-
-    .geo-cta:hover,
-    .geo-cta:focus-visible {
-      background: var(--accent-hover);
-      border-color: var(--accent);
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .geo-cta:hover svg {
-        transform: translateX(3px);
-      }
-    }
-
-    .geo-cta:active {
-      transform: scale(0.97);
-    }
   </style>
 </head>
 <body class="no-transition">
@@ -1189,7 +1181,6 @@
       <li><a href="#bakgrunn" data-i18n="nav.background">Bakgrunn</a></li>
       <li><a href="bacheloroppgave.html" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
       <li><a href="geologi.html" data-i18n="nav.geology">Geologi</a></li>
-      <li><a href="#kontakt" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
     <div class="nav-controls">
       <button type="button" class="lang-toggle" data-i18n="lang.switch" data-i18n-aria-label="lang.aria" aria-label="Bytt språk til engelsk">EN</button>
@@ -1213,7 +1204,7 @@
         <p class="hero-geolog" data-i18n="hero.geolog">geolog</p>
         <h1 data-i18n="hero.title">Vetle Øyvind Larsen Lunde</h1>
         <p class="subtitle" data-i18n-html="hero.subtitle">Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class="quote-attr">&ndash; Henrik Ibsen</span></p>
-        <a href="#om-meg" class="scroll-hint" data-i18n="hero.scroll">↓ Scroll ned for å lese mer</a>
+        <p class="scroll-hint" data-i18n="hero.scroll">↓ Scroll ned for å lese mer</p>
       </div>
       <div class="hero-caption" data-i18n="hero.caption">På vei opp Galdhøgpiggen får man en fin utsikt over Visdalen, hvor fjellet Hellstuguhøe (2072 moh) markerer seg i midten av bildet.</div>
     </section>
@@ -1226,11 +1217,6 @@
           <p data-i18n="about.text">Hei, mitt navn er Vetle! Jeg er 23 år og kommer fra Stavanger.</p>
           <p data-i18n="about.text2">Siden barndommen har jeg hatt en stor interesse for geologi. Ønsket om å forstå hvorfor landskapet ser ut slik som det gjør, har vært en viktig drivkraft i min interesse for faget.</p>
           <p data-i18n="about.background.text">I 2023 startet jeg på den treårige bachelorgraden Geologi og Geofare ved Høgskulen på Vestlandet i Sogndal. Studiet har gitt meg stor kunnskap og lærerike opplevelser gjennom både teoretisk undervisning og feltarbeid/ekskursjoner. Nå bygger jeg videre på kunnskapen jeg har opparbeidet meg ved å skrive en bacheloroppgave som avslutning på studiet.</p>
-          <a class="geo-cta" href="geologi.html">
-            <span aria-hidden="true">🪨</span>
-            <span data-i18n="about.geo.cta">Ny i geologi? Les en kort innføring</span>
-            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
-          </a>
         </div>
         <div class="media-col">
           <figure>
@@ -1271,6 +1257,11 @@
           <!-- Study subsection -->
           <div class="background-subsection">
             <h3 data-i18n="background.study.title">Faglig bakgrunn</h3>
+
+            <!-- BSc – Sogndal (the campus photo only sits beside this block) -->
+            <div class="degree-row">
+              <div class="degree">
+                <h4 class="degree-title" data-i18n="background.bsc.title">BSc. Geologi og Geofare – Sogndal</h4>
                   <p data-i18n="study.text">Jeg studerer Geologi og geofare, Norges fremste bachelorprogram innen geofag, som i både 2022 og 2023 ble kåret til landets beste i Studiebarometeret. Studiet utmerker seg med sitt unike fokus på geofare og arealplanlegging, og som student her drar jeg nytte av et læringsmiljø i norgestoppen med tett oppfølging fra fagmiljøet. Med min bakgrunn fra dette studiet har jeg opparbeidet meg solid kompetanse på å løse komplekse geologiske problemstillinger i praksis.</p>
                   <details class="accordion">
                 <summary data-i18n="study.accordion.title">Oppnådd faglig kompetanse</summary>
@@ -1396,10 +1387,38 @@
                   </table>
                   </div>
                   </details>
+              </div>
+              <div class="media-col">
+                <figure>
+                  <img
+                    src="images/optimized/hvl-campus-sogndal-1000.webp"
+                    alt="Høgskulen på Vestlandet, Campus Sogndal"
+                    data-i18n-alt="study.hvl.alt"
+                    loading="lazy"
+                    decoding="async"
+                    width="1000"
+                    height="666"
+                  />
+                  <figcaption data-i18n="study.hvl.caption">Høgskulen på Vestlandet, Campus Sogndal</figcaption>
+                </figure>
+              </div>
             </div>
 
+            <!-- MSc – Trondheim -->
+            <div class="degree degree-narrow">
+              <h4 class="degree-title" data-i18n="background.msc.title">MSc. Master i geologi – Trondheim</h4>
+              <p data-i18n="msc.text">Kommer ...</p>
+              <details class="accordion">
+                <summary data-i18n="msc.accordion.title">Oppnådd faglig kompetanse</summary>
+                <div class="accordion-content" data-i18n-html="msc.accordion.content">
+                  <p class="accordion-placeholder">Kommer ...</p>
+                </div>
+              </details>
+            </div>
+          </div>
+
           <!-- Job subsection -->
-          <div class="background-subsection">
+          <div class="background-subsection degree-narrow">
             <h3 data-i18n="background.job.title">Jobberfaring</h3>
               <div class="timeline">
                 <div class="timeline-entry">
@@ -1450,20 +1469,6 @@
             </div>
 
         </div>
-        <div class="media-col">
-          <figure>
-            <img
-              src="images/optimized/hvl-campus-sogndal-1000.webp"
-              alt="Høgskulen på Vestlandet, Campus Sogndal"
-              data-i18n-alt="study.hvl.alt"
-              loading="lazy"
-              decoding="async"
-              width="1000"
-              height="666"
-            />
-            <figcaption data-i18n="study.hvl.caption">Høgskulen på Vestlandet, Campus Sogndal</figcaption>
-          </figure>
-        </div>
       </div>
     </section>
 
@@ -1504,7 +1509,6 @@
         "nav.about": "Om meg",
         "nav.background": "Bakgrunn",
         "nav.bachelor": "Bacheloroppgave",
-        "nav.contact": "Kontakt",
         "nav.aria.label": "Hovednavigasjon",
         "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geolog",
@@ -1536,6 +1540,11 @@
         "study.text": "Jeg studerer Geologi og geofare, Norges fremste bachelorprogram innen geofag, som i både 2022 og 2023 ble kåret til landets beste i Studiebarometeret. Studiet utmerker seg med sitt unike fokus på geofare og arealplanlegging, og som student her drar jeg nytte av et læringsmiljø i norgestoppen med tett oppfølging fra fagmiljøet. Med min bakgrunn fra dette studiet har jeg opparbeidet meg solid kompetanse på å løse komplekse geologiske problemstillinger i praksis.",
         "study.hvl.alt": "Høgskulen på Vestlandet, Campus Sogndal",
         "study.hvl.caption": "Høgskulen på Vestlandet, Campus Sogndal",
+        "background.bsc.title": "BSc. Geologi og Geofare – Sogndal",
+        "background.msc.title": "MSc. Master i geologi – Trondheim",
+        "msc.text": "Kommer ...",
+        "msc.accordion.title": "Oppnådd faglig kompetanse",
+        "msc.accordion.content": "<p class=\"accordion-placeholder\">Kommer ...<\/p>",
         "study.accordion.title": "Oppnådd faglig kompetanse",
         "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Emnekode<\/th><th scope=\"col\">Emnenavn<\/th><th scope=\"col\">Studiepoeng<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Matematikk for naturfag<\/td><td>10 sp<\/td><\/tr><tr><td>GE406<\/td><td>Geologi grunnkurs<\/td><td>10 sp<\/td><\/tr><tr><td>GE413<\/td><td>Kartlære og GIS<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Innføring i fysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogi og petrografi<\/td><td>10 sp<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Strukturgeologi og tektonikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE407<\/td><td>Anvendt geofysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE486<\/td><td>Glasialgeologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 sp<\/td><\/tr><tr><td>GE484<\/td><td>Geofare og skredkartlegging<\/td><td>10 sp<\/td><\/tr><tr><td>GE481<\/td><td>Ingeniørgeologi, geoteknikk og overvåkning av ustabile fjellsider<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeologi<\/td><td>10 sp<\/td><\/tr><tr><td>ING202<\/td><td>Programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>ME420<\/td><td>Statistikk<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snø og snøskred<\/td><td>10 sp<\/td><\/tr><tr><td>ING301<\/td><td>Datateknologi og videregående programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>GE491<\/td><td>Bacheloroppgave i geologi<\/td><td>20 sp<\/td><\/tr><\/tbody><\/table>",
         "contact.title": "Ta kontakt",
@@ -1561,15 +1570,13 @@
         "about.readmore": "Les mer",
         "footer.text": "Geologi og Geofare",
         "nav.brand": "Til forsiden",
-        "nav.geology": "Geologi",
-        "about.geo.cta": "Ny i geologi? Les en kort innføring"
+        "nav.geology": "Geologi"
       },
       "en": {
         "nav.home": "Home",
         "nav.about": "About me",
         "nav.background": "Background",
         "nav.bachelor": "Bachelor Thesis",
-        "nav.contact": "Contact",
         "nav.aria.label": "Main navigation",
         "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geologist",
@@ -1601,6 +1608,11 @@
         "study.text": "I study Geology and Geo-Hazards, Norway’s leading bachelor’s programme in geoscience, which was voted the best in the country in the Studiebarometeret survey in both 2022 and 2023. The programme stands out with its unique focus on geo-hazards and land-use planning, and as a student here I benefit from a top-tier learning environment with close support from the academic staff. With my background from this programme, I have developed solid expertise in solving complex geological problems in practice.",
         "study.hvl.alt": "Western Norway University of Applied Sciences, Campus Sogndal",
         "study.hvl.caption": "Western Norway University of Applied Sciences, Campus Sogndal",
+        "background.bsc.title": "BSc. Geology and Geohazards – Sogndal",
+        "background.msc.title": "MSc. Master in Geology – Trondheim",
+        "msc.text": "Coming soon ...",
+        "msc.accordion.title": "Achieved Academic Competence",
+        "msc.accordion.content": "<p class=\"accordion-placeholder\">Coming soon ...<\/p>",
         "study.accordion.title": "Achieved Academic Competence",
         "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Course Code<\/th><th scope=\"col\">Course Name<\/th><th scope=\"col\">Credits<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Mathematics for Natural Sciences<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE406<\/td><td>Basic Geology<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE413<\/td><td>Cartography and GIS<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Introduction to Physics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogy and Petrography<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Structural Geology and Tectonics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE407<\/td><td>Applied Geophysics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE486<\/td><td>Glacial Geology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE484<\/td><td>Geohazards and Landslide Mapping<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE481<\/td><td>Engineering Geology, Geotechnics and Monitoring of Unstable Rock Slopes<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeology<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING202<\/td><td>Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>ME420<\/td><td>Statistics<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snow and Avalanches<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING301<\/td><td>Data Technology and Advanced Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>GE491<\/td><td>Bachelor Thesis in Geology<\/td><td>20 ECTS<\/td><\/tr><\/tbody><\/table>",
         "contact.title": "Get in touch",
@@ -1626,8 +1638,7 @@
         "about.readmore": "Read more",
         "footer.text": "Geology and Geo-Hazards",
         "nav.brand": "Go to the home page",
-        "nav.geology": "Geology",
-        "about.geo.cta": "New to geology? Read a short introduction"
+        "nav.geology": "Geology"
       }
     }
   </script>

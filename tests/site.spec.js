@@ -465,15 +465,12 @@ test.describe("Navigation active highlighting", () => {
     await expect(bachelorLink).toHaveAttribute("href", "bacheloroppgave.html");
   });
 
-  test("clicking kontakt nav link highlights it", async ({ page }) => {
-    await page.locator('nav a[href="#kontakt"]').click();
-    await page.waitForTimeout(900);
-    const kontaktLink = page.locator('nav a[href="#kontakt"]');
-    await expect(kontaktLink).toHaveClass(/nav-active/);
+  test("there is no Kontakt link in the nav", async ({ page }) => {
+    await expect(page.locator('nav a[href="#kontakt"]')).toHaveCount(0);
   });
 
   test("only one nav link is active at a time", async ({ page }) => {
-    const hrefs = ['#hjem', '#om-meg', '#bakgrunn', '#kontakt'];
+    const hrefs = ['#hjem', '#om-meg', '#bakgrunn'];
     for (const href of hrefs) {
       await page.locator('nav ul a[href="' + href + '"]').click();
       await page.waitForTimeout(900);
@@ -495,7 +492,7 @@ test.describe("Multi-page navigation", () => {
     await expect(page.locator('nav a[data-i18n="nav.home"]')).toHaveAttribute("href", "index.html#hjem");
     await expect(page.locator('nav a[data-i18n="nav.about"]')).toHaveAttribute("href", "index.html#om-meg");
     await expect(page.locator('nav a[data-i18n="nav.background"]')).toHaveAttribute("href", "index.html#bakgrunn");
-    await expect(page.locator('nav a[data-i18n="nav.contact"]')).toHaveAttribute("href", "index.html#kontakt");
+    await expect(page.locator('nav a[data-i18n="nav.contact"]')).toHaveCount(0);
   });
 
   test("bacheloroppgave.html bachelor link points to #bachelor", async ({ page }) => {
@@ -952,5 +949,46 @@ test.describe("Gallery captions always visible (Fix 4)", () => {
     await thumb.hover();
     const caption = thumb.locator("figcaption");
     await expect(caption).toHaveCSS("opacity", "1");
+  });
+});
+
+test.describe("Academic background split into BSc and MSc", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(PAGE_URL);
+  });
+
+  test("shows BSc and MSc headings", async ({ page }) => {
+    await expect(page.locator('[data-i18n="background.bsc.title"]')).toHaveText("BSc. Geologi og Geofare – Sogndal");
+    await expect(page.locator('[data-i18n="background.msc.title"]')).toHaveText("MSc. Master i geologi – Trondheim");
+    await expect(page.locator('[data-i18n="msc.text"]')).toHaveText("Kommer ...");
+  });
+
+  test("BSc course table sits in the BSc block, MSc has its own accordion", async ({ page }) => {
+    await expect(page.locator(".degree-row .course-table")).toHaveCount(1);
+    await expect(page.locator('summary[data-i18n="msc.accordion.title"]')).toHaveText("Oppnådd faglig kompetanse");
+  });
+
+  test("campus photo only sits beside the BSc block", async ({ page }) => {
+    await expect(page.locator('.degree-row img[src*="hvl-campus-sogndal"]')).toHaveCount(1);
+    await expect(page.locator('#bakgrunn img[src*="hvl-campus-sogndal"]')).toHaveCount(1);
+  });
+
+  test("MSc strings switch to English", async ({ page }) => {
+    await page.click(".lang-toggle");
+    await expect(page.locator('[data-i18n="background.bsc.title"]')).toHaveText("BSc. Geology and Geohazards – Sogndal");
+    await expect(page.locator('[data-i18n="background.msc.title"]')).toHaveText("MSc. Master in Geology – Trondheim");
+  });
+});
+
+test.describe("Hero and About cleanup", () => {
+  test("scroll hint is plain text, not a link", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await expect(page.locator("#hjem .scroll-hint")).toBeVisible();
+    await expect(page.locator("#hjem a.scroll-hint")).toHaveCount(0);
+  });
+
+  test("About section has no geology intro button", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await expect(page.locator("#om-meg .geo-cta")).toHaveCount(0);
   });
 });

@@ -116,7 +116,7 @@ test.describe("Mobile navigation", () => {
       await expect(menu).toBeHidden();
       await burger.click();
       await expect(burger).toHaveAttribute("aria-expanded", "true");
-      await expect(menu.locator('a[data-i18n="nav.contact"]')).toBeVisible();
+      await expect(menu.locator('a[data-i18n="nav.home"]')).toBeVisible();
       await page.keyboard.press("Escape");
       await expect(burger).toHaveAttribute("aria-expanded", "false");
       await expect(burger).toBeFocused();
@@ -256,10 +256,10 @@ test.describe("Hero", () => {
 });
 
 test.describe("Geology page", () => {
-  test("is linked from the nav and the About section", async ({ page }) => {
+  test("is linked from the nav", async ({ page }) => {
     await page.goto("/index.html");
     await expect(page.locator('nav a[href="geologi.html"]')).toHaveCount(1);
-    await page.locator(".geo-cta").click();
+    await page.locator('nav a[href="geologi.html"]').first().click();
     await expect(page).toHaveURL(/geologi\.html$/);
     await expect(page.locator("h1")).toHaveText("Hva er geologi?");
   });
