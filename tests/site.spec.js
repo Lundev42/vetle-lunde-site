@@ -938,8 +938,8 @@ test.describe("Academic background split into BSc and MSc", () => {
   });
 
   test("shows BSc and MSc headings", async ({ page }) => {
-    await expect(page.locator('[data-i18n="background.bsc.title"]')).toHaveText("BSc. Geologi og Geofare – Sogndal");
-    await expect(page.locator('[data-i18n="background.msc.title"]')).toHaveText("MSc. Master i geologi – Trondheim");
+    await expect(page.locator('[data-i18n="background.bsc.title"]')).toHaveText("Bachelor i geologi og geofare – Sogndal 2023–2026");
+    await expect(page.locator('[data-i18n="background.msc.title"]')).toHaveText("Master i geologi – Trondheim 2026–2028");
     await expect(page.locator('[data-i18n="msc.text"]')).toHaveText("Kommer ...");
   });
 
@@ -955,8 +955,8 @@ test.describe("Academic background split into BSc and MSc", () => {
 
   test("MSc strings switch to English", async ({ page }) => {
     await page.click(".lang-toggle");
-    await expect(page.locator('[data-i18n="background.bsc.title"]')).toHaveText("BSc. Geology and Geohazards – Sogndal");
-    await expect(page.locator('[data-i18n="background.msc.title"]')).toHaveText("MSc. Master in Geology – Trondheim");
+    await expect(page.locator('[data-i18n="background.bsc.title"]')).toHaveText("Bachelor in Geology and Geohazards – Sogndal 2023–2026");
+    await expect(page.locator('[data-i18n="background.msc.title"]')).toHaveText("Master in Geology – Trondheim 2026–2028");
   });
 });
 
