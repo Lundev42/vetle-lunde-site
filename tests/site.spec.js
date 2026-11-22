@@ -55,29 +55,9 @@ test.describe("Hero section", () => {
     await expect(overlay).toBeVisible();
   });
 
-  test("has a caption describing the hero image", async ({ page }) => {
-    const caption = page.locator("#hjem .hero-caption");
-    await expect(caption).toBeVisible();
-    await expect(caption).toHaveText("På vei opp Galdhøgpiggen får man en fin utsikt over Visdalen, hvor fjellet Hellstuguhøe (2072 moh) markerer seg i midten av bildet.");
-  });
-
-  test("hero caption switches to English", async ({ page }) => {
-    await page.click(".lang-toggle");
-    const caption = page.locator("#hjem .hero-caption");
-    await expect(caption).toHaveText("On the way up Galdhøpiggen, one gets a nice view over Visdalen, where the mountain Hellstuguhøe (2072 m a.s.l.) stands out in the centre of the image.");
-  });
-
-  test("hero caption switches back to Norwegian", async ({ page }) => {
-    await page.click(".lang-toggle");
-    await page.click(".lang-toggle");
-    const caption = page.locator("#hjem .hero-caption");
-    await expect(caption).toHaveText("På vei opp Galdhøgpiggen får man en fin utsikt over Visdalen, hvor fjellet Hellstuguhøe (2072 moh) markerer seg i midten av bildet.");
-  });
-
-  test("hero caption has no border radius", async ({ page }) => {
-    const caption = page.locator("#hjem .hero-caption");
-    const borderRadius = await caption.evaluate((el) => getComputedStyle(el).borderRadius);
-    expect(borderRadius).toBe("0px");
+  test("has no photo caption", async ({ page }) => {
+    await expect(page.locator("#hjem .hero-caption")).toHaveCount(0);
+    await expect(page.locator("#hjem")).not.toContainText("Galdhøgpiggen");
   });
 });
 
@@ -192,13 +172,12 @@ test.describe("About section – content", () => {
     await expect(dates.nth(3)).toHaveText("2020–2022");
   });
 
-  test("timeline markers are visible", async ({ page }) => {
-    const markers = page.locator('#bakgrunn .timeline-marker');
-    await expect(markers).toHaveCount(4);
-    await expect(markers.nth(0)).toBeVisible();
-    await expect(markers.nth(1)).toBeVisible();
-    await expect(markers.nth(2)).toBeVisible();
-    await expect(markers.nth(3)).toBeVisible();
+  test("work experience has four entries, each with a visible date", async ({ page }) => {
+    const entries = page.locator('#bakgrunn .timeline-entry');
+    await expect(entries).toHaveCount(4);
+    for (let i = 0; i < 4; i++) {
+      await expect(entries.nth(i).locator(".timeline-date")).toBeVisible();
+    }
   });
 
   test("job history switches to English", async ({ page }) => {
@@ -260,7 +239,7 @@ test.describe("SEO and accessibility must-haves", () => {
   });
 
   test("has a theme-color meta tag", async ({ page }) => {
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#0f1117");
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#151412");
   });
 
   test("has a skip-to-content link targeting main content", async ({ page }) => {
@@ -524,9 +503,9 @@ test.describe("Accordion component in Bakgrunn section", () => {
   test("nested accordion contains course table with correct courses", async ({ page }) => {
     const nestedSummary = page.locator('summary[data-i18n="study.accordion.title"]');
     await nestedSummary.click();
-    const table = page.locator("#bakgrunn .course-table");
+    const table = page.locator("#bakgrunn .degree-row .course-table");
     await expect(table).toBeVisible();
-    const courseRows = page.locator("#bakgrunn .course-table tbody tr:not(.semester-row)");
+    const courseRows = page.locator("#bakgrunn .degree-row .course-table tbody tr:not(.semester-row)");
     await expect(courseRows).toHaveCount(18);
     await expect(courseRows.first()).toContainText("MA414");
   });
@@ -541,7 +520,7 @@ test.describe("Accordion component in Bakgrunn section", () => {
     await page.click(".lang-toggle");
     const nestedSummary = page.locator('summary[data-i18n="study.accordion.title"]');
     await nestedSummary.click();
-    const firstCourse = page.locator("#bakgrunn .course-table tbody tr:not(.semester-row)").first();
+    const firstCourse = page.locator("#bakgrunn .degree-row .course-table tbody tr:not(.semester-row)").first();
     await expect(firstCourse).toContainText("MA414");
     await expect(firstCourse).toContainText("Mathematics for Natural Sciences");
   });
@@ -865,24 +844,16 @@ test.describe('Motion design (impeccable skill)', function () {
 
 /* ── CSS Fix Tests ── */
 
-test.describe("Profile image dark-mode shadow (Fix 1)", () => {
-  test("dark mode uses light shadow", async ({ page }) => {
-    await page.goto(PAGE_URL);
-    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
-    const figure = page.locator("#om-meg .media-col figure");
-    const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
-    // Dark mode default: light rgba(255,255,255,0.08) shadow
-    expect(shadow).toMatch(/rgba?\(255,\s*255,\s*255/);
-  });
-
-  test("light mode uses dark shadow", async ({ page }) => {
-    await page.goto(PAGE_URL);
-    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"));
-    const figure = page.locator("#om-meg .media-col figure");
-    const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
-    // Light mode: dark rgba(0,0,0,0.25) shadow
-    expect(shadow).toMatch(/rgba?\(0,\s*0,\s*0/);
-  });
+test.describe("Profile image has no glow (editorial redesign)", () => {
+  for (const theme of ["dark", "light"]) {
+    test(`no box shadow in ${theme} mode`, async ({ page }) => {
+      await page.goto(PAGE_URL);
+      await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+      const figure = page.locator("#om-meg .media-col figure");
+      const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
+      expect(shadow).toBe("none");
+    });
+  }
 });
 
 test.describe("Navigation active highlighting in light mode (Fix 2)", () => {
@@ -990,5 +961,55 @@ test.describe("Hero and About cleanup", () => {
   test("About section has no geology intro button", async ({ page }) => {
     await page.goto(PAGE_URL);
     await expect(page.locator("#om-meg .geo-cta")).toHaveCount(0);
+  });
+});
+
+test.describe("Nav highlighting follows the section being read", () => {
+  async function activeHref(page) {
+    await page.waitForTimeout(150);
+    return page.locator("nav ul a.nav-active").getAttribute("href");
+  }
+
+  test("Kontakt section keeps Bakgrunn highlighted", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    expect(await activeHref(page)).toBe("#bakgrunn");
+  });
+
+  test("scrolling back up from the bottom passes through Bakgrunn and Om meg", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await activeHref(page);
+    // Somewhere in the middle of the (tall) Bakgrunn section
+    await page.evaluate(() => {
+      const bg = document.getElementById("bakgrunn");
+      window.scrollTo(0, bg.offsetTop + bg.offsetHeight / 2);
+    });
+    expect(await activeHref(page)).toBe("#bakgrunn");
+    await page.evaluate(() => window.scrollTo(0, document.getElementById("om-meg").offsetTop + 100));
+    expect(await activeHref(page)).toBe("#om-meg");
+    await page.evaluate(() => window.scrollTo(0, 0));
+    expect(await activeHref(page)).toBe("#hjem");
+  });
+});
+
+test.describe("Course tables", () => {
+  test("semester 1 lists Matematikk naturfag", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await expect(page.locator(".degree-row .course-table")).toContainText("Matematikk naturfag");
+    await expect(page.locator(".degree-row .course-table")).not.toContainText("Matematikk for naturfag");
+  });
+
+  test("MSc table lists the semester 1 courses and a pending semester 2", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    const table = page.locator('[data-i18n-html="msc.accordion.content"] .course-table');
+    for (const code of ["TPG4175", "TGB4266", "TGB4265", "TPG4255"]) {
+      await expect(table).toContainText(code);
+    }
+    await expect(table).toContainText("Geomekanikk for CO₂-lagring");
+    await expect(table.locator(".course-pending")).toHaveText("Kommer snart ...");
+    await page.click(".lang-toggle");
+    await expect(table).toContainText("Geomechanics for CO₂ Storage");
+    await expect(table.locator(".course-pending")).toHaveText("Coming soon ...");
   });
 });

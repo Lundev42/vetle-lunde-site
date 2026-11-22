@@ -247,11 +247,11 @@ test.describe("Hero", () => {
     expect(gap).toBeLessThanOrEqual(40);
   });
 
-  test("home link in the nav is a rock symbol with an accessible name", async ({ page }) => {
-    await page.goto("/index.html");
-    const brand = page.locator(".nav-brand");
-    await expect(brand).toHaveText("🪨");
-    await expect(brand).toHaveAttribute("aria-label", "Til forsiden");
+  test("home link in the nav is the name", async ({ page }) => {
+    for (const path of PAGES) {
+      await page.goto(path);
+      await expect(page.locator(".nav-brand"), path).toHaveText("Vetle Lunde");
+    }
   });
 });
 

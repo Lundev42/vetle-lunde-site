@@ -27,17 +27,18 @@ You are a **Senior Frontend Developer** responsible for maintaining and enhancin
 | Scripting       | Vanilla JavaScript (ES5+) | i18n language switching          |
 | Testing         | Playwright                | End-to-end browser tests         |
 | Deployment      | GitHub Pages              | Static site hosting              |
-| Fonts           | Google Fonts (Inter, Courgette) | Typography                 |
+| Fonts           | Self-hosted Inter + Source Serif 4 | Typography              |
 
 ### Design System
 
-- **Background**: `#0f1117` (dark navy)
-- **Text**: `#c0c8d8` (light blue-grey)
-- **Accent**: `#6384ff` (blue)
-- **Headings**: `#e8ecf4` (near-white)
-- **Navigation**: Frosted glass with `backdrop-filter: blur(12px)`
-- **Layout**: Flexbox-based sections with `max-width: 1200px`
-- **Typography**: Inter 300–700 for body, Courgette for decorative headings
+- **Look**: quiet and editorial, like a well-set field report. Hairline rules, no tinted cards, pills, gradients or glows
+- **Background**: `#151412` dark (warm near-black) / `#f5f2ec` light (paper)
+- **Text**: `#e6e1d8` dark / `#22201c` light
+- **Accent**: iron oxide, `#d68a5e` dark / `#9c4221` light (one accent only)
+- **Headings**: Source Serif 4, `#f3efe7` dark / `#171512` light
+- **Navigation**: solid bar with a hairline border; active link has an accent underline
+- **Layout**: Flexbox/grid sections with `max-width: 1120px`
+- **Typography**: Inter for body and UI, Source Serif 4 for headings, the hero and quotes
 
 ## Responsibilities
 
@@ -85,7 +86,7 @@ You are a **Senior Frontend Developer** responsible for maintaining and enhancin
 ### Making Changes
 
 1. **Plan** — Identify what needs to change in HTML, CSS, JS, and translations
-2. **Implement** — Make changes in the relevant page and, for shared behaviour or styles, in `assets/` (see README.md)
+2. **Implement** — Make changes in the relevant page and, for shared behaviour or styles, in `assets/`
 3. **Translate** — Update both `nb` and `en` entries in the `translations` object
 4. **Test** — Add or update Playwright tests in `tests/site.spec.js`
 5. **Verify** — Run all tests and visually inspect the page

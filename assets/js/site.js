@@ -158,11 +158,13 @@
   (function () {
     var sections = document.querySelectorAll("section[id]");
     var navLinks = document.querySelectorAll('nav ul a[href^="#"]');
-    if (!sections.length || !navLinks.length || !("IntersectionObserver" in window)) return;
+    if (!sections.length || !navLinks.length) return;
 
     var scrollLocked = false;
     var unlockTimer = null;
-    var lastSection = sections[sections.length - 1];
+
+    var linkedIds = {};
+    forEach(navLinks, function (link) { linkedIds[link.getAttribute("href").substring(1)] = true; });
 
     function setActive(id) {
       forEach(navLinks, function (link) {
@@ -176,39 +178,48 @@
       });
     }
 
-    // Detection strip occupies 20 %–40 % from the top of the viewport.
-    var observer = new IntersectionObserver(function (entries) {
+    // Work out the current section from scratch on every scroll, in both
+    // directions: it is the last section whose top has passed a line 30 %
+    // down the viewport (or the last section once the page bottom is
+    // reached). A section without its own nav link (Kontakt) keeps the
+    // link of the nearest section above it highlighted.
+    function update() {
       if (scrollLocked) return;
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) setActive(entry.target.id);
-      });
-    }, { rootMargin: "-20% 0px -60% 0px" });
-    forEach(sections, function (s) { observer.observe(s); });
+      var line = window.innerHeight * 0.3;
+      var index = 0;
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i].getBoundingClientRect().top <= line) index = i;
+      }
+      if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 2)) {
+        index = sections.length - 1;
+      }
+      while (index > 0 && !linkedIds[sections[index].id]) index--;
+      setActive(sections[index].id);
+    }
 
-    // Highlight a clicked link immediately and ignore the observer while
-    // the smooth scroll is running.
+    // Highlight a clicked link immediately and pause tracking while the
+    // smooth scroll is running.
     forEach(navLinks, function (link) {
       link.addEventListener("click", function () {
         setActive(link.getAttribute("href").substring(1));
         scrollLocked = true;
         clearTimeout(unlockTimer);
-        unlockTimer = setTimeout(function () { scrollLocked = false; }, 800);
+        unlockTimer = setTimeout(function () { scrollLocked = false; update(); }, 800);
       });
     });
 
-    // At the very bottom, activate the last section even if it is too
-    // short to reach the observer's detection strip.
     var ticking = false;
-    window.addEventListener("scroll", function () {
+    function onScroll() {
       if (ticking) return;
       ticking = true;
       requestAnimationFrame(function () {
         ticking = false;
-        if (!scrollLocked && (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 2)) {
-          setActive(lastSection.id);
-        }
+        update();
       });
-    }, { passive: true });
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    update();
   })();
 
   /* ── Mobile menu ── */
