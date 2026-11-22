@@ -1,6 +1,6 @@
 /*
  * Layout for the secondary pages (Bacheloroppgave, ConocoPhillips 2024/2025,
- * StarSteer, Geologi). Loaded after site.css.
+ * StarSteer). Loaded after site.css.
  */
 
 /* ── Page layout ── */
@@ -10,32 +10,36 @@
 
 .page-section + .page-section {
   padding-top: 96px;
-  border-top: 1px solid var(--rule);
+}
+
+.page-section.alt {
+  background: var(--bg-secondary);
 }
 
 .page-inner {
-  max-width: 1040px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-bottom: 40px;
-  font-size: 0.875rem;
+  gap: 6px;
+  margin-bottom: 32px;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-decoration: none;
+  border-radius: 4px;
   transition: color var(--duration-state) var(--ease-out-quart);
 }
 
 .back-link svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.25;
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: transform var(--duration-state) var(--ease-out-quart);
@@ -43,48 +47,65 @@
 
 .back-link:hover,
 .back-link:focus-visible {
-  color: var(--text-heading);
+  color: var(--accent);
 }
 
 .back-link:hover svg {
-  transform: translateX(-2px);
+  transform: translateX(-3px);
 }
 
-/* Small context line above the page title */
 .section-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--accent);
-  margin-bottom: 12px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 999px;
+  padding: 4px 14px;
+  margin-bottom: 18px;
 }
 
 .page-inner h1,
 .page-inner h2 {
   color: var(--text-heading);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.015em;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .page-inner h1 {
-  font-size: 3rem;
-  margin-bottom: 28px;
+  font-size: 2.75rem;
+  margin-bottom: 24px;
 }
 
 .page-inner h2 {
-  font-size: 2.1rem;
+  font-size: 2rem;
   margin-bottom: 20px;
 }
 
+.page-inner h1::after,
+.page-inner h2::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: 18px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), #a78bfa);
+}
+
 .prose {
-  max-width: 680px;
+  max-width: 720px;
 }
 
 .prose p {
   font-size: 1.05rem;
-  line-height: 1.7;
-  color: var(--text-secondary);
+  line-height: 1.75;
+  color: var(--text-muted);
 }
 
 .prose p + p {
@@ -92,9 +113,7 @@
 }
 
 .prose p.lead {
-  font-family: var(--font-serif);
-  font-size: 1.3rem;
-  line-height: 1.55;
+  font-size: 1.15rem;
   color: var(--text-primary);
 }
 
@@ -110,55 +129,59 @@
   border-bottom-color: var(--accent);
 }
 
-/* ── Key facts: a ruled row of label/value pairs ── */
+/* ── Fact cards ── */
 .info-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  column-gap: 32px;
-  row-gap: 20px;
-  margin-top: 48px;
-  max-width: 900px;
+  gap: 16px;
+  margin-top: 40px;
 }
 
 .info-card {
-  padding-top: 14px;
-  border-top: 1px solid var(--rule-strong);
+  padding: 18px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  transition: background-color var(--duration-state) var(--ease-out-quart);
 }
 
 .card-label {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin-bottom: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
 }
 
 .card-value {
   font-size: 1rem;
   font-weight: 500;
   color: var(--text-heading);
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 /* ── Notice (upcoming content) ── */
 .notice {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   align-items: flex-start;
-  margin-top: 48px;
-  padding: 18px 20px;
-  max-width: 680px;
-  border: 1px solid var(--rule-strong);
+  margin-top: 40px;
+  padding: 20px 22px;
+  max-width: 720px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius);
 }
 
 .notice-icon {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  margin-top: 2px;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
   fill: none;
-  stroke: var(--text-muted);
-  stroke-width: 1.75;
+  stroke: var(--accent);
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -170,7 +193,7 @@
 }
 
 .notice p {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   line-height: 1.6;
   font-size: 0.95rem;
 }
@@ -179,12 +202,16 @@
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
+  gap: 20px;
   margin-top: 56px;
 }
 
 .gallery-grid figure {
   margin: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
 }
 
 .gallery-grid img {
@@ -193,20 +220,25 @@
   aspect-ratio: 3 / 4;
   object-fit: cover;
   display: block;
-  border-radius: var(--radius);
+  transition: transform var(--duration-state) var(--ease-out-quart);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .media-col img:hover {
+    transform: scale(1.02);
+  }
 }
 
 .gallery-grid figcaption {
-  margin-top: 12px;
-  font-size: 0.875rem;
-  line-height: 1.55;
+  font-size: 0.85rem;
   color: var(--text-muted);
+  padding: 12px 16px;
 }
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .page-section {
-    padding: 104px 20px 64px;
+    padding: 96px 20px 64px;
   }
 
   .page-section + .page-section {
@@ -214,19 +246,19 @@
   }
 
   .page-inner h1 {
-    font-size: 2.2rem;
+    font-size: 2rem;
   }
 
   .page-inner h2 {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
   }
 
   .prose p {
-    font-size: 1rem;
+    font-size: 0.98rem;
   }
 
   .prose p.lead {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
   }
 
   .gallery-grid {

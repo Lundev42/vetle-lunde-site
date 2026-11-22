@@ -172,12 +172,13 @@ test.describe("About section – content", () => {
     await expect(dates.nth(3)).toHaveText("2020–2022");
   });
 
-  test("work experience has four entries, each with a visible date", async ({ page }) => {
-    const entries = page.locator('#bakgrunn .timeline-entry');
-    await expect(entries).toHaveCount(4);
-    for (let i = 0; i < 4; i++) {
-      await expect(entries.nth(i).locator(".timeline-date")).toBeVisible();
-    }
+  test("timeline markers are visible", async ({ page }) => {
+    const markers = page.locator('#bakgrunn .timeline-marker');
+    await expect(markers).toHaveCount(4);
+    await expect(markers.nth(0)).toBeVisible();
+    await expect(markers.nth(1)).toBeVisible();
+    await expect(markers.nth(2)).toBeVisible();
+    await expect(markers.nth(3)).toBeVisible();
   });
 
   test("job history switches to English", async ({ page }) => {
@@ -239,7 +240,7 @@ test.describe("SEO and accessibility must-haves", () => {
   });
 
   test("has a theme-color meta tag", async ({ page }) => {
-    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#151412");
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#0f1117");
   });
 
   test("has a skip-to-content link targeting main content", async ({ page }) => {
@@ -844,16 +845,24 @@ test.describe('Motion design (impeccable skill)', function () {
 
 /* ── CSS Fix Tests ── */
 
-test.describe("Profile image has no glow (editorial redesign)", () => {
-  for (const theme of ["dark", "light"]) {
-    test(`no box shadow in ${theme} mode`, async ({ page }) => {
-      await page.goto(PAGE_URL);
-      await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
-      const figure = page.locator("#om-meg .media-col figure");
-      const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
-      expect(shadow).toBe("none");
-    });
-  }
+test.describe("Profile image dark-mode shadow (Fix 1)", () => {
+  test("dark mode uses light shadow", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
+    const figure = page.locator("#om-meg .media-col figure");
+    const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
+    // Dark mode default: light rgba(255,255,255,0.08) shadow
+    expect(shadow).toMatch(/rgba?\(255,\s*255,\s*255/);
+  });
+
+  test("light mode uses dark shadow", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"));
+    const figure = page.locator("#om-meg .media-col figure");
+    const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
+    // Light mode: dark rgba(0,0,0,0.25) shadow
+    expect(shadow).toMatch(/rgba?\(0,\s*0,\s*0/);
+  });
 });
 
 test.describe("Navigation active highlighting in light mode (Fix 2)", () => {

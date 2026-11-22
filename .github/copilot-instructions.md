@@ -15,9 +15,9 @@ This is a **static portfolio website** for Vetle Øyvind Larsen Lunde, showcasin
 Layout in short:
 - Pages are plain HTML files in the repo root. Shared styles are in `assets/css/site.css` (+ `subpage.css`), shared behaviour in `assets/js/site.js`, and the pre-paint theme script in `assets/js/theme-init.js`.
 - Page-specific CSS stays in the page's `<style>` block.
-- Fonts (Inter, Source Serif 4) are self-hosted in `assets/fonts/`; do not add Google Fonts or CDN links.
+- Fonts (Inter, Courgette) are self-hosted in `assets/fonts/`; do not add Google Fonts or CDN links.
 - JavaScript is plain ES5-compatible (no modules, no transpilation, no libraries).
-- Design: quiet editorial look. Colour tokens live in `assets/css/site.css` (warm neutrals, one iron-oxide accent); use hairline rules, not tinted cards, pills, gradients or glows.
+- Dark theme design: background `#0f1117`, text `#c0c8d8`, accent `#6384ff`.
 
 ### Content-Security-Policy
 - Every page has a CSP `<meta>` with `script-src 'self'`: never add inline `<script>` code or inline event handlers (`onclick=` etc.).
