@@ -255,7 +255,7 @@
     #hjem .hero-content {
       position: relative;
       z-index: 2;
-      max-width: 720px;
+      max-width: 960px;
       margin: 0 auto;
       padding: 0 24px;
       transform: translateY(-40px);
@@ -268,6 +268,8 @@
       margin-bottom: 20px;
       line-height: 1.15;
       letter-spacing: -0.02em;
+      /* The full name always stays on one line */
+      white-space: nowrap;
       text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
     }
 
@@ -283,6 +285,9 @@
     #hjem .subtitle {
       font-size: 1.15rem;
       color: #d0d6e4;
+      /* Shrink to the longest line of the poem so the attribution
+         lines up with the end of the verse, not the edge of a wide box */
+      width: fit-content;
       max-width: 520px;
       margin: 0 auto 32px;
       line-height: 1.7;
@@ -1125,6 +1130,50 @@
     .reveal-slider-tab:hover .arrow-icon {
       transform: translateX(3px);
     }
+
+    /* ── Link to the geology introduction ── */
+    .geo-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+      padding: 10px 16px 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-heading);
+      text-decoration: none;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 999px;
+      transition: background var(--duration-state) ease, border-color var(--duration-state) ease, transform 160ms var(--ease-out-quart);
+    }
+
+    .geo-cta svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform var(--duration-state) var(--ease-out-quart);
+    }
+
+    .geo-cta:hover,
+    .geo-cta:focus-visible {
+      background: var(--accent-hover);
+      border-color: var(--accent);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .geo-cta:hover svg {
+        transform: translateX(3px);
+      }
+    }
+
+    .geo-cta:active {
+      transform: scale(0.97);
+    }
   </style>
 </head>
 <body class="no-transition">
@@ -1133,12 +1182,13 @@
 
   <!-- Navigation -->
   <nav aria-label="Hovednavigasjon" data-i18n-aria-label="nav.aria.label">
-    <a href="#hjem" class="nav-brand">Vetle Lunde</a>
+    <a href="#hjem" class="nav-brand" aria-label="Til forsiden" data-i18n-aria-label="nav.brand"><span aria-hidden="true">🪨</span></a>
     <ul id="nav-menu">
       <li><a href="#hjem" data-i18n="nav.home">Hjem</a></li>
       <li><a href="#om-meg" data-i18n="nav.about">Om meg</a></li>
       <li><a href="#bakgrunn" data-i18n="nav.background">Bakgrunn</a></li>
       <li><a href="bacheloroppgave.html" data-i18n="nav.bachelor">Bacheloroppgave</a></li>
+      <li><a href="geologi.html" data-i18n="nav.geology">Geologi</a></li>
       <li><a href="#kontakt" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
     <div class="nav-controls">
@@ -1176,6 +1226,11 @@
           <p data-i18n="about.text">Hei, mitt navn er Vetle! Jeg er 23 år og kommer fra Stavanger.</p>
           <p data-i18n="about.text2">Siden barndommen har jeg hatt en stor interesse for geologi. Ønsket om å forstå hvorfor landskapet ser ut slik som det gjør, har vært en viktig drivkraft i min interesse for faget.</p>
           <p data-i18n="about.background.text">I 2023 startet jeg på den treårige bachelorgraden Geologi og Geofare ved Høgskulen på Vestlandet i Sogndal. Studiet har gitt meg stor kunnskap og lærerike opplevelser gjennom både teoretisk undervisning og feltarbeid/ekskursjoner. Nå bygger jeg videre på kunnskapen jeg har opparbeidet meg ved å skrive en bacheloroppgave som avslutning på studiet.</p>
+          <a class="geo-cta" href="geologi.html">
+            <span aria-hidden="true">🪨</span>
+            <span data-i18n="about.geo.cta">Ny i geologi? Les en kort innføring</span>
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
+          </a>
         </div>
         <div class="media-col">
           <figure>
@@ -1453,7 +1508,7 @@
         "nav.aria.label": "Hovednavigasjon",
         "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geolog",
-        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen</span>",
+        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
         "hero.scroll": "↓ Scroll ned for å lese mer",
         "hero.caption": "På vei opp Galdhøgpiggen får man en fin utsikt over Visdalen, hvor fjellet Hellstuguhøe (2072 moh) markerer seg i midten av bildet.",
         "about.title": "Om meg",
@@ -1470,7 +1525,7 @@
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "Arbeidet mitt besto av å hjelpe reservoarkarakteriserings teamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.",
         "about.job2.title": "ConocoPhillips",
-        "about.job2.text": "Som en del av Well Delivery-teamet arbeidet jeg med å utvikle et omfattende bibliotek av re-styrte brønner på Ekofiskfeltet. Arbeidet ble utført i programvaren <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer</a> ved å integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Formålet var å forbedre treffsikkerheten for fremtidige brønner og støtte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til å identifisere avvik i strukturelle geomodeller (Petrel) for målrettet modellforbedring på Ekofisk og Eldfisk-feltene.",
+        "about.job2.text": "Som en del av Well Delivery-teamet arbeidet jeg med å utvikle et omfattende bibliotek av re-styrte brønner på Ekofiskfeltet. Arbeidet ble utført i programvaren <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer<\/a> ved å integrere biostratigrafi, bildeloggtolkninger og geofysiske logger (CPI). Formålet var å forbedre treffsikkerheten for fremtidige brønner og støtte implementeringen av sanntidsoperasjoner i 2025. Prosjektet innebar avansert korrelasjon og analyse av tetthet og resistivitetslogger, samt bruk av utdata til å identifisere avvik i strukturelle geomodeller (Petrel) for målrettet modellforbedring på Ekofisk og Eldfisk-feltene.",
         "about.job0.title": "Vaktsoldat – Akershus Festning",
         "about.job0.text": "Tjenestegjorde som vaktsoldat ved Akershus festning i Oslo. Her jobbet vi med å ivareta sikkerhet gjennom døgnkontinuerlig vakthold. Hovedoppgavene inkluderer portvakt, streifvakter (patruljering) og flaggpost, samt bistand ved arrangementer. Tjenesten innebar tett kontakt med sivile på en av Oslo's største turistattraksjoner.",
         "about.job_ren.title": "Renovasjonen IKS",
@@ -1482,7 +1537,7 @@
         "study.hvl.alt": "Høgskulen på Vestlandet, Campus Sogndal",
         "study.hvl.caption": "Høgskulen på Vestlandet, Campus Sogndal",
         "study.accordion.title": "Oppnådd faglig kompetanse",
-        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Emnekode</th><th scope=\"col\">Emnenavn</th><th scope=\"col\">Studiepoeng</th></tr></thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1</th></tr><tr><td>MA414</td><td>Matematikk for naturfag</td><td>10 sp</td></tr><tr><td>GE406</td><td>Geologi grunnkurs</td><td>10 sp</td></tr><tr><td>GE413</td><td>Kartlære og GIS</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2</th></tr><tr><td>FY400</td><td>Innføring i fysikk</td><td>10 sp</td></tr><tr><td>GE408</td><td>Mineralogi og petrografi</td><td>10 sp</td></tr><tr><td>GE436</td><td>Sedimentologi</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3</th></tr><tr><td>GE414</td><td>Strukturgeologi og tektonikk</td><td>10 sp</td></tr><tr><td>GE407</td><td>Anvendt geofysikk</td><td>10 sp</td></tr><tr><td>GE486</td><td>Glasialgeologi</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4</th></tr><tr><td>GE483</td><td>Climate Change</td><td>10 sp</td></tr><tr><td>GE484</td><td>Geofare og skredkartlegging</td><td>10 sp</td></tr><tr><td>GE481</td><td>Ingeniørgeologi, geoteknikk og overvåkning av ustabile fjellsider</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5</th></tr><tr><td>GE482</td><td>Hydrogeologi</td><td>10 sp</td></tr><tr><td>ING202</td><td>Programmering for ingeniører</td><td>5 sp</td></tr><tr><td>ME420</td><td>Statistikk</td><td>10 sp</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6</th></tr><tr><td>GE448</td><td>Snø og snøskred</td><td>10 sp</td></tr><tr><td>ING301</td><td>Datateknologi og videregående programmering for ingeniører</td><td>5 sp</td></tr><tr><td>GE491</td><td>Bacheloroppgave i geologi</td><td>20 sp</td></tr></tbody></table>",
+        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Emnekode<\/th><th scope=\"col\">Emnenavn<\/th><th scope=\"col\">Studiepoeng<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Matematikk for naturfag<\/td><td>10 sp<\/td><\/tr><tr><td>GE406<\/td><td>Geologi grunnkurs<\/td><td>10 sp<\/td><\/tr><tr><td>GE413<\/td><td>Kartlære og GIS<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Innføring i fysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogi og petrografi<\/td><td>10 sp<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Strukturgeologi og tektonikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE407<\/td><td>Anvendt geofysikk<\/td><td>10 sp<\/td><\/tr><tr><td>GE486<\/td><td>Glasialgeologi<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 sp<\/td><\/tr><tr><td>GE484<\/td><td>Geofare og skredkartlegging<\/td><td>10 sp<\/td><\/tr><tr><td>GE481<\/td><td>Ingeniørgeologi, geoteknikk og overvåkning av ustabile fjellsider<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeologi<\/td><td>10 sp<\/td><\/tr><tr><td>ING202<\/td><td>Programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>ME420<\/td><td>Statistikk<\/td><td>10 sp<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snø og snøskred<\/td><td>10 sp<\/td><\/tr><tr><td>ING301<\/td><td>Datateknologi og videregående programmering for ingeniører<\/td><td>5 sp<\/td><\/tr><tr><td>GE491<\/td><td>Bacheloroppgave i geologi<\/td><td>20 sp<\/td><\/tr><\/tbody><\/table>",
         "contact.title": "Ta kontakt",
         "contact.text": "Har du noen spørsmål eller vil komme i kontakt? Ikke nøl med å sende meg en mail!",
         "contact.email": "E-post",
@@ -1504,7 +1559,10 @@
         "lightbox.label": "Bildevisning",
         "lightbox.close": "Lukk",
         "about.readmore": "Les mer",
-        "footer.text": "Geologi og Geofare"
+        "footer.text": "Geologi og Geofare",
+        "nav.brand": "Til forsiden",
+        "nav.geology": "Geologi",
+        "about.geo.cta": "Ny i geologi? Les en kort innføring"
       },
       "en": {
         "nav.home": "Home",
@@ -1515,7 +1573,7 @@
         "nav.aria.label": "Main navigation",
         "hero.title": "Vetle Øyvind Larsen Lunde",
         "hero.geolog": "geologist",
-        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen</span>",
+        "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
         "hero.scroll": "↓ Scroll down to read more",
         "hero.caption": "On the way up Galdhøpiggen, one gets a nice view over Visdalen, where the mountain Hellstuguhøe (2072 m a.s.l.) stands out in the centre of the image.",
         "about.title": "About me",
@@ -1532,7 +1590,7 @@
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "My work consisted of helping the reservoir characterisation team to create a usable biostratigraphic database. This work supports the geological interpretation following the drilling campaign on the Tommeliten A gas condensate field, and contributed to the complete model update for 2024/2025. The workflow consisted of data processing in Excel followed by analysis work in Spotfire.",
         "about.job2.title": "ConocoPhillips",
-        "about.job2.text": "As part of the Well Delivery team, I worked on developing a comprehensive library of re-steered wells on the Ekofisk field. The work was carried out in the <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer</a> software by integrating biostratigraphy, image log interpretations and geophysical logs (CPI). The purpose was to improve the accuracy of future wells and support the implementation of real-time operations in 2025. The project involved advanced correlation and analysis of density and resistivity logs, as well as using the output to identify discrepancies in structural geomodels (Petrel) for targeted model improvement on the Ekofisk and Eldfisk fields.",
+        "about.job2.text": "As part of the Well Delivery team, I worked on developing a comprehensive library of re-steered wells on the Ekofisk field. The work was carried out in the <a href=\"https://www.rogii.com/products/starsteer\" target=\"_blank\" rel=\"noopener noreferrer\">StarSteer<\/a> software by integrating biostratigraphy, image log interpretations and geophysical logs (CPI). The purpose was to improve the accuracy of future wells and support the implementation of real-time operations in 2025. The project involved advanced correlation and analysis of density and resistivity logs, as well as using the output to identify discrepancies in structural geomodels (Petrel) for targeted model improvement on the Ekofisk and Eldfisk fields.",
         "about.job0.title": "Guard Soldier – Akershus Fortress",
         "about.job0.text": "Served as a guard soldier at Akershus Fortress in Oslo. We worked to maintain security through round-the-clock guard duty. Main tasks included gate guard, patrol rounds and flag post, as well as assistance at events. The service involved close contact with civilians at one of Oslo's largest tourist attractions.",
         "about.job_ren.title": "Renovasjonen IKS",
@@ -1544,7 +1602,7 @@
         "study.hvl.alt": "Western Norway University of Applied Sciences, Campus Sogndal",
         "study.hvl.caption": "Western Norway University of Applied Sciences, Campus Sogndal",
         "study.accordion.title": "Achieved Academic Competence",
-        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Course Code</th><th scope=\"col\">Course Name</th><th scope=\"col\">Credits</th></tr></thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1</th></tr><tr><td>MA414</td><td>Mathematics for Natural Sciences</td><td>10 ECTS</td></tr><tr><td>GE406</td><td>Basic Geology</td><td>10 ECTS</td></tr><tr><td>GE413</td><td>Cartography and GIS</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2</th></tr><tr><td>FY400</td><td>Introduction to Physics</td><td>10 ECTS</td></tr><tr><td>GE408</td><td>Mineralogy and Petrography</td><td>10 ECTS</td></tr><tr><td>GE436</td><td>Sedimentology</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3</th></tr><tr><td>GE414</td><td>Structural Geology and Tectonics</td><td>10 ECTS</td></tr><tr><td>GE407</td><td>Applied Geophysics</td><td>10 ECTS</td></tr><tr><td>GE486</td><td>Glacial Geology</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4</th></tr><tr><td>GE483</td><td>Climate Change</td><td>10 ECTS</td></tr><tr><td>GE484</td><td>Geohazards and Landslide Mapping</td><td>10 ECTS</td></tr><tr><td>GE481</td><td>Engineering Geology, Geotechnics and Monitoring of Unstable Rock Slopes</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5</th></tr><tr><td>GE482</td><td>Hydrogeology</td><td>10 ECTS</td></tr><tr><td>ING202</td><td>Programming for Engineers</td><td>5 ECTS</td></tr><tr><td>ME420</td><td>Statistics</td><td>10 ECTS</td></tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6</th></tr><tr><td>GE448</td><td>Snow and Avalanches</td><td>10 ECTS</td></tr><tr><td>ING301</td><td>Data Technology and Advanced Programming for Engineers</td><td>5 ECTS</td></tr><tr><td>GE491</td><td>Bachelor Thesis in Geology</td><td>20 ECTS</td></tr></tbody></table>",
+        "study.accordion.content": "<table class=\"course-table\"><thead><tr><th scope=\"col\">Course Code<\/th><th scope=\"col\">Course Name<\/th><th scope=\"col\">Credits<\/th><\/tr><\/thead><tbody><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 1<\/th><\/tr><tr><td>MA414<\/td><td>Mathematics for Natural Sciences<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE406<\/td><td>Basic Geology<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE413<\/td><td>Cartography and GIS<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 2<\/th><\/tr><tr><td>FY400<\/td><td>Introduction to Physics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE408<\/td><td>Mineralogy and Petrography<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE436<\/td><td>Sedimentology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 3<\/th><\/tr><tr><td>GE414<\/td><td>Structural Geology and Tectonics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE407<\/td><td>Applied Geophysics<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE486<\/td><td>Glacial Geology<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 4<\/th><\/tr><tr><td>GE483<\/td><td>Climate Change<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE484<\/td><td>Geohazards and Landslide Mapping<\/td><td>10 ECTS<\/td><\/tr><tr><td>GE481<\/td><td>Engineering Geology, Geotechnics and Monitoring of Unstable Rock Slopes<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 5<\/th><\/tr><tr><td>GE482<\/td><td>Hydrogeology<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING202<\/td><td>Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>ME420<\/td><td>Statistics<\/td><td>10 ECTS<\/td><\/tr><tr class=\"semester-row\"><th colspan=\"3\" scope=\"row\">Semester 6<\/th><\/tr><tr><td>GE448<\/td><td>Snow and Avalanches<\/td><td>10 ECTS<\/td><\/tr><tr><td>ING301<\/td><td>Data Technology and Advanced Programming for Engineers<\/td><td>5 ECTS<\/td><\/tr><tr><td>GE491<\/td><td>Bachelor Thesis in Geology<\/td><td>20 ECTS<\/td><\/tr><\/tbody><\/table>",
         "contact.title": "Get in touch",
         "contact.text": "Do you have any questions or want to get in touch? Don’t hesitate to send me an email!",
         "contact.email": "Email",
@@ -1566,7 +1624,10 @@
         "lightbox.label": "Image viewer",
         "lightbox.close": "Close",
         "about.readmore": "Read more",
-        "footer.text": "Geology and Geo-Hazards"
+        "footer.text": "Geology and Geo-Hazards",
+        "nav.brand": "Go to the home page",
+        "nav.geology": "Geology",
+        "about.geo.cta": "New to geology? Read a short introduction"
       }
     }
   </script>

@@ -9,6 +9,7 @@ const PAGES = [
   "/conocophillips-2024.html",
   "/conocophillips-2025.html",
   "/starsteer.html",
+  "/geologi.html",
 ];
 
 test.describe("Layout: no horizontal overflow", () => {
@@ -213,5 +214,70 @@ test.describe("SEO files", () => {
     await expect(page.locator("body")).toHaveCSS("background-color", /rgb/);
     const home = await page.locator(".home-link").evaluate((a) => a.href);
     expect(home).toMatch(/\/vetle-lunde-site\/index\.html$/);
+  });
+});
+
+test.describe("Hero", () => {
+  for (const width of [320, 390, 768, 1280, 1536, 1920, 2560]) {
+    test(`full name stays on one line at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/index.html");
+      await page.evaluate(() => document.fonts.ready);
+      const { lines, fits } = await page.locator("#hjem h1").evaluate((h) => {
+        const r = h.getBoundingClientRect();
+        const lh = parseFloat(getComputedStyle(h).lineHeight);
+        return { lines: Math.round(r.height / lh), fits: r.left >= 0 && r.right <= document.documentElement.clientWidth };
+      });
+      expect(lines).toBe(1);
+      expect(fits).toBe(true);
+    });
+  }
+
+  test("Ibsen attribution lines up with the end of the poem", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/index.html");
+    const gap = await page.evaluate(() => {
+      const sub = document.querySelector("#hjem .subtitle");
+      const range = document.createRange();
+      range.selectNodeContents(sub);
+      const lineRights = Array.from(range.getClientRects()).map((r) => r.right);
+      const attr = sub.querySelector(".quote-attr").getBoundingClientRect();
+      return Math.round(attr.right - Math.max(...lineRights.filter((x) => x < attr.right - 1), 0));
+    });
+    expect(gap).toBeLessThanOrEqual(40);
+  });
+
+  test("home link in the nav is a rock symbol with an accessible name", async ({ page }) => {
+    await page.goto("/index.html");
+    const brand = page.locator(".nav-brand");
+    await expect(brand).toHaveText("🪨");
+    await expect(brand).toHaveAttribute("aria-label", "Til forsiden");
+  });
+});
+
+test.describe("Geology page", () => {
+  test("is linked from the nav and the About section", async ({ page }) => {
+    await page.goto("/index.html");
+    await expect(page.locator('nav a[href="geologi.html"]')).toHaveCount(1);
+    await page.locator(".geo-cta").click();
+    await expect(page).toHaveURL(/geologi\.html$/);
+    await expect(page.locator("h1")).toHaveText("Hva er geologi?");
+  });
+
+  test("switches to English", async ({ page }) => {
+    await page.goto("/geologi.html");
+    await page.click(".lang-toggle");
+    await expect(page.locator("h1")).toHaveText("What is geology?");
+    await expect(page.locator("#rock-cycle-title")).toContainText("The rock cycle");
+    await expect(page).toHaveTitle("What is geology? – Vetle Lunde");
+  });
+
+  test("every Norwegian string has an English translation", async ({ page }) => {
+    await page.goto("/geologi.html");
+    const missing = await page.evaluate(() => {
+      const t = JSON.parse(document.getElementById("i18n-data").textContent);
+      return Object.keys(t.nb).filter((k) => !(k in t.en)).concat(Object.keys(t.en).filter((k) => !(k in t.nb)));
+    });
+    expect(missing).toEqual([]);
   });
 });

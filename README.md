@@ -8,10 +8,11 @@ Live site: `https://Lundev42.github.io/vetle-lunde-site/`
 
 | Path | What it is |
 | --- | --- |
-| `index.html`, `bacheloroppgave.html`, `conocophillips-2024.html`, `conocophillips-2025.html`, `starsteer.html` | Pages. Page-specific styles live in each page's `<style>` block; Norwegian/English strings live in its `<script type="application/json" id="i18n-data">` block. |
+| `index.html`, `bacheloroppgave.html`, `conocophillips-2024.html`, `conocophillips-2025.html`, `starsteer.html`, `geologi.html` | Pages. Page-specific styles live in each page's `<style>` block; Norwegian/English strings live in its `<script type="application/json" id="i18n-data">` block. |
 | `404.html` | Not-found page served by GitHub Pages. |
 | `assets/css/site.css` | Shared styles: fonts, colour tokens, navigation, toggles, footer, reveal animation. |
 | `assets/css/subpage.css` | Layout for the secondary pages. |
+| `assets/css/geology.css` | Extra styles for the geology introduction (`geologi.html`). |
 | `assets/js/theme-init.js` | Runs in `<head>` before paint: applies saved/system theme. |
 | `assets/js/site.js` | Shared behaviour: translations, theme toggle, mobile menu, nav highlighting, lightbox. |
 | `assets/fonts/` | Self-hosted Inter and Courgette (SIL Open Font License). |

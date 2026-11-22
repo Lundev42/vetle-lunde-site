@@ -1,0 +1,269 @@
+/* Styles for geologi.html (the "What is geology?" introduction). Loaded after subpage.css. */
+
+/* ── Table of contents ── */
+.toc {
+  margin-top: 40px;
+  padding: 18px 22px;
+  max-width: 720px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+}
+
+.toc-title {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.toc ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+
+.toc a {
+  display: inline-block;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  background: var(--accent-bg);
+  border-radius: 999px;
+  transition: background var(--duration-state) ease;
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  background: var(--accent-hover);
+}
+
+/* ── Rock type cards ── */
+.rock-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.rock-card {
+  padding: 22px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+}
+
+.rock-card h3 {
+  font-size: 1.1rem;
+  color: var(--text-heading);
+  margin-bottom: 10px;
+}
+
+.rock-card p {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.rock-card .rock-example {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+/* ── Rock cycle diagram ── */
+.rock-cycle {
+  margin: 48px auto 0;
+  max-width: 640px;
+}
+
+.rock-cycle svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.cycle-node {
+  fill: var(--accent-bg);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.cycle-node-label {
+  fill: var(--text-heading);
+  font-size: 20px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.cycle-edge {
+  stroke: var(--text-secondary);
+  stroke-width: 2;
+}
+
+.cycle-arrowhead {
+  fill: var(--text-secondary);
+}
+
+/* text-anchor is set per label in the SVG (CSS would override it) */
+.cycle-step {
+  fill: var(--text-muted);
+  font-size: 18px;
+  font-style: italic;
+}
+
+.rock-cycle figcaption {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ── Norway timeline ── */
+.geo-timeline {
+  list-style: none;
+  margin-top: 40px;
+  max-width: 760px;
+  border-left: 2px solid var(--accent-border);
+}
+
+.geo-timeline li {
+  position: relative;
+  padding: 0 0 32px 28px;
+}
+
+.geo-timeline li:last-child {
+  padding-bottom: 0;
+}
+
+.geo-timeline li::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  background: var(--bg-secondary);
+}
+
+.geo-time {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.geo-timeline h3 {
+  font-size: 1.15rem;
+  color: var(--text-heading);
+  margin-bottom: 6px;
+}
+
+.geo-timeline p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.geo-timeline a,
+.learn-more a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-border);
+}
+
+.geo-timeline a:hover,
+.learn-more a:hover {
+  border-bottom-color: var(--accent);
+}
+
+/* ── Hazard list ── */
+.hazard-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 32px 0;
+}
+
+.hazard-list li {
+  padding: 18px 20px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.hazard-list strong {
+  display: block;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+/* ── Learn more ── */
+.learn-more {
+  margin-top: 40px;
+  max-width: 720px;
+}
+
+.learn-more h3 {
+  font-size: 1.1rem;
+  color: var(--text-heading);
+  margin-bottom: 12px;
+}
+
+.learn-more ul {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.learn-more li {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.geo-home-link {
+  display: inline-block;
+  margin-top: 36px;
+  padding: 10px 18px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent-strong);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: filter var(--duration-state) ease, transform 160ms var(--ease-out-quart);
+}
+
+.geo-home-link:hover {
+  filter: brightness(1.12);
+}
+
+.geo-home-link:active {
+  transform: scale(0.97);
+}
+
+@media (max-width: 768px) {
+  .hazard-list {
+    grid-template-columns: 1fr;
+  }
+
+  .cycle-node-label {
+    font-size: 24px;
+  }
+
+}
