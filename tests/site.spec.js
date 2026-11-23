@@ -43,67 +43,21 @@ test.describe("Hero section", () => {
     await page.goto(PAGE_URL);
   });
 
-  test("shows the geological mountain scene instead of a photo", async ({ page }) => {
-    const scene = page.locator("#hjem svg.hero-scene");
-    await expect(scene).toBeVisible();
-    await expect(scene).toHaveAttribute("aria-hidden", "true");
-    const bg = await page.locator("#hjem").evaluate((el) => getComputedStyle(el).backgroundImage);
-    expect(bg).toContain("linear-gradient");
-    expect(bg).not.toContain("url(");
+  test("has a background image (optimised copy of IMG_7173.JPG)", async ({ page }) => {
+    const bg = await page.locator("#hjem").evaluate((el) =>
+      getComputedStyle(el).backgroundImage
+    );
+    expect(bg).toContain("hero-galdhopiggen");
   });
 
-  test("scene has layered rocks, an unconformity, snow, a glacier and huts", async ({ page }) => {
-    const scene = page.locator("#hjem svg.hero-scene");
-    for (const layer of ["geo-t0", "geo-t1", "geo-t2", "geo-t3", "geo-t4", "geo-t5"]) {
-      await expect(scene.locator("." + layer)).toHaveCount(1);
-    }
-    await expect(scene.locator(".geo-basement")).toHaveCount(1);
-    expect(await scene.locator(".geo-snow").count()).toBeGreaterThanOrEqual(3);
-    await expect(scene.locator(".geo-ice")).toHaveCount(1);
-    expect(await scene.locator(".hut").count()).toBeGreaterThanOrEqual(2);
-    // The unconformity is drawn as a visible line on top of the old basement rocks
-    const stroke = await scene.locator(".geo-basement").evaluate((el) => getComputedStyle(el).strokeWidth);
-    expect(parseFloat(stroke)).toBeGreaterThan(0);
+  test("has a dark overlay for readability", async ({ page }) => {
+    const overlay = page.locator("#hjem .hero-overlay");
+    await expect(overlay).toBeVisible();
   });
 
   test("has no photo caption", async ({ page }) => {
     await expect(page.locator("#hjem .hero-caption")).toHaveCount(0);
     await expect(page.locator("#hjem")).not.toContainText("Galdhøgpiggen");
-  });
-
-  for (const [width, height] of [[1920, 1080], [1440, 900], [1280, 720], [1024, 768], [768, 1024], [390, 844], [375, 667], [320, 568]]) {
-    test(`text stays above the mountains at ${width}x${height}`, async ({ page }) => {
-      await page.setViewportSize({ width, height });
-      await page.goto(PAGE_URL);
-      // wait for the fade-in (it moves the text 20px) to finish
-      await expect(page.locator("#hjem .hero-content")).toHaveClass(/visible/);
-      await page.waitForTimeout(700);
-      const gap = await page.evaluate(() => {
-        const svg = document.querySelector("#hjem .hero-scene");
-        const box = svg.getBoundingClientRect();
-        // viewBox is 0 0 2400 900 and scaled to the element height;
-        // the highest peak is at y = 285
-        const peakTop = box.bottom - (900 - 285) * (box.height / 900);
-        const text = document.querySelector("#hjem .hero-content").getBoundingClientRect();
-        return peakTop - text.bottom;
-      });
-      expect(gap).toBeGreaterThan(0);
-    });
-  }
-
-  test("scene sits at the bottom of the hero and spans its full width", async ({ page }) => {
-    for (const [width, height] of [[2560, 1080], [1440, 900], [390, 844]]) {
-      await page.setViewportSize({ width, height });
-      await page.goto(PAGE_URL);
-      const r = await page.evaluate(() => {
-        const hero = document.querySelector("#hjem").getBoundingClientRect();
-        const svg = document.querySelector("#hjem .hero-scene").getBoundingClientRect();
-        return { left: svg.left - hero.left, right: hero.right - svg.right, bottom: hero.bottom - svg.bottom };
-      });
-      expect(r.left).toBeLessThanOrEqual(0.5);
-      expect(r.right).toBeLessThanOrEqual(0.5);
-      expect(Math.abs(r.bottom)).toBeLessThanOrEqual(0.5);
-    }
   });
 });
 
@@ -463,13 +417,12 @@ test.describe("Colour theme picker", () => {
     });
   }
 
-  test("each theme gives the mountain scene its own sky", async ({ page }) => {
-    const skies = new Set();
+  test("the front photo stays the same in every colour theme", async ({ page }) => {
     for (const theme of Object.keys(THEMES)) {
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
-      skies.add(await page.locator("#hjem").evaluate((el) => getComputedStyle(el).backgroundImage));
+      const bg = await page.locator("#hjem").evaluate((el) => getComputedStyle(el).backgroundImage);
+      expect(bg).toContain("hero-galdhopiggen");
     }
-    expect(skies.size).toBe(5);
   });
 
   test("saved theme is restored on reload and on other pages", async ({ page }) => {
