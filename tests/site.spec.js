@@ -43,21 +43,67 @@ test.describe("Hero section", () => {
     await page.goto(PAGE_URL);
   });
 
-  test("has a background image (optimised copy of IMG_7173.JPG)", async ({ page }) => {
-    const bg = await page.locator("#hjem").evaluate((el) =>
-      getComputedStyle(el).backgroundImage
-    );
-    expect(bg).toContain("hero-galdhopiggen");
+  test("shows the geological mountain scene instead of a photo", async ({ page }) => {
+    const scene = page.locator("#hjem svg.hero-scene");
+    await expect(scene).toBeVisible();
+    await expect(scene).toHaveAttribute("aria-hidden", "true");
+    const bg = await page.locator("#hjem").evaluate((el) => getComputedStyle(el).backgroundImage);
+    expect(bg).toContain("linear-gradient");
+    expect(bg).not.toContain("url(");
   });
 
-  test("has a dark overlay for readability", async ({ page }) => {
-    const overlay = page.locator("#hjem .hero-overlay");
-    await expect(overlay).toBeVisible();
+  test("scene has layered rocks, an unconformity, snow, a glacier and huts", async ({ page }) => {
+    const scene = page.locator("#hjem svg.hero-scene");
+    for (const layer of ["geo-t0", "geo-t1", "geo-t2", "geo-t3", "geo-t4", "geo-t5"]) {
+      await expect(scene.locator("." + layer)).toHaveCount(1);
+    }
+    await expect(scene.locator(".geo-basement")).toHaveCount(1);
+    expect(await scene.locator(".geo-snow").count()).toBeGreaterThanOrEqual(3);
+    await expect(scene.locator(".geo-ice")).toHaveCount(1);
+    expect(await scene.locator(".hut").count()).toBeGreaterThanOrEqual(2);
+    // The unconformity is drawn as a visible line on top of the old basement rocks
+    const stroke = await scene.locator(".geo-basement").evaluate((el) => getComputedStyle(el).strokeWidth);
+    expect(parseFloat(stroke)).toBeGreaterThan(0);
   });
 
   test("has no photo caption", async ({ page }) => {
     await expect(page.locator("#hjem .hero-caption")).toHaveCount(0);
     await expect(page.locator("#hjem")).not.toContainText("Galdhøgpiggen");
+  });
+
+  for (const [width, height] of [[1920, 1080], [1440, 900], [1280, 720], [1024, 768], [768, 1024], [390, 844], [375, 667], [320, 568]]) {
+    test(`text stays above the mountains at ${width}x${height}`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto(PAGE_URL);
+      // wait for the fade-in (it moves the text 20px) to finish
+      await expect(page.locator("#hjem .hero-content")).toHaveClass(/visible/);
+      await page.waitForTimeout(700);
+      const gap = await page.evaluate(() => {
+        const svg = document.querySelector("#hjem .hero-scene");
+        const box = svg.getBoundingClientRect();
+        // viewBox is 0 0 2400 900 and scaled to the element height;
+        // the highest peak is at y = 285
+        const peakTop = box.bottom - (900 - 285) * (box.height / 900);
+        const text = document.querySelector("#hjem .hero-content").getBoundingClientRect();
+        return peakTop - text.bottom;
+      });
+      expect(gap).toBeGreaterThan(0);
+    });
+  }
+
+  test("scene sits at the bottom of the hero and spans its full width", async ({ page }) => {
+    for (const [width, height] of [[2560, 1080], [1440, 900], [390, 844]]) {
+      await page.setViewportSize({ width, height });
+      await page.goto(PAGE_URL);
+      const r = await page.evaluate(() => {
+        const hero = document.querySelector("#hjem").getBoundingClientRect();
+        const svg = document.querySelector("#hjem .hero-scene").getBoundingClientRect();
+        return { left: svg.left - hero.left, right: hero.right - svg.right, bottom: hero.bottom - svg.bottom };
+      });
+      expect(r.left).toBeLessThanOrEqual(0.5);
+      expect(r.right).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(r.bottom)).toBeLessThanOrEqual(0.5);
+    }
   });
 });
 
@@ -239,7 +285,9 @@ test.describe("SEO and accessibility must-haves", () => {
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", /vetle-lunde-site/);
   });
 
-  test("has a theme-color meta tag", async ({ page }) => {
+  test("has a theme-color meta tag matching the theme", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto(PAGE_URL);
     await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#0f1117");
   });
 
@@ -356,73 +404,129 @@ test.describe("Contact section link buttons", () => {
   });
 });
 
-test.describe("Theme toggle (dark/light mode)", () => {
+test.describe("Colour theme picker", () => {
+  const THEMES = {
+    dark: { mode: "dark", bg: "rgb(15, 17, 23)", meta: "#0f1117" },
+    light: { mode: "light", bg: "rgb(238, 240, 246)", meta: "#eef0f6" },
+    purple: { mode: "dark", bg: "rgb(21, 15, 32)", meta: "#150f20" },
+    green: { mode: "dark", bg: "rgb(12, 22, 18)", meta: "#0c1612" },
+    white: { mode: "light", bg: "rgb(255, 255, 255)", meta: "#ffffff" },
+  };
+
+  async function choose(page, theme) {
+    await page.click("#theme-toggle");
+    await page.click(`.theme-option[data-theme-value="${theme}"]`);
+  }
+
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto(PAGE_URL);
   });
 
-  test("theme toggle button is visible in nav", async ({ page }) => {
+  test("picker button is visible and labelled", async ({ page }) => {
     const toggle = page.locator("#theme-toggle");
     await expect(toggle).toBeVisible();
-    await expect(toggle).toHaveAttribute("aria-label", /./);
+    await expect(toggle).toHaveAttribute("aria-label", "Velg bakgrunnsfarge");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(toggle).toHaveAttribute("aria-controls", "theme-menu");
+    await expect(page.locator("#theme-menu")).toBeHidden();
   });
 
-  test("defaults to dark theme", async ({ page }) => {
+  test("defaults to the dark theme", async ({ page }) => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("html")).toHaveAttribute("data-mode", "dark");
+    await expect(page.locator('.theme-option[data-theme-value="dark"]')).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("shows moon icon in dark mode", async ({ page }) => {
-    const moon = page.locator("#theme-toggle .theme-icon-moon");
-    const sun = page.locator("#theme-toggle .theme-icon-sun");
-    await expect(moon).toBeVisible();
-    await expect(sun).toBeHidden();
+  test("opens a menu with five colours and focuses the current one", async ({ page }) => {
+    await page.click("#theme-toggle");
+    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-expanded", "true");
+    await expect(page.locator("#theme-menu")).toBeVisible();
+    await expect(page.locator(".theme-option")).toHaveText(["Mørk", "Lys", "Lilla", "Grønn", "Hvit"]);
+    await expect(page.locator('.theme-option[data-theme-value="dark"]')).toBeFocused();
   });
 
-  test("clicking toggle switches to light theme", async ({ page }) => {
-    await page.click("#theme-toggle");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  for (const [theme, expected] of Object.entries(THEMES)) {
+    test(`choosing ${theme} applies, marks and saves it`, async ({ page }) => {
+      if (theme === "dark") await choose(page, "white");
+      await choose(page, theme);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
+      await expect(page.locator("html")).toHaveAttribute("data-mode", expected.mode);
+      await expect(page.locator(`.theme-option[data-theme-value="${theme}"]`)).toHaveAttribute("aria-pressed", "true");
+      await expect(page.locator('.theme-option[aria-pressed="true"]')).toHaveCount(1);
+      await expect(page.locator("body")).toHaveCSS("background-color", expected.bg);
+      await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", expected.meta);
+      expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(theme);
+      // menu closes and focus returns to the button
+      await expect(page.locator("#theme-menu")).toBeHidden();
+      await expect(page.locator("#theme-toggle")).toBeFocused();
+    });
+  }
+
+  test("each theme gives the mountain scene its own sky", async ({ page }) => {
+    const skies = new Set();
+    for (const theme of Object.keys(THEMES)) {
+      await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+      skies.add(await page.locator("#hjem").evaluate((el) => getComputedStyle(el).backgroundImage));
+    }
+    expect(skies.size).toBe(5);
   });
 
-  test("shows sun icon in light mode", async ({ page }) => {
-    await page.click("#theme-toggle");
-    const moon = page.locator("#theme-toggle .theme-icon-moon");
-    const sun = page.locator("#theme-toggle .theme-icon-sun");
-    await expect(sun).toBeVisible();
-    await expect(moon).toBeHidden();
-  });
-
-  test("clicking toggle twice returns to dark theme", async ({ page }) => {
-    await page.click("#theme-toggle");
-    await page.click("#theme-toggle");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  });
-
-  test("theme preference persists in localStorage", async ({ page }) => {
-    await page.click("#theme-toggle");
-    const stored = await page.evaluate(() => localStorage.getItem("theme"));
-    expect(stored).toBe("light");
-  });
-
-  test("saved light theme is restored on reload", async ({ page }) => {
-    await page.click("#theme-toggle");
+  test("saved theme is restored on reload and on other pages", async ({ page }) => {
+    await choose(page, "purple");
     await page.reload();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "purple");
+    await page.goto(BACHELOR_URL);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "purple");
+    await expect(page.locator('.theme-option[data-theme-value="purple"]')).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("aria-label updates when switching themes", async ({ page }) => {
-    const toggle = page.locator("#theme-toggle");
-    const darkLabel = await toggle.getAttribute("aria-label");
+  test("Escape closes the menu and returns focus", async ({ page }) => {
     await page.click("#theme-toggle");
-    const lightLabel = await toggle.getAttribute("aria-label");
-    expect(darkLabel).not.toBe(lightLabel);
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#theme-menu")).toBeHidden();
+    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-expanded", "false");
+    await expect(page.locator("#theme-toggle")).toBeFocused();
   });
 
-  test("theme toggle works alongside language toggle", async ({ page }) => {
+  test("arrow keys move between colours and Enter picks one", async ({ page }) => {
+    await page.focus("#theme-toggle");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    await expect(page.locator('.theme-option[data-theme-value="purple"]')).toBeFocused();
+    await page.keyboard.press("ArrowUp");
+    await page.keyboard.press("End");
+    await expect(page.locator('.theme-option[data-theme-value="white"]')).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "white");
+  });
+
+  test("clicking outside closes the menu without changing the theme", async ({ page }) => {
     await page.click("#theme-toggle");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await page.mouse.click(10, 400);
+    await expect(page.locator("#theme-menu")).toBeHidden();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  });
+
+  test("colour names follow the language", async ({ page }) => {
     await page.click(".lang-toggle");
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", "Choose background colour");
+    await expect(page.locator(".theme-option")).toHaveText(["Dark", "Light", "Purple", "Green", "White"]);
+  });
+
+  test("works on the mobile layout", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto(PAGE_URL);
+    await choose(page, "green");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "green");
+    await expect(page.locator("#theme-menu")).toBeHidden();
+  });
+
+  test("an unknown saved value falls back to the system preference", async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem("theme", "neon"));
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto(PAGE_URL);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   });
 
@@ -431,6 +535,7 @@ test.describe("Theme toggle (dark/light mode)", () => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto(PAGE_URL);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
   });
 });
 
@@ -848,7 +953,10 @@ test.describe('Motion design (impeccable skill)', function () {
 test.describe("Profile image dark-mode shadow (Fix 1)", () => {
   test("dark mode uses light shadow", async ({ page }) => {
     await page.goto(PAGE_URL);
-    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
+    await page.evaluate(() => {
+      document.documentElement.setAttribute("data-theme", "dark");
+      document.documentElement.setAttribute("data-mode", "dark");
+    });
     const figure = page.locator("#om-meg .media-col figure");
     const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
     // Dark mode default: light rgba(255,255,255,0.08) shadow
@@ -857,7 +965,10 @@ test.describe("Profile image dark-mode shadow (Fix 1)", () => {
 
   test("light mode uses dark shadow", async ({ page }) => {
     await page.goto(PAGE_URL);
-    await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"));
+    await page.evaluate(() => {
+      document.documentElement.setAttribute("data-theme", "light");
+      document.documentElement.setAttribute("data-mode", "light");
+    });
     const figure = page.locator("#om-meg .media-col figure");
     const shadow = await figure.evaluate(el => getComputedStyle(el).boxShadow);
     // Light mode: dark rgba(0,0,0,0.25) shadow
@@ -873,7 +984,7 @@ test.describe("Navigation active highlighting in light mode (Fix 2)", () => {
         var rules = sheets[s].cssRules;
         for (var r = 0; r < rules.length; r++) {
           if (rules[r].selectorText &&
-              rules[r].selectorText.indexOf('[data-theme="light"] nav a.nav-active') !== -1) {
+              rules[r].selectorText.indexOf('[data-mode="light"] nav a.nav-active') !== -1) {
             return true;
           }
         }

@@ -43,10 +43,19 @@
     </ul>
     <div class="nav-controls">
       <button type="button" class="lang-toggle" data-i18n="lang.switch" data-i18n-aria-label="lang.aria" aria-label="Bytt språk til engelsk">EN</button>
-      <button type="button" class="theme-toggle" id="theme-toggle" data-i18n-aria-label="theme.toggle.dark" aria-label="Bytt til lyst tema">
-        <svg class="theme-icon-moon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-        <svg class="theme-icon-sun" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </button>
+      <div class="theme-picker">
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-expanded="false" aria-controls="theme-menu" aria-label="Velg bakgrunnsfarge" data-i18n-aria-label="theme.choose">
+          <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11.5" r="1.3"/><circle cx="9.7" cy="7.4" r="1.3"/><circle cx="14.3" cy="7.4" r="1.3"/><circle cx="16.8" cy="11" r="1.3"/></svg>
+        </button>
+        <div class="theme-menu" id="theme-menu" role="group" aria-labelledby="theme-menu-title">
+          <span class="theme-menu-title" id="theme-menu-title" data-i18n="theme.menu">Bakgrunnsfarge</span>
+          <button type="button" class="theme-option" data-theme-value="dark" aria-pressed="false"><span class="theme-swatch" aria-hidden="true"></span><span data-i18n="theme.dark">Mørk</span><svg class="theme-check" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="5 12.5 10 17 19 7"/></svg></button>
+          <button type="button" class="theme-option" data-theme-value="light" aria-pressed="false"><span class="theme-swatch" aria-hidden="true"></span><span data-i18n="theme.light">Lys</span><svg class="theme-check" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="5 12.5 10 17 19 7"/></svg></button>
+          <button type="button" class="theme-option" data-theme-value="purple" aria-pressed="false"><span class="theme-swatch" aria-hidden="true"></span><span data-i18n="theme.purple">Lilla</span><svg class="theme-check" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="5 12.5 10 17 19 7"/></svg></button>
+          <button type="button" class="theme-option" data-theme-value="green" aria-pressed="false"><span class="theme-swatch" aria-hidden="true"></span><span data-i18n="theme.green">Grønn</span><svg class="theme-check" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="5 12.5 10 17 19 7"/></svg></button>
+          <button type="button" class="theme-option" data-theme-value="white" aria-pressed="false"><span class="theme-swatch" aria-hidden="true"></span><span data-i18n="theme.white">Hvit</span><svg class="theme-check" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><polyline points="5 12.5 10 17 19 7"/></svg></button>
+        </div>
+      </div>
       <button type="button" class="hamburger" id="hamburger" aria-label="Meny" data-i18n-aria-label="nav.menu" aria-expanded="false" aria-controls="nav-menu">
         <svg class="icon-open" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         <svg class="icon-close" aria-hidden="true" focusable="false" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
@@ -126,8 +135,13 @@
         "meta.description": "StarSteer – programvare for retningsboring brukt av Vetle Lunde ved ConocoPhillips på Ekofiskfeltet.",
         "skip.link": "Hopp til hovedinnhold",
         "lang.switch": "EN",
-        "theme.toggle.dark": "Bytt til lyst tema",
-        "theme.toggle.light": "Bytt til mørkt tema",
+        "theme.choose": "Velg bakgrunnsfarge",
+        "theme.menu": "Bakgrunnsfarge",
+        "theme.dark": "Mørk",
+        "theme.light": "Lys",
+        "theme.purple": "Lilla",
+        "theme.green": "Grønn",
+        "theme.white": "Hvit",
         "lang.aria": "Bytt språk til engelsk",
         "nav.menu": "Meny",
         "footer.text": "Geologi og Geofare",
@@ -159,8 +173,13 @@
         "meta.description": "StarSteer – directional drilling software used by Vetle Lunde at ConocoPhillips on the Ekofisk field.",
         "skip.link": "Skip to main content",
         "lang.switch": "NO",
-        "theme.toggle.dark": "Switch to light mode",
-        "theme.toggle.light": "Switch to dark mode",
+        "theme.choose": "Choose background colour",
+        "theme.menu": "Background colour",
+        "theme.dark": "Dark",
+        "theme.light": "Light",
+        "theme.purple": "Purple",
+        "theme.green": "Green",
+        "theme.white": "White",
         "lang.aria": "Switch language to Norwegian",
         "nav.menu": "Menu",
         "footer.text": "Geology and Geo-Hazards",

@@ -34,6 +34,7 @@
   --text-heading: #e8ecf4;
   --accent: #6384ff;
   --accent-strong: #3b54c7;
+  --accent-2: #a78bfa;
   --accent-hover: rgba(99, 132, 255, 0.25);
   --accent-bg: rgba(99, 132, 255, 0.15);
   --accent-border: rgba(99, 132, 255, 0.3);
@@ -81,6 +82,72 @@
   --input-bg: rgba(0, 0, 0, 0.04);
   --input-border: rgba(0, 0, 0, 0.15);
   --focus-ring: #3b54c7;
+}
+
+[data-theme="white"] {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f7;
+  --text-primary: #1f2329;
+  --text-secondary: #434956;
+  --text-muted: #4f5563;
+  --text-heading: #111418;
+  --accent: #3b54c7;
+  --accent-strong: #2f45a8;
+  --accent-2: #7c6cf0;
+  --accent-hover: rgba(59, 84, 199, 0.14);
+  --accent-bg: rgba(59, 84, 199, 0.07);
+  --accent-border: rgba(59, 84, 199, 0.28);
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --nav-border: rgba(0, 0, 0, 0.09);
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.1);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --input-bg: rgba(0, 0, 0, 0.03);
+  --input-border: rgba(0, 0, 0, 0.15);
+  --focus-ring: #2f45a8;
+}
+
+[data-theme="purple"] {
+  color-scheme: dark;
+  --bg-primary: #150f20;
+  --bg-secondary: #1e162d;
+  --text-primary: #d3c9e3;
+  --text-secondary: #b6a8cc;
+  --text-muted: #a99cc0;
+  --text-heading: #f1eaff;
+  --accent: #b48cff;
+  --accent-strong: #7448d1;
+  --accent-2: #f39ad5;
+  --accent-hover: rgba(180, 140, 255, 0.25);
+  --accent-bg: rgba(180, 140, 255, 0.14);
+  --accent-border: rgba(180, 140, 255, 0.32);
+  --nav-bg: rgba(21, 15, 32, 0.8);
+  --nav-border: rgba(255, 255, 255, 0.07);
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.09);
+  --focus-ring: #cbb0ff;
+}
+
+[data-theme="green"] {
+  color-scheme: dark;
+  --bg-primary: #0c1612;
+  --bg-secondary: #13211b;
+  --text-primary: #c6d9ce;
+  --text-secondary: #a5c0b1;
+  --text-muted: #98b3a5;
+  --text-heading: #e7f4ec;
+  --accent: #4fcf8a;
+  --accent-strong: #1f7a52;
+  --accent-2: #b5e36b;
+  --accent-hover: rgba(79, 207, 138, 0.22);
+  --accent-bg: rgba(79, 207, 138, 0.13);
+  --accent-border: rgba(79, 207, 138, 0.3);
+  --nav-bg: rgba(12, 22, 18, 0.8);
+  --nav-border: rgba(255, 255, 255, 0.07);
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --focus-ring: #7fe3ad;
 }
 
 /* ── Reset & base ── */
@@ -209,13 +276,13 @@ nav a.nav-active {
   background: var(--accent-bg);
 }
 
-[data-theme="light"] nav a.nav-active {
+[data-mode="light"] nav a.nav-active {
   color: var(--accent);
   background: var(--accent-hover);
 }
 
-[data-theme="light"] nav a:hover,
-[data-theme="light"] nav a:focus-visible {
+[data-mode="light"] nav a:hover,
+[data-mode="light"] nav a:focus-visible {
   color: var(--accent);
   background: var(--accent-hover);
 }
@@ -257,10 +324,10 @@ nav a.nav-active {
   border-color: #fff;
 }
 
-[data-theme="light"] .lang-toggle:hover,
-[data-theme="light"] .lang-toggle:focus-visible,
-[data-theme="light"] .theme-toggle:hover,
-[data-theme="light"] .theme-toggle:focus-visible {
+[data-mode="light"] .lang-toggle:hover,
+[data-mode="light"] .lang-toggle:focus-visible,
+[data-mode="light"] .theme-toggle:hover,
+[data-mode="light"] .theme-toggle:focus-visible {
   color: var(--accent);
   border-color: #000;
 }
@@ -280,21 +347,113 @@ nav a.nav-active {
   stroke-linejoin: round;
 }
 
-/* Icon visibility is driven purely by the theme attribute (no inline styles) */
-.theme-icon-sun { display: none; }
-[data-theme="light"] .theme-icon-moon { display: none; }
-[data-theme="light"] .theme-icon-sun { display: inline; }
-
-/* Sun icon: golden yellow in light mode */
-[data-theme="light"] .theme-toggle .theme-icon-sun {
-  stroke: #f59e0b;
-  fill: #f59e0b;
+.theme-toggle svg circle {
+  fill: currentColor;
+  stroke: none;
 }
 
-/* Moon icon: soft silver fill in dark mode */
-.theme-toggle .theme-icon-moon {
-  fill: #c0c8d8;
-  stroke: #c0c8d8;
+/* ── Colour theme picker ── */
+.theme-picker {
+  position: relative;
+}
+
+.theme-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 110;
+  min-width: 176px;
+  padding: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px) scale(0.97);
+  transform-origin: top right;
+  /* visibility flips at the end when closing, immediately when opening,
+     so the options can take focus as soon as the menu opens */
+  transition: opacity 150ms var(--ease-out-quart), transform 150ms var(--ease-out-quart), visibility 0s linear 150ms;
+}
+
+.theme-menu.open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+.theme-menu-title {
+  display: block;
+  padding: 6px 10px 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--duration-instant), color var(--duration-instant);
+}
+
+.theme-option:hover,
+.theme-option:focus-visible {
+  background: var(--accent-bg);
+  color: var(--text-heading);
+}
+
+.theme-option:focus-visible {
+  outline-offset: -2px;
+}
+
+.theme-option[aria-pressed="true"] {
+  color: var(--text-heading);
+}
+
+/* Each swatch shows the theme's background and accent colour */
+.theme-swatch {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(127, 127, 127, 0.45);
+}
+
+.theme-option[data-theme-value="dark"] .theme-swatch { background: linear-gradient(135deg, #0f1117 50%, #6384ff 50%); }
+.theme-option[data-theme-value="light"] .theme-swatch { background: linear-gradient(135deg, #eef0f6 50%, #4a63cc 50%); }
+.theme-option[data-theme-value="purple"] .theme-swatch { background: linear-gradient(135deg, #2c1d45 50%, #b48cff 50%); }
+.theme-option[data-theme-value="green"] .theme-swatch { background: linear-gradient(135deg, #183129 50%, #4fcf8a 50%); }
+.theme-option[data-theme-value="white"] .theme-swatch { background: linear-gradient(135deg, #ffffff 50%, #3b54c7 50%); }
+
+.theme-check {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  visibility: hidden;
+}
+
+.theme-option[aria-pressed="true"] .theme-check {
+  visibility: visible;
 }
 
 /* ── Hamburger menu button (mobile) ── */

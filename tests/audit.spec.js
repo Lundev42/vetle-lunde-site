@@ -35,7 +35,10 @@ test.describe("No console errors or CSP violations", () => {
       page.on("pageerror", (err) => errors.push(err.message));
       await page.goto(path, { waitUntil: "networkidle" });
       if (await page.locator(".lang-toggle").count()) await page.click(".lang-toggle");
-      if (await page.locator("#theme-toggle").count()) await page.click("#theme-toggle");
+      if (await page.locator("#theme-toggle").count()) {
+        await page.click("#theme-toggle");
+        await page.click('.theme-option[data-theme-value="green"]');
+      }
       expect(errors).toEqual([]);
     });
   }
@@ -174,6 +177,8 @@ test.describe("Robustness", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
     await page.click("#theme-toggle");
+    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
+    await page.click('.theme-option[data-theme-value="dark"]');
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe("dark");
   });
 

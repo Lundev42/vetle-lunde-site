@@ -2,7 +2,7 @@
  * Shared behaviour for every page:
  *   - Norwegian/English translations (strings live in each page's
  *     <script type="application/json" id="i18n-data"> block)
- *   - dark/light theme toggle
+ *   - colour theme picker (dark, light, purple, green, white)
  *   - scroll reveal animation
  *   - active section highlighting in the navigation
  *   - mobile (hamburger) menu
@@ -95,34 +95,92 @@
   var savedLang = storageGet("lang");
   setLanguage(savedLang && translations[savedLang] ? savedLang : (root.lang in translations ? root.lang : "nb"));
 
-  /* ── Theme toggle ── */
+  /* ── Colour theme picker ── */
   (function () {
     var toggle = document.getElementById("theme-toggle");
-    if (!toggle) return;
+    var menu = document.getElementById("theme-menu");
+    if (!toggle || !menu) return;
+
+    // Theme → light/dark mode (must match theme-init.js) and browser UI colour
+    var MODES = { dark: "dark", light: "light", purple: "dark", green: "dark", white: "light" };
+    var UI_COLORS = { dark: "#0f1117", light: "#eef0f6", purple: "#150f20", green: "#0c1612", white: "#ffffff" };
+    var options = menu.querySelectorAll(".theme-option");
+    var picker = toggle.parentNode;
+
+    function isTheme(value) {
+      return !!value && Object.prototype.hasOwnProperty.call(MODES, value);
+    }
 
     function applyTheme(theme, persist) {
+      if (!isTheme(theme)) theme = "dark";
       root.setAttribute("data-theme", theme);
+      root.setAttribute("data-mode", MODES[theme]);
       if (persist) storageSet("theme", theme);
+      setMeta('meta[name="theme-color"]', UI_COLORS[theme]);
+      forEach(options, function (option) {
+        option.setAttribute("aria-pressed", option.getAttribute("data-theme-value") === theme ? "true" : "false");
+      });
+    }
 
-      var ariaKey = theme === "light" ? "theme.toggle.light" : "theme.toggle.dark";
-      toggle.setAttribute("data-i18n-aria-label", ariaKey);
-      var label = currentDict()[ariaKey];
-      if (label != null) toggle.setAttribute("aria-label", label);
+    function isOpen() {
+      return toggle.getAttribute("aria-expanded") === "true";
+    }
+
+    function setOpen(open, returnFocus) {
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      menu.classList.toggle("open", open);
+      if (open) {
+        (menu.querySelector('[aria-pressed="true"]') || options[0]).focus();
+      } else if (returnFocus) {
+        toggle.focus();
+      }
     }
 
     toggle.addEventListener("click", function () {
-      applyTheme(root.getAttribute("data-theme") === "light" ? "dark" : "light", true);
+      setOpen(!isOpen());
+    });
+
+    forEach(options, function (option) {
+      option.addEventListener("click", function () {
+        applyTheme(option.getAttribute("data-theme-value"), true);
+        setOpen(false, true);
+      });
+    });
+
+    // Escape closes the menu, arrow keys / Home / End move between themes
+    picker.addEventListener("keydown", function (e) {
+      if (!isOpen()) return;
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setOpen(false, true);
+        return;
+      }
+      var list = Array.prototype.slice.call(options);
+      var index = list.indexOf(document.activeElement);
+      var next = null;
+      if (e.key === "ArrowDown") next = list[(index + 1) % list.length];
+      else if (e.key === "ArrowUp") next = list[(index - 1 + list.length) % list.length];
+      else if (e.key === "Home") next = list[0];
+      else if (e.key === "End") next = list[list.length - 1];
+      if (next) {
+        e.preventDefault();
+        next.focus();
+      }
+    });
+
+    // Close when focus or a click moves elsewhere
+    document.addEventListener("click", function (e) {
+      if (isOpen() && !picker.contains(e.target)) setOpen(false);
+    });
+    picker.addEventListener("focusout", function (e) {
+      if (isOpen() && e.relatedTarget && !picker.contains(e.relatedTarget)) setOpen(false);
     });
 
     // theme-init.js already picked saved > system preference > dark.
-    // Only an explicit click is persisted, so visitors who never choose
+    // Only an explicit choice is persisted, so visitors who never choose
     // keep following their operating system setting.
     var saved = storageGet("theme");
-    if (saved === "light" || saved === "dark") {
-      applyTheme(saved, false);
-    } else {
-      applyTheme(root.getAttribute("data-theme") === "light" ? "light" : "dark", false);
-    }
+    applyTheme(isTheme(saved) ? saved : root.getAttribute("data-theme"), false);
   })();
 
   /* Re-enable transitions once the initial theme is in place */

@@ -95,7 +95,7 @@
   height: 3px;
   margin-top: 18px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--accent), #a78bfa);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
 }
 
 .prose {
