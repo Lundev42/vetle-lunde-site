@@ -64,11 +64,11 @@
   --nav-height: 56px;
 }
 
-/* Kvartær (quaternary): white */
+/* Kvartær (quaternary): light, a soft ice-grey rather than pure white */
 [data-theme="quaternary"] {
   color-scheme: light;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f3f4f7;
+  --bg-primary: #e8ebf0;
+  --bg-secondary: #dde1e8;
   --text-primary: #1f2329;
   --text-secondary: #434956;
   --text-muted: #4f5563;
@@ -79,9 +79,9 @@
   --accent-hover: rgba(59, 84, 199, 0.14);
   --accent-bg: rgba(59, 84, 199, 0.07);
   --accent-border: rgba(59, 84, 199, 0.28);
-  --nav-bg: rgba(255, 255, 255, 0.92);
+  --nav-bg: rgba(232, 235, 240, 0.92);
   --nav-border: rgba(0, 0, 0, 0.09);
-  --card-bg: #ffffff;
+  --card-bg: #f1f3f6;
   --card-border: rgba(0, 0, 0, 0.1);
   --overlay-bg: rgba(0, 0, 0, 0.4);
   --input-bg: rgba(0, 0, 0, 0.03);
@@ -435,8 +435,10 @@ nav a.nav-active {
 .theme-option[data-theme-value="cretaceous"] .ti-a { fill: #a7afc4; }
 .theme-option[data-theme-value="cretaceous"] .ti-b { fill: #5c657e; }
 .theme-option[data-theme-value="cretaceous"] .ti-trail { stroke: #ff8a3d; stroke-width: 1.9; stroke-linecap: round; }
-.theme-option[data-theme-value="quaternary"] .theme-icon { background: #ffffff; }
-.theme-option[data-theme-value="quaternary"] .ti-a { fill: #3b54c7; }
+.theme-option[data-theme-value="quaternary"] .theme-icon { background: #dbe4ee; }
+.theme-option[data-theme-value="quaternary"] .ti-a { fill: #7a4b2c; }
+.theme-option[data-theme-value="quaternary"] .ti-tusk { fill: #fbf3df; stroke: #5a341d; stroke-width: 0.5; stroke-linejoin: round; }
+.theme-option[data-theme-value="quaternary"] .ti-eye { fill: #1d120b; }
 
 .theme-label {
   display: flex;

@@ -102,7 +102,7 @@
 
     // Theme → light/dark mode (must match theme-init.js) and browser UI colour
     var MODES = { hadean: "dark", cambrian: "dark", cretaceous: "dark", quaternary: "light" };
-    var UI_COLORS = { hadean: "#160c0a", cambrian: "#0c1612", cretaceous: "#0f1117", quaternary: "#ffffff" };
+    var UI_COLORS = { hadean: "#160c0a", cambrian: "#0c1612", cretaceous: "#0f1117", quaternary: "#e8ebf0" };
     var OLD = { dark: "cretaceous", light: "quaternary", white: "quaternary", green: "cambrian", purple: "hadean" };
     var options = menu.querySelectorAll(".theme-option");
     var picker = toggle.parentNode;

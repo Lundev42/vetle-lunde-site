@@ -364,7 +364,7 @@ test.describe("Colour theme picker", () => {
     hadean: { mode: "dark", bg: "rgb(22, 12, 10)", meta: "#160c0a" },
     cambrian: { mode: "dark", bg: "rgb(12, 22, 18)", meta: "#0c1612" },
     cretaceous: { mode: "dark", bg: "rgb(15, 17, 23)", meta: "#0f1117" },
-    quaternary: { mode: "light", bg: "rgb(255, 255, 255)", meta: "#ffffff" },
+    quaternary: { mode: "light", bg: "rgb(232, 235, 240)", meta: "#e8ebf0" },
   };
 
   async function choose(page, theme) {
@@ -410,8 +410,10 @@ test.describe("Colour theme picker", () => {
       await expect(icon).toHaveAttribute("aria-hidden", "true");
       await expect(icon.locator("svg .ti-a").first()).toBeAttached();
     }
-    // magma, trilobite, meteorite (with a fiery trail) and a human
+    // magma, trilobite, meteorite (with a fiery trail) and a woolly mammoth
+    // with its curved tusk
     await expect(page.locator('.theme-option[data-theme-value="cretaceous"] .ti-trail line')).toHaveCount(3);
+    await expect(page.locator('.theme-option[data-theme-value="quaternary"] .theme-icon svg .ti-tusk')).toHaveCount(1);
   });
 
   for (const [theme, expected] of Object.entries(THEMES)) {
@@ -1023,16 +1025,15 @@ test.describe("About me photos", () => {
 test.describe("About me mountain background", () => {
   const VIEWPORTS = [[2560, 1080], [1920, 1080], [1440, 900], [1280, 800], [1024, 768], [820, 1180], [390, 844], [375, 667], [320, 568]];
   const PERIODS = ["hadean", "cambrian", "cretaceous", "quaternary"];
+  const LAYERS = ["haze", "right-towers", "left-towers", "snow", "hills", "fore"];
 
-  // Rock shapes outside the moved group are the three towers on the left
   function measure() {
     const section = document.querySelector("#om-meg").getBoundingClientRect();
     const next = document.querySelector("#bakgrunn").getBoundingClientRect();
     const svgEl = document.querySelector("#om-meg .about-scene");
     const svg = svgEl.getBoundingClientRect();
-    const tops = (els) => Math.min(...Array.from(els).map((el) => el.getBoundingClientRect().top));
-    const leftTop = tops(svgEl.querySelectorAll(':scope > path[class^="s-rock-"]'));
-    const rightTop = tops(svgEl.querySelectorAll('g[transform] path[class^="s-rock-"]'));
+    const leftTop = svgEl.querySelector(".left-towers").getBoundingClientRect().top;
+    const rightTop = svgEl.querySelector(".right-towers").getBoundingClientRect().top;
     const boxes = [];
     document.querySelectorAll("#om-meg h2, #om-meg p").forEach((el) => {
       const range = document.createRange();
@@ -1049,13 +1050,18 @@ test.describe("About me mountain background", () => {
     };
   }
 
-  test("is a traced scene of rock, snow, hills and sky, hidden from screen readers", async ({ page }) => {
+  test("is the traced picture in depth layers over a gradient sky, hidden from screen readers", async ({ page }) => {
     await page.goto(PAGE_URL);
     const svg = page.locator("#om-meg svg.about-scene");
     await expect(svg).toHaveAttribute("aria-hidden", "true");
-    for (const group of ["sky", "haze", "rock", "snow", "grass", "dirt", "fore"]) {
-      expect(await svg.locator(`path[class^="s-${group}-"]`).count(), group).toBeGreaterThan(0);
+    for (const layer of LAYERS) {
+      expect(await svg.locator(`g.${layer} > path`).count(), layer).toBeGreaterThan(0);
     }
+    // the banded sky of the source is replaced by one smooth gradient
+    await expect(svg.locator("rect.sky")).toHaveAttribute("fill", "url(#about-sky)");
+    expect(await svg.locator("#about-sky stop").count()).toBeGreaterThanOrEqual(3);
+    // the right towers are moved back to the depth of the left ones
+    await expect(svg.locator("g.right-towers")).toHaveAttribute("transform", /scale\(/);
     await expect(page.locator("#om-meg .about-sun, #om-meg .about-mountains")).toHaveCount(0);
   });
 
@@ -1075,23 +1081,40 @@ test.describe("About me mountain background", () => {
       const towersTop = Math.min(r.leftTop, r.rightTop);
       expect(towersTop).toBeGreaterThanOrEqual(r.contentBottom);
       expect(towersTop).toBeGreaterThanOrEqual(r.svg.top + 0.11 * r.svg.height);
-      // the mountains take up to about half of the section, more on wide screens
+      // the scene fills the room below the text, from the border upwards
       const share = (r.section.bottom - towersTop) / r.section.height;
       expect(share).toBeGreaterThan(0.15);
       expect(share).toBeLessThan(0.62);
       // the right-hand towers stand at the same depth as the left ones
       expect(Math.abs(r.rightTop - r.leftTop)).toBeLessThanOrEqual(0.06 * r.svg.height);
+      // on laptops and desktops the section is as tall as it was with the
+      // three photos under the text (980 px)
+      if (width >= 1280) expect(Math.abs(r.section.height - 980)).toBeLessThanOrEqual(20);
     });
   }
 
-  test("the scene is repainted by every colour theme", async ({ page }) => {
+  test("the scene is repainted by every colour theme, and every shape has a colour", async ({ page }) => {
     await page.goto(PAGE_URL);
     const fills = new Set();
+    const skies = new Set();
     for (const theme of PERIODS) {
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
-      fills.add(await page.locator('#om-meg .about-scene path[class^="s-rock-"]').first().evaluate((el) => getComputedStyle(el).fill));
+      const r = await page.evaluate(() => {
+        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path"));
+        // a class without a colour for this theme would fall back to black
+        const missing = paths.filter((el) => getComputedStyle(el).fill === "rgb(0, 0, 0)").map((el) => el.getAttribute("class"));
+        return {
+          missing,
+          tower: getComputedStyle(document.querySelector("#om-meg .left-towers path")).fill,
+          sky: Array.from(document.querySelectorAll("#about-sky stop")).map((el) => getComputedStyle(el).stopColor).join(),
+        };
+      });
+      expect(r.missing, theme).toEqual([]);
+      fills.add(r.tower);
+      skies.add(r.sky);
     }
     expect(fills.size).toBe(PERIODS.length);
+    expect(skies.size).toBe(PERIODS.length);
   });
 
   for (const theme of PERIODS) {
@@ -1099,8 +1122,6 @@ test.describe("About me mountain background", () => {
       await page.goto(PAGE_URL);
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
       const worst = await page.evaluate(() => {
-        // computed fills of color-mix() come back as oklab(): let a canvas
-        // turn any CSS colour into sRGB
         const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
         function rgb(str) {
           ctx.clearRect(0, 0, 1, 1);
@@ -1119,10 +1140,13 @@ test.describe("About me mountain background", () => {
           return (x + 0.05) / (y + 0.05);
         }
         const text = rgb(getComputedStyle(document.querySelector("#om-meg .text-col p")).color);
-        const sky = Array.from(document.querySelectorAll('#om-meg .about-scene path[class^="s-sky-"]'))
-          .map((el) => rgb(getComputedStyle(el).fill));
-        if (sky.length < 3) return 0;
-        const bg = rgb(getComputedStyle(document.querySelector(".theme-menu")).backgroundColor);
+        // the text only ever sits over the upper sky (the towers start 14 %
+        // down the scene); check the sky down to 30 % and the section itself
+        const sky = Array.from(document.querySelectorAll("#about-sky stop"))
+          .filter((el) => parseFloat(el.getAttribute("offset")) <= 0.3)
+          .map((el) => rgb(getComputedStyle(el).stopColor));
+        if (sky.length < 2) return 0;
+        const bg = rgb(getComputedStyle(document.querySelector("#om-meg")).backgroundColor);
         return Math.min(...sky.concat([bg]).map((c) => contrast(text, c)));
       });
       expect(worst).toBeGreaterThanOrEqual(4.5);
@@ -1168,6 +1192,27 @@ test.describe("Hero and About cleanup", () => {
   test("About section has no geology intro button", async ({ page }) => {
     await page.goto(PAGE_URL);
     await expect(page.locator("#om-meg .geo-cta")).toHaveCount(0);
+  });
+
+  test("About text no longer repeats the bachelor paragraph, in either language", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await expect(page.locator('[data-i18n="about.background.text"]')).toHaveCount(0);
+    await expect(page.locator("#om-meg .text-col p")).toHaveCount(2);
+    await expect(page.locator("#om-meg")).not.toContainText("treårige bachelorgraden");
+    await page.locator(".lang-toggle").first().click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator("#om-meg")).not.toContainText("three-year bachelor");
+  });
+
+  test("the profile photo is smaller: 250 px wide on desktop, 220 px on phones", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(PAGE_URL);
+    let box = await page.locator("#om-meg .media-col img").boundingBox();
+    expect(Math.round(box.width)).toBeLessThanOrEqual(250);
+    expect(box.width).toBeGreaterThan(200);
+    await page.setViewportSize({ width: 390, height: 844 });
+    box = await page.locator("#om-meg .media-col img").boundingBox();
+    expect(Math.round(box.width)).toBeLessThanOrEqual(220);
   });
 });
 
