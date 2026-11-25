@@ -23,7 +23,11 @@
   src: url('../fonts/courgette-latin.woff2') format('woff2');
 }
 
-/* ── Design tokens ── */
+/* ── Design tokens ──
+   Four colour themes named after geological periods. :root holds Kritt
+   (cretaceous, dark), the default; html[data-theme] switches the others.
+   data-mode (dark/light) carries the styles shared by all dark or all
+   light themes. */
 :root {
   color-scheme: dark;
   --bg-primary: #0f1117;
@@ -60,31 +64,8 @@
   --nav-height: 56px;
 }
 
-[data-theme="light"] {
-  color-scheme: light;
-  --bg-primary: #eef0f6;
-  --bg-secondary: #e1e4ec;
-  --text-primary: #23272f;
-  --text-secondary: #474d5c;
-  /* Darkened from #6b7280 so body text meets WCAG AA (4.5:1) on both light backgrounds */
-  --text-muted: #525866;
-  --text-heading: #1a1d24;
-  --accent: #4a63cc;
-  --accent-strong: #3b54c7;
-  --accent-hover: rgba(74, 99, 204, 0.18);
-  --accent-bg: rgba(74, 99, 204, 0.10);
-  --accent-border: rgba(74, 99, 204, 0.3);
-  --nav-bg: rgba(238, 240, 246, 0.92);
-  --nav-border: rgba(0, 0, 0, 0.08);
-  --card-bg: rgba(255, 255, 255, 0.6);
-  --card-border: rgba(0, 0, 0, 0.08);
-  --overlay-bg: rgba(0, 0, 0, 0.4);
-  --input-bg: rgba(0, 0, 0, 0.04);
-  --input-border: rgba(0, 0, 0, 0.15);
-  --focus-ring: #3b54c7;
-}
-
-[data-theme="white"] {
+/* Kvartær (quaternary): white */
+[data-theme="quaternary"] {
   color-scheme: light;
   --bg-primary: #ffffff;
   --bg-secondary: #f3f4f7;
@@ -108,28 +89,30 @@
   --focus-ring: #2f45a8;
 }
 
-[data-theme="purple"] {
+/* Hadeikum (hadean): magma */
+[data-theme="hadean"] {
   color-scheme: dark;
-  --bg-primary: #150f20;
-  --bg-secondary: #1e162d;
-  --text-primary: #d3c9e3;
-  --text-secondary: #b6a8cc;
-  --text-muted: #a99cc0;
-  --text-heading: #f1eaff;
-  --accent: #b48cff;
-  --accent-strong: #7448d1;
-  --accent-2: #f39ad5;
-  --accent-hover: rgba(180, 140, 255, 0.25);
-  --accent-bg: rgba(180, 140, 255, 0.14);
-  --accent-border: rgba(180, 140, 255, 0.32);
-  --nav-bg: rgba(21, 15, 32, 0.8);
+  --bg-primary: #160c0a;
+  --bg-secondary: #21110d;
+  --text-primary: #e6d3ca;
+  --text-secondary: #d2b6a9;
+  --text-muted: #c4a597;
+  --text-heading: #fff1ea;
+  --accent: #ff7a3d;
+  --accent-strong: #c2410c;
+  --accent-2: #ffc15e;
+  --accent-hover: rgba(255, 122, 61, 0.24);
+  --accent-bg: rgba(255, 122, 61, 0.13);
+  --accent-border: rgba(255, 122, 61, 0.32);
+  --nav-bg: rgba(22, 12, 10, 0.8);
   --nav-border: rgba(255, 255, 255, 0.07);
   --card-bg: rgba(255, 255, 255, 0.04);
   --card-border: rgba(255, 255, 255, 0.09);
-  --focus-ring: #cbb0ff;
+  --focus-ring: #ffa070;
 }
 
-[data-theme="green"] {
+/* Kambrium (cambrian): green */
+[data-theme="cambrian"] {
   color-scheme: dark;
   --bg-primary: #0c1612;
   --bg-secondary: #13211b;
@@ -362,7 +345,7 @@ nav a.nav-active {
   top: calc(100% + 10px);
   right: 0;
   z-index: 110;
-  min-width: 176px;
+  min-width: 248px;
   padding: 6px;
   background: var(--bg-primary);
   border: 1px solid var(--card-border);
@@ -425,20 +408,48 @@ nav a.nav-active {
   color: var(--text-heading);
 }
 
-/* Each swatch shows the theme's background and accent colour */
-.theme-swatch {
+/* Each period has an icon on its own background colour */
+.theme-icon {
   flex-shrink: 0;
-  width: 18px;
-  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px solid rgba(127, 127, 127, 0.45);
 }
 
-.theme-option[data-theme-value="dark"] .theme-swatch { background: linear-gradient(135deg, #0f1117 50%, #6384ff 50%); }
-.theme-option[data-theme-value="light"] .theme-swatch { background: linear-gradient(135deg, #eef0f6 50%, #4a63cc 50%); }
-.theme-option[data-theme-value="purple"] .theme-swatch { background: linear-gradient(135deg, #2c1d45 50%, #b48cff 50%); }
-.theme-option[data-theme-value="green"] .theme-swatch { background: linear-gradient(135deg, #183129 50%, #4fcf8a 50%); }
-.theme-option[data-theme-value="white"] .theme-swatch { background: linear-gradient(135deg, #ffffff 50%, #3b54c7 50%); }
+.theme-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.theme-option[data-theme-value="hadean"] .theme-icon { background: #1f0f0b; }
+.theme-option[data-theme-value="hadean"] .ti-a { fill: #ff5a1f; }
+.theme-option[data-theme-value="hadean"] .ti-b { fill: #ffc23d; }
+.theme-option[data-theme-value="cambrian"] .theme-icon { background: #13211b; }
+.theme-option[data-theme-value="cambrian"] .ti-a { fill: #4fcf8a; }
+.theme-option[data-theme-value="cambrian"] .ti-b { fill: #1f7a52; }
+.theme-option[data-theme-value="cretaceous"] .theme-icon { background: #181a20; }
+.theme-option[data-theme-value="cretaceous"] .ti-a { fill: #a7afc4; }
+.theme-option[data-theme-value="cretaceous"] .ti-b { fill: #5c657e; }
+.theme-option[data-theme-value="cretaceous"] .ti-trail { stroke: #ff8a3d; stroke-width: 1.9; stroke-linecap: round; }
+.theme-option[data-theme-value="quaternary"] .theme-icon { background: #ffffff; }
+.theme-option[data-theme-value="quaternary"] .ti-a { fill: #3b54c7; }
+
+.theme-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.25;
+}
+
+.theme-label small {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
 
 .theme-check {
   width: 16px;

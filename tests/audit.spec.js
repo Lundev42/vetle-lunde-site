@@ -37,7 +37,7 @@ test.describe("No console errors or CSP violations", () => {
       if (await page.locator(".lang-toggle").count()) await page.click(".lang-toggle");
       if (await page.locator("#theme-toggle").count()) {
         await page.click("#theme-toggle");
-        await page.click('.theme-option[data-theme-value="green"]');
+        await page.click('.theme-option[data-theme-value="cambrian"]');
       }
       expect(errors).toEqual([]);
     });
@@ -140,12 +140,12 @@ test.describe("Robustness", () => {
   test("system theme is not stored until the visitor chooses", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto("/index.html");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "quaternary");
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
     await page.click("#theme-toggle");
     expect(await page.evaluate(() => localStorage.getItem("theme"))).toBeNull();
-    await page.click('.theme-option[data-theme-value="dark"]');
-    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe("dark");
+    await page.click('.theme-option[data-theme-value="cretaceous"]');
+    expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe("cretaceous");
   });
 
   test("saved English is applied on other pages", async ({ page }) => {

@@ -359,12 +359,12 @@ test.describe("Contact section link buttons", () => {
 });
 
 test.describe("Colour theme picker", () => {
+  // Themes are geological periods, in time order
   const THEMES = {
-    dark: { mode: "dark", bg: "rgb(15, 17, 23)", meta: "#0f1117" },
-    light: { mode: "light", bg: "rgb(238, 240, 246)", meta: "#eef0f6" },
-    purple: { mode: "dark", bg: "rgb(21, 15, 32)", meta: "#150f20" },
-    green: { mode: "dark", bg: "rgb(12, 22, 18)", meta: "#0c1612" },
-    white: { mode: "light", bg: "rgb(255, 255, 255)", meta: "#ffffff" },
+    hadean: { mode: "dark", bg: "rgb(22, 12, 10)", meta: "#160c0a" },
+    cambrian: { mode: "dark", bg: "rgb(12, 22, 18)", meta: "#0c1612" },
+    cretaceous: { mode: "dark", bg: "rgb(15, 17, 23)", meta: "#0f1117" },
+    quaternary: { mode: "light", bg: "rgb(255, 255, 255)", meta: "#ffffff" },
   };
 
   async function choose(page, theme) {
@@ -380,29 +380,43 @@ test.describe("Colour theme picker", () => {
   test("picker button is visible and labelled", async ({ page }) => {
     const toggle = page.locator("#theme-toggle");
     await expect(toggle).toBeVisible();
-    await expect(toggle).toHaveAttribute("aria-label", "Velg bakgrunnsfarge");
+    await expect(toggle).toHaveAttribute("aria-label", "Velg fargetema");
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(toggle).toHaveAttribute("aria-controls", "theme-menu");
     await expect(page.locator("#theme-menu")).toBeHidden();
   });
 
-  test("defaults to the dark theme", async ({ page }) => {
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  test("defaults to Kritt (cretaceous, dark)", async ({ page }) => {
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "cretaceous");
     await expect(page.locator("html")).toHaveAttribute("data-mode", "dark");
-    await expect(page.locator('.theme-option[data-theme-value="dark"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator('.theme-option[data-theme-value="cretaceous"]')).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("opens a menu with five colours and focuses the current one", async ({ page }) => {
+  test("opens a menu with four geological periods and focuses the current one", async ({ page }) => {
     await page.click("#theme-toggle");
     await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator("#theme-menu")).toBeVisible();
-    await expect(page.locator(".theme-option")).toHaveText(["Mørk", "Lys", "Lilla", "Grønn", "Hvit"]);
-    await expect(page.locator('.theme-option[data-theme-value="dark"]')).toBeFocused();
+    await expect(page.locator(".theme-menu-title")).toHaveText("Geologisk periode");
+    await expect(page.locator(".theme-label > span")).toHaveText(["Hadeikum", "Kambrium", "Kritt", "Kvartær"]);
+    await expect(page.locator(".theme-label small")).toHaveText([
+      "4,6–4,0 mrd. år siden", "539–487 mill. år siden", "145–66 mill. år siden", "2,6 mill. år siden – i dag",
+    ]);
+    await expect(page.locator('.theme-option[data-theme-value="cretaceous"]')).toBeFocused();
+  });
+
+  test("each period has its own icon, hidden from screen readers", async ({ page }) => {
+    for (const theme of Object.keys(THEMES)) {
+      const icon = page.locator(`.theme-option[data-theme-value="${theme}"] .theme-icon`);
+      await expect(icon).toHaveAttribute("aria-hidden", "true");
+      await expect(icon.locator("svg .ti-a").first()).toBeAttached();
+    }
+    // magma, trilobite, meteorite (with a fiery trail) and a human
+    await expect(page.locator('.theme-option[data-theme-value="cretaceous"] .ti-trail line')).toHaveCount(3);
   });
 
   for (const [theme, expected] of Object.entries(THEMES)) {
     test(`choosing ${theme} applies, marks and saves it`, async ({ page }) => {
-      if (theme === "dark") await choose(page, "white");
+      if (theme === "cretaceous") await choose(page, "quaternary");
       await choose(page, theme);
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       await expect(page.locator("html")).toHaveAttribute("data-mode", expected.mode);
@@ -426,13 +440,22 @@ test.describe("Colour theme picker", () => {
   });
 
   test("saved theme is restored on reload and on other pages", async ({ page }) => {
-    await choose(page, "purple");
+    await choose(page, "hadean");
     await page.reload();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "purple");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "hadean");
     await page.goto(BACHELOR_URL);
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "purple");
-    await expect(page.locator('.theme-option[data-theme-value="purple"]')).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "hadean");
+    await expect(page.locator('.theme-option[data-theme-value="hadean"]')).toHaveAttribute("aria-pressed", "true");
   });
+
+  for (const [old, now] of [["dark", "cretaceous"], ["light", "quaternary"], ["white", "quaternary"], ["green", "cambrian"], ["purple", "hadean"]]) {
+    test(`a choice saved under the old name ${old} becomes ${now}`, async ({ page }) => {
+      await page.evaluate((v) => localStorage.setItem("theme", v), old);
+      await page.goto(PAGE_URL);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", now);
+      expect(await page.evaluate(() => localStorage.getItem("theme"))).toBe(now);
+    });
+  }
 
   test("Escape closes the menu and returns focus", async ({ page }) => {
     await page.click("#theme-toggle");
@@ -442,52 +465,67 @@ test.describe("Colour theme picker", () => {
     await expect(page.locator("#theme-toggle")).toBeFocused();
   });
 
-  test("arrow keys move between colours and Enter picks one", async ({ page }) => {
+  test("arrow keys move between periods and Enter picks one", async ({ page }) => {
     await page.focus("#theme-toggle");
     await page.keyboard.press("Enter");
     await page.keyboard.press("ArrowDown");
+    await expect(page.locator('.theme-option[data-theme-value="quaternary"]')).toBeFocused();
     await page.keyboard.press("ArrowDown");
-    await expect(page.locator('.theme-option[data-theme-value="purple"]')).toBeFocused();
+    await expect(page.locator('.theme-option[data-theme-value="hadean"]')).toBeFocused();
     await page.keyboard.press("ArrowUp");
+    await page.keyboard.press("Home");
+    await expect(page.locator('.theme-option[data-theme-value="hadean"]')).toBeFocused();
     await page.keyboard.press("End");
-    await expect(page.locator('.theme-option[data-theme-value="white"]')).toBeFocused();
+    await expect(page.locator('.theme-option[data-theme-value="quaternary"]')).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "white");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "quaternary");
   });
 
   test("clicking outside closes the menu without changing the theme", async ({ page }) => {
     await page.click("#theme-toggle");
     await page.mouse.click(10, 400);
     await expect(page.locator("#theme-menu")).toBeHidden();
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "cretaceous");
   });
 
-  test("colour names follow the language", async ({ page }) => {
+  test("period names follow the language", async ({ page }) => {
     await page.click(".lang-toggle");
-    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", "Choose background colour");
-    await expect(page.locator(".theme-option")).toHaveText(["Dark", "Light", "Purple", "Green", "White"]);
+    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", "Choose colour theme");
+    await expect(page.locator(".theme-menu-title")).toHaveText("Geological period");
+    await expect(page.locator(".theme-label > span")).toHaveText(["Hadean", "Cambrian", "Cretaceous", "Quaternary"]);
+    await expect(page.locator(".theme-label small").last()).toHaveText("2.6 million years ago – today");
   });
 
   test("works on the mobile layout", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto(PAGE_URL);
-    await choose(page, "green");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "green");
+    await choose(page, "cambrian");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "cambrian");
     await expect(page.locator("#theme-menu")).toBeHidden();
+  });
+
+  test("the open menu fits on a small phone", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto(PAGE_URL);
+    await page.click("#theme-toggle");
+    const box = await page.locator("#theme-menu").boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(320);
+    expect(box.y + box.height).toBeLessThanOrEqual(568);
   });
 
   test("an unknown saved value falls back to the system preference", async ({ page }) => {
     await page.evaluate(() => localStorage.setItem("theme", "neon"));
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto(PAGE_URL);
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "quaternary");
   });
 
   test("respects prefers-color-scheme light when no saved preference", async ({ page }) => {
     await page.evaluate(() => localStorage.removeItem("theme"));
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto(PAGE_URL);
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "quaternary");
     await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
   });
 });
@@ -900,7 +938,7 @@ test.describe("Profile image dark-mode shadow (Fix 1)", () => {
   test("dark mode uses light shadow", async ({ page }) => {
     await page.goto(PAGE_URL);
     await page.evaluate(() => {
-      document.documentElement.setAttribute("data-theme", "dark");
+      document.documentElement.setAttribute("data-theme", "cretaceous");
       document.documentElement.setAttribute("data-mode", "dark");
     });
     const figure = page.locator("#om-meg .media-col figure");
@@ -912,7 +950,7 @@ test.describe("Profile image dark-mode shadow (Fix 1)", () => {
   test("light mode uses dark shadow", async ({ page }) => {
     await page.goto(PAGE_URL);
     await page.evaluate(() => {
-      document.documentElement.setAttribute("data-theme", "light");
+      document.documentElement.setAttribute("data-theme", "quaternary");
       document.documentElement.setAttribute("data-mode", "light");
     });
     const figure = page.locator("#om-meg .media-col figure");
@@ -984,66 +1022,93 @@ test.describe("About me photos", () => {
 
 test.describe("About me mountain background", () => {
   const VIEWPORTS = [[2560, 1080], [1920, 1080], [1440, 900], [1280, 800], [1024, 768], [820, 1180], [390, 844], [375, 667], [320, 568]];
+  const PERIODS = ["hadean", "cambrian", "cretaceous", "quaternary"];
 
-  test("has three mountain ranges and a sun, hidden from screen readers", async ({ page }) => {
+  // Rock shapes outside the moved group are the three towers on the left
+  function measure() {
+    const section = document.querySelector("#om-meg").getBoundingClientRect();
+    const next = document.querySelector("#bakgrunn").getBoundingClientRect();
+    const svgEl = document.querySelector("#om-meg .about-scene");
+    const svg = svgEl.getBoundingClientRect();
+    const tops = (els) => Math.min(...Array.from(els).map((el) => el.getBoundingClientRect().top));
+    const leftTop = tops(svgEl.querySelectorAll(':scope > path[class^="s-rock-"]'));
+    const rightTop = tops(svgEl.querySelectorAll('g[transform] path[class^="s-rock-"]'));
+    const boxes = [];
+    document.querySelectorAll("#om-meg h2, #om-meg p").forEach((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      Array.from(range.getClientRects()).forEach((b) => boxes.push(b));
+    });
+    boxes.push(document.querySelector("#om-meg .media-col img").getBoundingClientRect());
+    return {
+      section: { top: section.top, bottom: section.bottom, left: section.left, right: section.right, height: section.height },
+      next: next.top,
+      svg: { top: svg.top, bottom: svg.bottom, left: svg.left, right: svg.right, height: svg.height },
+      leftTop, rightTop,
+      contentBottom: Math.max(...boxes.map((b) => b.bottom)),
+    };
+  }
+
+  test("is a traced scene of rock, snow, hills and sky, hidden from screen readers", async ({ page }) => {
     await page.goto(PAGE_URL);
-    const svg = page.locator("#om-meg svg.about-mountains");
+    const svg = page.locator("#om-meg svg.about-scene");
     await expect(svg).toHaveAttribute("aria-hidden", "true");
-    for (const range of ["am-far", "am-mid", "am-near"]) {
-      await expect(svg.locator("." + range)).toHaveCount(1);
+    for (const group of ["sky", "haze", "rock", "snow", "grass", "dirt", "fore"]) {
+      expect(await svg.locator(`path[class^="s-${group}-"]`).count(), group).toBeGreaterThan(0);
     }
-    await expect(page.locator("#om-meg .about-sun")).toHaveAttribute("aria-hidden", "true");
-    await expect(page.locator("#om-meg .about-sun")).toBeVisible();
+    await expect(page.locator("#om-meg .about-sun, #om-meg .about-mountains")).toHaveCount(0);
   });
 
   for (const [width, height] of VIEWPORTS) {
-    test(`mountains stand on the border to Bakgrunn and the sun is clear of text at ${width}x${height}`, async ({ page }) => {
+    test(`scene stands on the border to Bakgrunn, below the text, at ${width}x${height}`, async ({ page }) => {
       await page.setViewportSize({ width, height });
       await page.goto(PAGE_URL);
       await page.evaluate(() => document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible")));
       await page.waitForTimeout(700);
-      const r = await page.evaluate(() => {
-        const section = document.querySelector("#om-meg").getBoundingClientRect();
-        const next = document.querySelector("#bakgrunn").getBoundingClientRect();
-        const svg = document.querySelector("#om-meg .about-mountains").getBoundingClientRect();
-        const sun = document.querySelector("#om-meg .about-sun").getBoundingClientRect();
-        const boxes = [];
-        document.querySelectorAll("#om-meg h2, #om-meg p").forEach((el) => {
-          const range = document.createRange();
-          range.selectNodeContents(el);
-          Array.from(range.getClientRects()).forEach((b) => boxes.push(b));
-        });
-        boxes.push(document.querySelector("#om-meg .media-col img").getBoundingClientRect());
-        const hits = boxes.filter((b) => b.left < sun.right && b.right > sun.left && b.top < sun.bottom && b.bottom > sun.top).length;
-        return {
-          bottomGap: Math.abs(section.bottom - svg.bottom),
-          borderGap: Math.abs(next.top - section.bottom),
-          left: svg.left - section.left,
-          right: section.right - svg.right,
-          share: svg.height / section.height,
-          sunInside: sun.top >= section.top && sun.bottom <= section.bottom && sun.left >= section.left && sun.right <= section.right,
-          hits,
-        };
-      });
-      expect(r.bottomGap).toBeLessThanOrEqual(1);
-      expect(r.borderGap).toBeLessThanOrEqual(1);
-      expect(r.left).toBeLessThanOrEqual(0.5);
-      expect(r.right).toBeLessThanOrEqual(0.5);
-      expect(r.share).toBeGreaterThan(0.15);
-      expect(r.share).toBeLessThanOrEqual(0.501);
-      expect(r.sunInside).toBe(true);
-      expect(r.hits).toBe(0);
+      const r = await page.evaluate(measure);
+      // rests on the border and fills the width
+      expect(Math.abs(r.section.bottom - r.svg.bottom)).toBeLessThanOrEqual(1);
+      expect(Math.abs(r.next - r.section.bottom)).toBeLessThanOrEqual(1);
+      expect(r.svg.left - r.section.left).toBeLessThanOrEqual(0.5);
+      expect(r.section.right - r.svg.right).toBeLessThanOrEqual(0.5);
+      // the towers start below the text and photo, and below the faded sky
+      const towersTop = Math.min(r.leftTop, r.rightTop);
+      expect(towersTop).toBeGreaterThanOrEqual(r.contentBottom);
+      expect(towersTop).toBeGreaterThanOrEqual(r.svg.top + 0.11 * r.svg.height);
+      // the mountains take up to about half of the section, more on wide screens
+      const share = (r.section.bottom - towersTop) / r.section.height;
+      expect(share).toBeGreaterThan(0.15);
+      expect(share).toBeLessThan(0.62);
+      // the right-hand towers stand at the same depth as the left ones
+      expect(Math.abs(r.rightTop - r.leftTop)).toBeLessThanOrEqual(0.06 * r.svg.height);
     });
   }
 
-  for (const theme of ["dark", "light", "purple", "green", "white"]) {
-    test(`text stays readable over the mountains in the ${theme} theme`, async ({ page }) => {
+  test("the scene is repainted by every colour theme", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    const fills = new Set();
+    for (const theme of PERIODS) {
+      await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+      fills.add(await page.locator('#om-meg .about-scene path[class^="s-rock-"]').first().evaluate((el) => getComputedStyle(el).fill));
+    }
+    expect(fills.size).toBe(PERIODS.length);
+  });
+
+  for (const theme of PERIODS) {
+    test(`text stays readable over the sky in the ${theme} theme`, async ({ page }) => {
       await page.goto(PAGE_URL);
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
       const worst = await page.evaluate(() => {
+        // computed fills of color-mix() come back as oklab(): let a canvas
+        // turn any CSS colour into sRGB
+        const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
         function rgb(str) {
-          const m = str.match(/[\d.]+/g).map(Number);
-          return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 };
+          ctx.clearRect(0, 0, 1, 1);
+          ctx.fillStyle = "#000";
+          ctx.fillStyle = str;
+          ctx.fillRect(0, 0, 1, 1);
+          const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+          return { r, g, b };
         }
         function lum(c) {
           const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -1054,26 +1119,11 @@ test.describe("About me mountain background", () => {
           return (x + 0.05) / (y + 0.05);
         }
         const text = rgb(getComputedStyle(document.querySelector("#om-meg .text-col p")).color);
-        const svg = document.querySelector("#om-meg .about-mountains");
-        const colours = [];
-        const shaded = [];
-        svg.querySelectorAll("stop").forEach((stop) => {
-          const name = stop.className.baseVal;
-          if (name.startsWith("am-shade")) return;
-          colours.push(rgb(getComputedStyle(stop).stopColor));
-          if (!name.startsWith("am-near")) shaded.push(colours[colours.length - 1]);
-        });
-        colours.push(rgb(getComputedStyle(svg.querySelector(".am-snow")).fill));
-        shaded.push(colours[colours.length - 1]);
-        // the shadow faces darken the far and middle ranges (and their snow)
-        const shade = rgb(getComputedStyle(svg.querySelector(".am-shade-top")).stopColor);
-        const shadeAlpha = parseFloat(getComputedStyle(svg.querySelector(".am-shade-top")).stopOpacity) * shade.a;
-        const mixed = shaded.map((c) => ({
-          r: c.r * (1 - shadeAlpha) + shade.r * shadeAlpha,
-          g: c.g * (1 - shadeAlpha) + shade.g * shadeAlpha,
-          b: c.b * (1 - shadeAlpha) + shade.b * shadeAlpha,
-        }));
-        return Math.min(...colours.concat(mixed).map((c) => contrast(text, c)));
+        const sky = Array.from(document.querySelectorAll('#om-meg .about-scene path[class^="s-sky-"]'))
+          .map((el) => rgb(getComputedStyle(el).fill));
+        if (sky.length < 3) return 0;
+        const bg = rgb(getComputedStyle(document.querySelector(".theme-menu")).backgroundColor);
+        return Math.min(...sky.concat([bg]).map((c) => contrast(text, c)));
       });
       expect(worst).toBeGreaterThanOrEqual(4.5);
     });

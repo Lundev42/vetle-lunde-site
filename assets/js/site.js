@@ -2,7 +2,7 @@
  * Shared behaviour for every page:
  *   - Norwegian/English translations (strings live in each page's
  *     <script type="application/json" id="i18n-data"> block)
- *   - colour theme picker (dark, light, purple, green, white)
+ *   - colour theme picker (geological periods: hadean, cambrian, cretaceous, quaternary)
  *   - scroll reveal animation
  *   - active section highlighting in the navigation
  *   - mobile (hamburger) menu
@@ -101,8 +101,9 @@
     if (!toggle || !menu) return;
 
     // Theme → light/dark mode (must match theme-init.js) and browser UI colour
-    var MODES = { dark: "dark", light: "light", purple: "dark", green: "dark", white: "light" };
-    var UI_COLORS = { dark: "#0f1117", light: "#eef0f6", purple: "#150f20", green: "#0c1612", white: "#ffffff" };
+    var MODES = { hadean: "dark", cambrian: "dark", cretaceous: "dark", quaternary: "light" };
+    var UI_COLORS = { hadean: "#160c0a", cambrian: "#0c1612", cretaceous: "#0f1117", quaternary: "#ffffff" };
+    var OLD = { dark: "cretaceous", light: "quaternary", white: "quaternary", green: "cambrian", purple: "hadean" };
     var options = menu.querySelectorAll(".theme-option");
     var picker = toggle.parentNode;
 
@@ -111,7 +112,7 @@
     }
 
     function applyTheme(theme, persist) {
-      if (!isTheme(theme)) theme = "dark";
+      if (!isTheme(theme)) theme = "cretaceous";
       root.setAttribute("data-theme", theme);
       root.setAttribute("data-mode", MODES[theme]);
       if (persist) storageSet("theme", theme);
@@ -175,11 +176,16 @@
       if (isOpen() && e.relatedTarget && !picker.contains(e.relatedTarget)) setOpen(false);
     });
 
-    // theme-init.js already picked saved > system preference > dark.
+    // theme-init.js already picked saved > system preference > Kritt.
     // Only an explicit choice is persisted, so visitors who never choose
-    // keep following their operating system setting.
+    // keep following their operating system setting. A choice saved under
+    // an old theme name is stored again under its new name.
     var saved = storageGet("theme");
-    applyTheme(isTheme(saved) ? saved : root.getAttribute("data-theme"), false);
+    if (saved && Object.prototype.hasOwnProperty.call(OLD, saved)) {
+      applyTheme(OLD[saved], true);
+    } else {
+      applyTheme(isTheme(saved) ? saved : root.getAttribute("data-theme"), false);
+    }
   })();
 
   /* Re-enable transitions once the initial theme is in place */
