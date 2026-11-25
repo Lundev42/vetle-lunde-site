@@ -6,7 +6,6 @@
  *   - scroll reveal animation
  *   - active section highlighting in the navigation
  *   - mobile (hamburger) menu
- *   - image lightbox (only on pages that have one)
  *
  * Plain ES5, no dependencies, no inline event handlers (keeps the
  * Content-Security-Policy strict: script-src 'self').
@@ -321,56 +320,5 @@
       if (desktop.addEventListener) desktop.addEventListener("change", onChange);
       else if (desktop.addListener) desktop.addListener(onChange);
     }
-  })();
-
-  /* ── Lightbox (native <dialog>: focus trap, Escape and top layer for free) ── */
-  (function () {
-    var dialog = document.getElementById("lightbox");
-    if (!dialog || typeof dialog.showModal !== "function") return;
-
-    var img = document.getElementById("lightbox-img");
-    var caption = document.getElementById("lightbox-caption");
-    var closeBtn = dialog.querySelector(".lightbox-close");
-    var opener = null;
-
-    function open(thumb) {
-      var thumbImg = thumb.querySelector("img");
-      var thumbCaption = thumb.querySelector("figcaption");
-      if (!thumbImg) return;
-      opener = thumb;
-      img.src = thumb.getAttribute("data-full") || thumbImg.currentSrc || thumbImg.src;
-      img.alt = thumbImg.alt;
-      caption.textContent = thumbCaption ? thumbCaption.textContent : "";
-      dialog.showModal();
-      document.body.style.overflow = "hidden";
-      closeBtn.focus();
-    }
-
-    function close() {
-      if (dialog.open) dialog.close();
-    }
-
-    dialog.addEventListener("close", function () {
-      document.body.style.overflow = "";
-      img.removeAttribute("src");
-      if (opener) opener.focus();
-    });
-
-    closeBtn.addEventListener("click", close);
-
-    // Clicking the dark backdrop (outside the image) closes the viewer
-    dialog.addEventListener("click", function (e) {
-      if (e.target === dialog) close();
-    });
-
-    forEach(document.querySelectorAll("[data-lightbox]"), function (thumb) {
-      thumb.addEventListener("click", function () { open(thumb); });
-      thumb.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          open(thumb);
-        }
-      });
-    });
   })();
 })();

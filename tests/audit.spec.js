@@ -1,6 +1,6 @@
 // @ts-check
 // Regression tests for the site-wide audit: layout overflow, console/CSP
-// errors, broken links/assets, mobile menu, lightbox, no-JS fallback and SEO files.
+// errors, broken links/assets, mobile menu, no-JS fallback and SEO files.
 const { test, expect } = require("@playwright/test");
 
 const PAGES = [
@@ -125,40 +125,6 @@ test.describe("Mobile navigation", () => {
       await expect(burger).toBeFocused();
     });
   }
-});
-
-test.describe("Lightbox", () => {
-  test("opens from keyboard, closes with Escape and returns focus", async ({ page }) => {
-    await page.goto("/index.html");
-    const thumb = page.locator(".about-sub-gallery .gallery-thumb").first();
-    await thumb.focus();
-    await page.keyboard.press("Enter");
-    const dialog = page.locator("#lightbox");
-    await expect(dialog).toBeVisible();
-    await expect(page.locator("#lightbox-img")).toHaveAttribute("src", /dumdalsgrottene/);
-    await expect(page.locator("#lightbox-caption")).toContainText("Dumdalsgrottene");
-    await expect(page.locator(".lightbox-close")).toBeFocused();
-    await page.keyboard.press("Escape");
-    await expect(dialog).toBeHidden();
-    await expect(thumb).toBeFocused();
-  });
-
-  test("close button and backdrop click close the viewer", async ({ page }) => {
-    await page.goto("/index.html");
-    const thumb = page.locator(".about-sub-gallery .gallery-thumb").nth(1);
-    await thumb.click();
-    await page.locator(".lightbox-close").click();
-    await expect(page.locator("#lightbox")).toBeHidden();
-    await thumb.click();
-    await page.mouse.click(5, 5);
-    await expect(page.locator("#lightbox")).toBeHidden();
-  });
-
-  test("labels are translated", async ({ page }) => {
-    await page.goto("/index.html");
-    await page.click(".lang-toggle");
-    await expect(page.locator(".lightbox-close")).toHaveAttribute("aria-label", "Close");
-  });
 });
 
 test.describe("Robustness", () => {

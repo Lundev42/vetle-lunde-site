@@ -320,7 +320,132 @@
 
     /* ── About ── */
     #om-meg {
+      /* Sky and mountains – dark theme (default); other themes below */
+      --about-sky-top: var(--bg-secondary);
+      --about-sky-low: #202432;
+      --about-sun: #f2c879;
+      --am-far-top: #2d3346;
+      --am-far-base: #262b3b;
+      --am-mid-top: #242a3a;
+      --am-mid-base: #1f2431;
+      --am-near-top: #1b1f2a;
+      --am-near-base: #171a23;
+      --am-shade: rgba(8, 10, 16, 0.22);
+      --am-snow: #32384b;
+
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
       flex-direction: column;
+      /* extra room at the bottom so the mountains show below the text */
+      padding-bottom: 200px;
+      background: linear-gradient(180deg, var(--about-sky-top) 0%, var(--about-sky-low) 75%);
+    }
+
+    [data-theme="light"] #om-meg {
+      --about-sky-low: #f3f5fa;
+      --about-sun: #f6b765;
+      --am-far-top: #dde3ee;
+      --am-far-base: #e6eaf2;
+      --am-mid-top: #d0d8e6;
+      --am-mid-base: #d9dfea;
+      --am-near-top: #cad2df;
+      --am-near-base: #ccd3e0;
+      --am-shade: rgba(40, 52, 80, 0.045);
+      --am-snow: #f5f7fb;
+    }
+
+    [data-theme="white"] #om-meg {
+      --about-sky-low: #ffffff;
+      --about-sun: #f5b14f;
+      --am-far-top: #e9ecf2;
+      --am-far-base: #f1f3f7;
+      --am-mid-top: #dfe3eb;
+      --am-mid-base: #e7eaf0;
+      --am-near-top: #d5dbe5;
+      --am-near-base: #dadfe8;
+      --am-shade: rgba(40, 52, 80, 0.045);
+      --am-snow: #fbfcfd;
+    }
+
+    [data-theme="purple"] #om-meg {
+      --about-sky-low: #2b1e42;
+      --about-sun: #f6b3c6;
+      --am-far-top: #3a2b55;
+      --am-far-base: #322549;
+      --am-mid-top: #2d2144;
+      --am-mid-base: #271d3b;
+      --am-near-top: #21182f;
+      --am-near-base: #1c1429;
+      --am-shade: rgba(10, 4, 20, 0.22);
+      --am-snow: #3f305a;
+    }
+
+    [data-theme="green"] #om-meg {
+      --about-sky-low: #1a3128;
+      --about-sun: #e9df98;
+      --am-far-top: #254035;
+      --am-far-base: #20382e;
+      --am-mid-top: #1d3329;
+      --am-mid-base: #192c24;
+      --am-near-top: #15261f;
+      --am-near-base: #12211b;
+      --am-shade: rgba(2, 10, 6, 0.22);
+      --am-snow: #2a453a;
+    }
+
+    #om-meg .about-mountains {
+      position: absolute;
+      z-index: -1;
+      bottom: 0;
+      left: 50%;
+      /* Half the section, but never so tall on a phone that only one peak shows */
+      height: min(50%, 60vw);
+      width: auto;
+      aspect-ratio: 4 / 1;
+      min-width: 100%;
+      max-width: none;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .about-mountains .am-far { fill: url(#am-far); }
+    .about-mountains .am-mid { fill: url(#am-mid); }
+    .about-mountains .am-near { fill: url(#am-near); }
+    .about-mountains .am-snow { fill: var(--am-snow); }
+    .about-mountains .am-shade { fill: url(#am-shade); }
+    .about-mountains .am-shade-top { stop-color: var(--am-shade); }
+    .about-mountains .am-shade-base { stop-color: var(--am-shade); stop-opacity: 0; }
+    .about-mountains .am-far-top { stop-color: var(--am-far-top); }
+    .about-mountains .am-far-base { stop-color: var(--am-far-base); }
+    .about-mountains .am-mid-top { stop-color: var(--am-mid-top); }
+    .about-mountains .am-mid-base { stop-color: var(--am-mid-base); }
+    .about-mountains .am-near-top { stop-color: var(--am-near-top); }
+    .about-mountains .am-near-base { stop-color: var(--am-near-base); }
+
+    /* Small flat sun with two soft halo rings, in the open sky between the
+       text and the photo (wide screens), above the photo (tablets) or next
+       to the heading (phones) */
+    #om-meg .about-sun {
+      position: absolute;
+      z-index: -1;
+      top: 38%;
+      left: calc(max(48px, (100% - 1200px) / 2) + (min(650px, min(1200px, 100% - 96px) - 380px) + min(1200px, 100% - 96px) - 320px) / 2);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--about-sun);
+      box-shadow:
+        0 0 64px 26px color-mix(in srgb, var(--about-sun) 18%, transparent);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    @media (max-width: 1099px) {
+      #om-meg .about-sun {
+        top: 64px;
+        left: calc(100% - 48px - 160px);
+      }
     }
 
     #om-meg .section-inner {
@@ -368,170 +493,6 @@
       background: var(--card-bg);
       border-radius: 0;
       transition: background-color var(--duration-state) var(--ease-out-quart), color var(--duration-state) var(--ease-out-quart);
-    }
-
-    /* ── About Sub-Gallery ── */
-    .about-sub-gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      max-width: 1200px;
-      width: 100%;
-      margin: 64px auto 0;
-    }
-
-    .about-sub-gallery .gallery-thumb {
-      position: relative;
-      margin: 0;
-      aspect-ratio: 4 / 3;
-      cursor: zoom-in;
-      border-radius: var(--radius);
-      overflow: hidden;
-      border: 1px solid var(--card-border);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-      transition: transform var(--duration-state) var(--ease-out-quart), box-shadow var(--duration-state) var(--ease-out-quart);
-    }
-
-    .about-sub-gallery .gallery-thumb img {
-      transition: transform var(--duration-layout) var(--ease-out-quart);
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .about-sub-gallery .gallery-thumb:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
-      }
-
-      .about-sub-gallery .gallery-thumb:hover img {
-        transform: scale(1.04);
-      }
-    }
-
-    .about-sub-gallery .gallery-thumb:active {
-      transform: scale(0.98);
-    }
-
-    [data-mode="light"] .about-sub-gallery .gallery-thumb {
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-    }
-
-    [data-mode="light"] .about-sub-gallery .gallery-thumb:hover {
-      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
-    }
-
-    .about-sub-gallery .gallery-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .about-sub-gallery .gallery-thumb figcaption {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 32px 16px 14px;
-      font-size: 0.85rem;
-      line-height: 1.45;
-      color: #fff;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-      text-align: left;
-      transition: opacity var(--duration-state) var(--ease-out-quart);
-      opacity: 1;
-    }
-
-    /* ── Lightbox ── */
-    /* Native <dialog>: rendered in the top layer, traps focus, closes on Escape */
-    .lightbox-overlay {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      max-width: none;
-      max-height: none;
-      margin: 0;
-      padding: 0;
-      border: none;
-      background: rgba(0, 0, 0, 0.88);
-      color: #fff;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-    }
-
-    .lightbox-overlay[open] {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .lightbox-overlay::backdrop {
-      background: transparent;
-    }
-
-    .lightbox-close {
-      position: absolute;
-      top: 16px;
-      right: 24px;
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 2.5rem;
-      cursor: pointer;
-      z-index: 10000;
-      line-height: 1;
-      padding: 4px 12px;
-      border-radius: 8px;
-      transition: opacity var(--duration-state) var(--ease-out-quart);
-    }
-
-    .lightbox-close:hover {
-      opacity: 0.7;
-    }
-
-    .lightbox-close:focus-visible {
-      outline-color: #fff;
-    }
-
-    .lightbox-content {
-      margin: 0;
-      max-width: 90vw;
-      max-height: 85vh;
-      text-align: center;
-    }
-
-    /* Entrance: fade + slight scale from 0.96 (never from 0), ease-out, ~220ms */
-    .lightbox-overlay[open] {
-      animation: lightbox-fade 220ms var(--ease-out-quart);
-    }
-
-    .lightbox-overlay[open] .lightbox-content {
-      animation: lightbox-in 220ms var(--ease-out-quart);
-    }
-
-    @keyframes lightbox-fade {
-      from { opacity: 0; }
-    }
-
-    @keyframes lightbox-in {
-      from { opacity: 0; transform: scale(0.96); }
-    }
-
-    .lightbox-content img {
-      max-width: 100%;
-      height: auto;
-      max-height: 80vh;
-      display: block;
-      margin: 0 auto;
-      border-radius: 6px;
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
-    }
-
-    .lightbox-content figcaption {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 1rem;
-      padding: 14px 20px;
-      text-align: center;
     }
 
     /* ── Study ── */
@@ -898,10 +859,19 @@
         align-self: center;
       }
 
-      .about-sub-gallery {
-        grid-template-columns: 1fr;
-        margin-top: 40px;
-        gap: 16px;
+      #om-meg {
+        padding-bottom: 170px;
+      }
+
+      #om-meg .about-sun {
+        top: 102px;
+        left: auto;
+        right: 44px;
+        width: 36px;
+        height: 36px;
+        transform: translateY(-50%);
+        box-shadow:
+          0 0 44px 18px color-mix(in srgb, var(--about-sun) 18%, transparent);
       }
 
       /* Bakgrunn: stack the BSc text and campus photo */
@@ -943,16 +913,6 @@
         justify-content: center;
       }
 
-      /* Lightbox mobile */
-      .lightbox-content {
-        max-width: 95vw;
-      }
-
-      .lightbox-close {
-        top: 12px;
-        right: 12px;
-        font-size: 2rem;
-      }
     }
 
     /* ── Small phone (≤ 380px) ── */
@@ -1173,6 +1133,19 @@
 
     <!-- About me -->
     <section id="om-meg">
+      <!-- Background: flat Lofoten-style mountains standing on the border to
+           Bakgrunn, with a small sun. Drawn by tools/about-mountains.py;
+           the colours come from the theme CSS. -->
+      <span class="about-sun" aria-hidden="true"></span>
+      <svg class="about-mountains" viewBox="0 0 1600 400" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
+      <defs><linearGradient id="am-far" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="400"><stop offset="0" class="am-far-top"/><stop offset="1" class="am-far-base"/></linearGradient><linearGradient id="am-mid" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="400"><stop offset="0" class="am-mid-top"/><stop offset="1" class="am-mid-base"/></linearGradient><linearGradient id="am-near" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="400"><stop offset="0" class="am-near-top"/><stop offset="1" class="am-near-base"/></linearGradient><linearGradient id="am-shade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="400"><stop offset="0" class="am-shade-top"/><stop offset="1" class="am-shade-base"/></linearGradient></defs>
+      <path class="am-far" d="M-1200,400 L-1200,268 -1125,162 -1066,75 -1015,176 -948,296 -879,192 -823,128 -760,171 -667,242 -611,182 -530,109 -484,165 -431,252 -368,151 -325,83 -270,186 -233,246 -172,158 -87,40 -37,136 36,255 91,191 150,128 209,194 287,252 362,188 418,132 481,196 524,260 590,156 662,38 739,133 815,234 904,135 987,47 1050,161 1107,288 1170,208 1233,124 1276,206 1313,261 1363,167 1421,87 1476,174 1529,262 1581,196 1659,93 1721,183 1779,241 1869,130 1950,36 2000,105 2071,213 2128,116 2188,26 2227,98 2270,192 2345,116 2407,29 2453,112 2519,243 2585,172 2630,112 2698,177 2767,250 2823,197 2887,128 L3000,400 Z"/>
+      <path class="am-snow" d="M-1086,105 L-1066,75 L-1051,105 L-1060,99 L-1069,110 L-1077,99 ZM-108,70 L-87,40 L-72,70 L-81,64 L-90,75 L-99,64 ZM644,68 L662,38 L686,68 L676,62 L665,73 L655,62 ZM959,77 L987,47 L1003,77 L992,71 L981,82 L970,71 ZM1925,66 L1950,36 L1971,66 L1959,60 L1948,71 L1936,60 ZM2169,56 L2188,26 L2204,56 L2195,50 L2186,61 L2178,50 ZM2386,59 L2407,29 L2423,59 L2414,53 L2405,64 L2395,53 Z"/>
+      <path class="am-shade" d="M-1066,75 L-1015,176 L-948,296 L-948,364 L-1040,400 ZM-823,128 L-760,171 L-667,242 L-667,345 L-789,400 ZM-530,109 L-484,165 L-431,252 L-431,348 L-508,400 ZM-325,83 L-270,186 L-233,246 L-233,346 L-305,400 ZM-87,40 L-37,136 L36,255 L36,349 L-60,400 ZM150,128 L209,194 L287,252 L287,348 L180,400 ZM418,132 L481,196 L524,260 L524,351 L441,400 ZM662,38 L739,133 L815,234 L815,342 L696,400 ZM987,47 L1050,161 L1107,288 L1107,361 L1014,400 ZM1233,124 L1276,206 L1313,261 L1313,351 L1251,400 ZM1421,87 L1476,174 L1529,262 L1529,352 L1445,400 ZM1659,93 L1721,183 L1779,241 L1779,344 L1686,400 ZM1950,36 L2000,105 L2071,213 L2071,334 L1977,400 ZM2188,26 L2227,98 L2270,192 L2270,327 L2206,400 ZM2407,29 L2453,112 L2519,243 L2519,345 L2432,400 ZM2630,112 L2698,177 L2767,250 L2767,348 L2660,400 ZM2887,128 L2887,305 L2887,400 Z"/>
+      <path class="am-mid" d="M-1200,400 L-1200,280 -1140,242 -1066,173 -1012,219 -933,303 -871,244 -789,171 -727,244 -662,305 -607,232 -562,156 -482,228 -412,275 -345,223 -274,154 -235,198 -188,276 -122,206 -70,143 24,246 94,310 140,255 190,214 259,282 320,325 397,255 449,197 511,238 586,302 652,237 728,152 787,219 870,289 950,231 1024,165 1073,225 1118,275 1183,198 1251,140 1329,223 1409,310 1482,253 1537,198 1579,228 1636,292 1725,238 1794,185 1838,236 1894,314 1979,226 2039,151 2096,217 2135,277 2189,228 2239,180 2305,235 2395,284 2454,222 2494,168 2574,236 2642,284 2710,228 2763,190 L3000,400 Z"/>
+      <path class="am-shade" d="M-1066,173 L-1012,219 L-933,303 L-933,366 L-1037,400 ZM-789,171 L-727,244 L-662,305 L-662,367 L-761,400 ZM-562,156 L-482,228 L-412,275 L-412,356 L-529,400 ZM-274,154 L-235,198 L-188,276 L-188,357 L-255,400 ZM-70,143 L24,246 L94,310 L94,368 L-34,400 ZM190,214 L259,282 L320,325 L320,374 L219,400 ZM449,197 L511,238 L586,302 L586,366 L479,400 ZM728,152 L787,219 L870,289 L870,361 L759,400 ZM1024,165 L1073,225 L1118,275 L1118,356 L1044,400 ZM1251,140 L1329,223 L1409,310 L1409,368 L1285,400 ZM1537,198 L1579,228 L1636,292 L1636,362 L1559,400 ZM1794,185 L1838,236 L1894,314 L1894,370 L1816,400 ZM2039,151 L2096,217 L2135,277 L2135,357 L2060,400 ZM2239,180 L2305,235 L2395,284 L2395,360 L2273,400 ZM2494,168 L2574,236 L2642,284 L2642,359 L2527,400 ZM2763,190 L2763,327 L2763,400 Z"/>
+      <path class="am-near" d="M-1200,400 L-1200,325 -1084,303 -948,272 -861,308 -747,341 -650,312 -511,263 -431,302 -357,322 -266,300 -187,276 -106,301 -12,341 65,320 143,294 267,317 392,347 497,318 646,295 725,308 842,338 946,323 1025,298 1117,332 1190,355 1288,334 1380,299 1484,319 1633,335 1751,316 1832,295 1967,314 2076,342 2182,297 2256,262 2368,288 2494,319 2645,294 2765,263 L3000,400 Z"/>
+      </svg>
       <div class="section-inner reveal">
         <div class="text-col">
           <h2 data-i18n="about.title">Om meg</h2>
@@ -1193,20 +1166,6 @@
             />
           </figure>
         </div>
-      </div>
-      <div class="about-sub-gallery">
-        <figure class="gallery-thumb" tabindex="0" role="button" aria-haspopup="dialog" data-lightbox data-full="images/optimized/dumdalsgrottene-900.webp">
-          <img src="images/optimized/dumdalsgrottene-600.webp" width="600" height="800" decoding="async" alt="Dumdalsgrottene" data-i18n-alt="about.img2172.alt" loading="lazy"/>
-          <figcaption data-i18n="about.caption2172">Det er ikke uvanlig å måtte krype gjennom trange marmorganger i Dumdalsgrottene</figcaption>
-        </figure>
-        <figure class="gallery-thumb" tabindex="0" role="button" aria-haspopup="dialog" data-lightbox data-full="images/optimized/brurastakken-1200.webp">
-          <img src="images/optimized/brurastakken-600.webp" width="600" height="1067" decoding="async" alt="Brurastakken" data-i18n-alt="about.img7212.alt" loading="lazy"/>
-          <figcaption data-i18n="about.caption7212">På toppen av Brurastakken kan man se Alden til venstre og Tvibyrge til høyre - to geologiske perler som startet sin reise som oseanisk skorpe i Iapetushavet.</figcaption>
-        </figure>
-        <figure class="gallery-thumb" tabindex="0" role="button" aria-haspopup="dialog" data-lightbox data-full="images/optimized/feltarbeid-bre-1600.webp">
-          <img src="images/optimized/feltarbeid-bre-600.webp" width="600" height="450" decoding="async" alt="Feltarbeid på bre" data-i18n-alt="about.img6585.alt" loading="lazy"/>
-          <figcaption data-i18n="about.caption6585">Hva er vel en manns kraft mot en kjempe som har sovet under isen i tusen år?</figcaption>
-        </figure>
       </div>
     </section>
 
@@ -1519,13 +1478,7 @@
         "about.text": "Hei, mitt navn er Vetle! Jeg er 23 år og kommer fra Stavanger.",
         "about.text2": "Siden barndommen har jeg hatt en stor interesse for geologi. Ønsket om å forstå hvorfor landskapet ser ut slik som det gjør, har vært en viktig drivkraft i min interesse for faget.",
         "about.background.text": "I 2023 startet jeg på den treårige bachelorgraden Geologi og Geofare ved Høgskulen på Vestlandet i Sogndal. Studiet har gitt meg stor kunnskap og lærerike opplevelser gjennom både teoretisk undervisning og feltarbeid/ekskursjoner. Nå bygger jeg videre på kunnskapen jeg har opparbeidet meg ved å skrive en bacheloroppgave som avslutning på studiet.",
-        "about.caption2172": "Det er ikke uvanlig å måtte krype gjennom trange marmorganger i Dumdalsgrottene",
-        "about.caption7212": "På toppen av Brurastakken kan man se Alden til venstre og Tvibyrge til høyre - to geologiske perler som startet sin reise som oseanisk skorpe i Iapetushavet.",
-        "about.caption6585": "Hva er vel en manns kraft mot en kjempe som har sovet under isen i tusen år?",
         "about.img8394.alt": "Vetle på fjelltur om vinteren",
-        "about.img2172.alt": "Dumdalsgrottene",
-        "about.img6585.alt": "Feltarbeid på bre",
-        "about.img7212.alt": "Brurastakken",
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "Arbeidet mitt besto av å hjelpe reservoarkarakteriserings teamet med å lage en brukbar biostratigrafisk database. Dette arbeidet støtter den geologiske tolkningen etter borekampanjen på gasskondensatfeltet Tommeliten A, og bidro til den fullstendige modelloppdateringen for 2024/2025. Arbeidsflyten bestod av databehandling i Excel etterfulgt av analysearbeid i Spotfire.",
         "about.job2.title": "ConocoPhillips",
@@ -1570,8 +1523,6 @@
         "contact.email.aria": "Send e-post",
         "contact.github.aria": "GitHub",
         "contact.linkedin.aria": "LinkedIn",
-        "lightbox.label": "Bildevisning",
-        "lightbox.close": "Lukk",
         "about.readmore": "Les mer",
         "footer.text": "Geologi og Geofare",
         "nav.brand": "Til forsiden",
@@ -1591,13 +1542,7 @@
         "about.text": "Hi, my name is Vetle! I’m 23 years old and from Stavanger.",
         "about.text2": "Since childhood, I’ve had a great interest in geology. The desire to understand why the landscape looks the way it does has been an important driving force in my interest in the subject.",
         "about.background.text": "In 2023, I started the three-year bachelor’s degree in Geology and Geo-Hazards at the Western Norway University of Applied Sciences in Sogndal. The programme has given me great knowledge and rewarding experiences through both theoretical teaching and fieldwork/excursions. I am now building on the knowledge I have acquired by writing a bachelor’s thesis as the conclusion of my studies.",
-        "about.caption2172": "It is not uncommon to have to crawl through narrow marble passages in the Dumdals Caves",
-        "about.caption7212": "From the top of Brurastakken you can see Alden to the left and Tvibyrge to the right – two geological gems that began their journey as oceanic crust in the Iapetus Ocean.",
-        "about.caption6585": "What is a man’s strength against a giant that has slept under the ice for a thousand years?",
         "about.img8394.alt": "Vetle on a winter mountain hike",
-        "about.img2172.alt": "Dumdals Caves",
-        "about.img6585.alt": "Fieldwork on glacier",
-        "about.img7212.alt": "Brurastakken",
         "about.job1.title": "ConocoPhillips",
         "about.job1.text": "My work consisted of helping the reservoir characterisation team to create a usable biostratigraphic database. This work supports the geological interpretation following the drilling campaign on the Tommeliten A gas condensate field, and contributed to the complete model update for 2024/2025. The workflow consisted of data processing in Excel followed by analysis work in Spotfire.",
         "about.job2.title": "ConocoPhillips",
@@ -1642,8 +1587,6 @@
         "contact.email.aria": "Send email",
         "contact.github.aria": "GitHub",
         "contact.linkedin.aria": "LinkedIn",
-        "lightbox.label": "Image viewer",
-        "lightbox.close": "Close",
         "about.readmore": "Read more",
         "footer.text": "Geology and Geo-Hazards",
         "nav.brand": "Go to the home page",
@@ -1653,13 +1596,6 @@
   </script>
   <script src="assets/js/site.js" defer></script>
 
-  <dialog class="lightbox-overlay" id="lightbox" aria-label="Bildevisning" data-i18n-aria-label="lightbox.label">
-    <button type="button" class="lightbox-close" aria-label="Lukk" data-i18n-aria-label="lightbox.close">&times;</button>
-    <figure class="lightbox-content">
-      <img id="lightbox-img" alt="">
-      <figcaption id="lightbox-caption"></figcaption>
-    </figure>
-  </dialog>
 
 </body>
 </html>

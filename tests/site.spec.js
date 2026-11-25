@@ -832,13 +832,6 @@ test.describe('Motion design (impeccable skill)', function () {
     expect(easeOutExpo).toBe('cubic-bezier(0.16, 1, 0.3, 1)');
   });
 
-  test('about sub-gallery contains three clickable figures', async function ({ page }) {
-    await page.goto(PAGE_URL);
-    var figures = page.locator('.about-sub-gallery .gallery-thumb');
-    var count = await figures.count();
-    expect(count).toBe(3);
-  });
-
   test('interactive elements have active pressed states', async function ({ page }) {
     await page.goto(PAGE_URL);
     var hasActiveRule = await page.evaluate(function () {
@@ -979,21 +972,112 @@ test.describe("Navigation bar vertical centering (Fix 3)", () => {
   });
 });
 
-test.describe("Gallery captions always visible (Fix 4)", () => {
-  test("caption is visible by default", async ({ page }) => {
+test.describe("About me photos", () => {
+  test("only the profile photo is left; the three small photos and the viewer are gone", async ({ page }) => {
     await page.goto(PAGE_URL);
-    const caption = page.locator(".about-sub-gallery .gallery-thumb figcaption").first();
-    const opacity = await caption.evaluate(el => getComputedStyle(el).opacity);
-    expect(opacity).toBe("1");
+    await expect(page.locator("#om-meg img")).toHaveCount(1);
+    await expect(page.locator(".about-sub-gallery")).toHaveCount(0);
+    await expect(page.locator("#lightbox")).toHaveCount(0);
+    await expect(page.locator("[data-lightbox]")).toHaveCount(0);
+  });
+});
+
+test.describe("About me mountain background", () => {
+  const VIEWPORTS = [[2560, 1080], [1920, 1080], [1440, 900], [1280, 800], [1024, 768], [820, 1180], [390, 844], [375, 667], [320, 568]];
+
+  test("has three mountain ranges and a sun, hidden from screen readers", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    const svg = page.locator("#om-meg svg.about-mountains");
+    await expect(svg).toHaveAttribute("aria-hidden", "true");
+    for (const range of ["am-far", "am-mid", "am-near"]) {
+      await expect(svg.locator("." + range)).toHaveCount(1);
+    }
+    await expect(page.locator("#om-meg .about-sun")).toHaveAttribute("aria-hidden", "true");
+    await expect(page.locator("#om-meg .about-sun")).toBeVisible();
   });
 
-  test("caption remains visible on hover", async ({ page }) => {
-    await page.goto(PAGE_URL);
-    const thumb = page.locator(".about-sub-gallery .gallery-thumb").first();
-    await thumb.hover();
-    const caption = thumb.locator("figcaption");
-    await expect(caption).toHaveCSS("opacity", "1");
-  });
+  for (const [width, height] of VIEWPORTS) {
+    test(`mountains stand on the border to Bakgrunn and the sun is clear of text at ${width}x${height}`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto(PAGE_URL);
+      await page.evaluate(() => document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible")));
+      await page.waitForTimeout(700);
+      const r = await page.evaluate(() => {
+        const section = document.querySelector("#om-meg").getBoundingClientRect();
+        const next = document.querySelector("#bakgrunn").getBoundingClientRect();
+        const svg = document.querySelector("#om-meg .about-mountains").getBoundingClientRect();
+        const sun = document.querySelector("#om-meg .about-sun").getBoundingClientRect();
+        const boxes = [];
+        document.querySelectorAll("#om-meg h2, #om-meg p").forEach((el) => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          Array.from(range.getClientRects()).forEach((b) => boxes.push(b));
+        });
+        boxes.push(document.querySelector("#om-meg .media-col img").getBoundingClientRect());
+        const hits = boxes.filter((b) => b.left < sun.right && b.right > sun.left && b.top < sun.bottom && b.bottom > sun.top).length;
+        return {
+          bottomGap: Math.abs(section.bottom - svg.bottom),
+          borderGap: Math.abs(next.top - section.bottom),
+          left: svg.left - section.left,
+          right: section.right - svg.right,
+          share: svg.height / section.height,
+          sunInside: sun.top >= section.top && sun.bottom <= section.bottom && sun.left >= section.left && sun.right <= section.right,
+          hits,
+        };
+      });
+      expect(r.bottomGap).toBeLessThanOrEqual(1);
+      expect(r.borderGap).toBeLessThanOrEqual(1);
+      expect(r.left).toBeLessThanOrEqual(0.5);
+      expect(r.right).toBeLessThanOrEqual(0.5);
+      expect(r.share).toBeGreaterThan(0.15);
+      expect(r.share).toBeLessThanOrEqual(0.501);
+      expect(r.sunInside).toBe(true);
+      expect(r.hits).toBe(0);
+    });
+  }
+
+  for (const theme of ["dark", "light", "purple", "green", "white"]) {
+    test(`text stays readable over the mountains in the ${theme} theme`, async ({ page }) => {
+      await page.goto(PAGE_URL);
+      await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+      const worst = await page.evaluate(() => {
+        function rgb(str) {
+          const m = str.match(/[\d.]+/g).map(Number);
+          return { r: m[0], g: m[1], b: m[2], a: m.length > 3 ? m[3] : 1 };
+        }
+        function lum(c) {
+          const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+          return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+        }
+        function contrast(a, b) {
+          const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+          return (x + 0.05) / (y + 0.05);
+        }
+        const text = rgb(getComputedStyle(document.querySelector("#om-meg .text-col p")).color);
+        const svg = document.querySelector("#om-meg .about-mountains");
+        const colours = [];
+        const shaded = [];
+        svg.querySelectorAll("stop").forEach((stop) => {
+          const name = stop.className.baseVal;
+          if (name.startsWith("am-shade")) return;
+          colours.push(rgb(getComputedStyle(stop).stopColor));
+          if (!name.startsWith("am-near")) shaded.push(colours[colours.length - 1]);
+        });
+        colours.push(rgb(getComputedStyle(svg.querySelector(".am-snow")).fill));
+        shaded.push(colours[colours.length - 1]);
+        // the shadow faces darken the far and middle ranges (and their snow)
+        const shade = rgb(getComputedStyle(svg.querySelector(".am-shade-top")).stopColor);
+        const shadeAlpha = parseFloat(getComputedStyle(svg.querySelector(".am-shade-top")).stopOpacity) * shade.a;
+        const mixed = shaded.map((c) => ({
+          r: c.r * (1 - shadeAlpha) + shade.r * shadeAlpha,
+          g: c.g * (1 - shadeAlpha) + shade.g * shadeAlpha,
+          b: c.b * (1 - shadeAlpha) + shade.b * shadeAlpha,
+        }));
+        return Math.min(...colours.concat(mixed).map((c) => contrast(text, c)));
+      });
+      expect(worst).toBeGreaterThanOrEqual(4.5);
+    });
+  }
 });
 
 test.describe("Academic background split into BSc and MSc", () => {
