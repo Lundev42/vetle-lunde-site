@@ -36,6 +36,7 @@ the generated CSS between the scene-tones markers in index.html. Use
 --debug DIR to write check images and a preview in the original colours.
 """
 import argparse
+import base64
 import re
 import subprocess
 import sys
@@ -53,7 +54,13 @@ HTML = "index.html"
 S = 2              # the labels are twice the size of the source picture
 PAD = 900          # extension on each side for wide screens, in source pixels
 TOP = 100          # crop: first source row that is drawn
-LAYERS = [None, "haze", "right-towers", "left-towers", "snow", "hills", "fore"]
+LAYERS = [None, "haze", "right-towers", "left-towers", "snow", "hills", "fore", "rocks"]
+DRAW_ORDER = [1, 2, 3, 7, 4, 5, 6]      # back to front ("rocks" stand in front of the big tower)
+RANK = np.zeros(8, np.int32)
+RANK[DRAW_ORDER] = np.arange(1, 8)
+# the big right tower (moved); the rocks and the spire left of it stay put
+TOWER_ZONE = np.array([(1016, 100), (1300, 100), (1300, 480), (1025, 480), (1025, 322),
+                       (1016, 316)], np.int32)
 
 # Zones in source pixels (1376 x 768), drawn by eye from the picture.
 TRIO_SNOWLINE = [(0, 472), (60, 468), (100, 462), (150, 474), (200, 470), (250, 458),
@@ -80,16 +87,14 @@ RIGHT_SCALE = 0.93
 RIGHT_ANCHOR = (1080, 470)
 RIGHT_SHIFT = (0, 34)
 
-# Sky per period, top to horizon, at these heights (fractions of the drawn
-# scene). The top colour is the section background (--bg-secondary).
-SKY_AT = [0.0, 0.3, 0.55, 0.8]
-SKY = {
-    "cretaceous": ["#181a20", "#1b1f2c", "#252c44", "#2f3955"],
-    "hadean": ["#21110d", "#2e120c", "#5a1d0c", "#7a2c0f"],
-    "cambrian": ["#13211b", "#162a22", "#1f3d31", "#28503f"],
-    "quaternary": ["#dde1e8", "#d9dfe8", "#cfd9e6", "#c6d3e3"],
-}
-THEMES = list(SKY)
+# Colour themes. "natural" keeps the picture's own sunset colours; the others
+# are the geological periods. BG2 is each theme's --bg-secondary in
+# assets/css/site.css: the sky darkens into it towards the top of the scene.
+THEMES = ["natural", "hadean", "cambrian", "cretaceous", "quaternary"]
+DEFAULT = "cretaceous"
+BG2 = {"natural": "#1d222a", "hadean": "#21110d", "cambrian": "#13211b",
+       "cretaceous": "#181a20", "quaternary": "#dde1e8"}
+SKY_PX = 40        # one pixel of the sky image covers 40 x 40 units
 
 
 # ── colour ────────────────────────────────────────────────────────────────
@@ -153,33 +158,57 @@ def theme_colour(theme, lab):
     olive (about 85). Each rule keeps the lightness order and the difference
     between rock and grass, and moves them to the period's hues."""
     L, a, b = lab
+    if theme == "natural":
+        return lab_hex(lab)
     C = float(np.hypot(a, b))
     h = float(np.degrees(np.arctan2(b, a)) % 360)
     # 0 = sunlit rock, 30 = grass; greys (little chroma, unreliable hue) count as rock
     warm = float(np.clip((C - 0.02) / 0.03, 0, 1)) if 25 <= h <= 115 else 0.0
     hh = (float(np.clip(h, 45, 95)) - 55) * warm
     if theme == "cretaceous":                 # moonlit night, blue rock, teal grass
-        return lch_hex(0.16 + 0.58 * L ** 1.35, 0.014 + 0.42 * C, 262 - 2.3 * hh)
+        return lch_hex(0.16 + 0.58 * L ** 1.35, min(0.014 + 0.42 * C, 0.06), 262 - 2.3 * hh)
     if theme == "hadean":                     # dark rock, the light parts glow like magma
         g = float(np.clip((L - 0.7) / 0.22, 0, 1))
         return lch_hex(0.13 + 0.5 * L ** 1.9 + 0.2 * g, 0.03 + 0.75 * C + 0.13 * g,
                        30 + 0.5 * hh + 30 * g)
     if theme == "cambrian":                   # green life
-        return lch_hex(0.15 + 0.6 * L ** 1.25, 0.016 + 0.72 * C, 170 - 1.2 * hh)
+        return lch_hex(0.15 + 0.6 * L ** 1.25, min(0.016 + 0.72 * C, 0.075), 170 - 1.2 * hh)
     if theme == "quaternary":                 # ice age: blue-grey rock and snow, sage steppe
         return lch_hex(0.36 + 0.58 * L, 0.008 + 0.3 * C, 245 - 3.2 * hh)
     raise ValueError(theme)
 
 
-def sky_colour(theme, t):
-    """The period's sky at height t (0 = top of the scene, 1 = bottom), OKLab."""
-    stops = [hex_lab(c) for c in SKY[theme]]
-    t = float(np.clip(t, SKY_AT[0], SKY_AT[-1]))
-    for i in range(len(SKY_AT) - 1):
-        if t <= SKY_AT[i + 1]:
-            f = (t - SKY_AT[i]) / (SKY_AT[i + 1] - SKY_AT[i])
-            return stops[i] * (1 - f) + stops[i + 1] * f
-    return stops[-1]
+def sky_map(theme, lab):
+    """Map the picture's sky (OKLab, any shape [..., 3]) into a theme's sky.
+
+    The sunset glow (the lightest, orange part) becomes the theme's horizon
+    glow; the blue-grey upper sky becomes its darker upper sky."""
+    lab = np.asarray(lab, float)
+    if theme == "natural":
+        return lab
+    L = lab[..., 0]
+    C = np.hypot(lab[..., 1], lab[..., 2])
+    t = np.clip((L - 0.62) / 0.18, 0, 1)
+    if theme == "cretaceous":
+        L2, C2, h2 = 0.22 + 0.28 * t, 0.025 + 0.3 * C, 265 - 20 * t
+    elif theme == "hadean":
+        L2, C2, h2 = 0.17 + 0.36 * t, 0.07 + 0.55 * C, 28 + 22 * t
+    elif theme == "cambrian":
+        L2, C2, h2 = 0.2 + 0.3 * t, 0.03 + 0.4 * C, 165 - 15 * t
+    elif theme == "quaternary":
+        # winter dusk: blue-grey above, a pale warm glow on the horizon
+        L2, C2, h2 = 0.76 + 0.18 * t, 0.018 + 0.12 * C, 245 - 170 * t ** 2
+    else:
+        raise ValueError(theme)
+    hr = np.radians(h2)
+    return np.stack([L2, C2 * np.cos(hr), C2 * np.sin(hr)], -1)
+
+
+def shade(theme, lab, y):
+    """Darken (or, for the light theme, soften) the sky towards the section
+    colour near the top of the scene; y is 0 at the top, 1 at the bottom."""
+    s = np.clip(1 - np.asarray(y, float) / 0.45, 0, 1) ** 1.4
+    return lab * (1 - s[..., None]) + hex_lab(BG2[theme]) * s[..., None]
 
 
 # ── depth layers from the original picture (source pixels) ───────────────
@@ -217,7 +246,8 @@ def depth_layers():
     """Land mask and drawing layer for every source pixel.
 
     Layers, back to front: 1 haze, 2 right towers, 3 left towers, 4 snow,
-    5 hills, 6 foreground (0 = sky)."""
+    5 hills, 6 foreground, 7 rocks left of the big tower (drawn after the
+    towers, before the snow; 0 = sky)."""
     img = cv2.imread(SRC)
     if img is None:
         sys.exit("missing " + SRC)
@@ -273,7 +303,8 @@ def depth_layers():
         done[m] = True
 
     put(dark, 6)
-    put(right & ~(grass & (yy > 420)), 2)
+    put(right & in_poly(TOWER_ZONE) & ~(grass & (yy > 420)), 2)
+    put(right & ~(grass & (yy > 420)), 7)    # the rocks left of the big tower stay where they are
     put(haze[2] & (yy < 440), 1)            # a thin cloud line along the haze
     put(trio, 3)
     put(haze[2] & ~grass & (L > 74) & (C < 18), 4)
@@ -359,8 +390,9 @@ def build(debug=None):
     H, W = lab.shape
     lab[-6:] = lab[-7]                        # the last rows follow the blurred frame
 
-    lab = vote(lab, 1.0)
+    lab = vote(lab, 1.6)                      # smoother edges than the SVG's own
     lab = despeckle(lab, 30)
+    ok = srgb_to_oklab(palette)
 
     # land: the source's land mask, with its edge moved onto the edges of
     # the SVG's own colours (a colour that is mostly land is land)
@@ -383,19 +415,12 @@ def build(debug=None):
         frac = np.bincount(flat, weights=land.ravel(), minlength=cnt) / np.maximum(np.bincount(flat, minlength=cnt), 1)
         sel = comp > 0
         land[sel] = (frac >= 0.5)[comp[sel]]
-    # the glow along the tower edges is sky: peel sky-coloured patches off
-    # the towers from the outside in
-    zone = np.zeros((H, W), np.uint8)
-    cv2.fillPoly(zone, [TRIO_ZONE * S, RIGHT_ZONE * S], 1)
-    zone = cv2.dilate(zone, np.ones((41, 41), np.uint8)).astype(bool)
-    skyish = on_land < 0.4 * np.maximum(total, 1)
-    cross = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
-    for _ in range(16):
-        edge = cv2.dilate((~land).astype(np.uint8), cross).astype(bool) & land & zone & skyish[lab]
-        if not edge.any():
-            break
-        land[edge] = False
     land = cv2.GaussianBlur(land.astype(np.float32), (0, 0), 1.0) > 0.5
+    # the far-left strip of distant haze is sunset sky in all but name: as
+    # land it would end abruptly where the wide-screen extension starts
+    left_haze = np.zeros((H, W), bool)
+    cv2.fillPoly(left_haze.view(np.uint8), [HAZE_ZONES[0] * S], 1)
+    land &= ~(left_haze & (cv2.resize(layer1.astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST) == 1))
 
     # layers: from the source, then each patch of one SVG colour that lies
     # mostly in one layer goes there whole (layer edges follow colour edges)
@@ -409,55 +434,82 @@ def build(debug=None):
             x, y, w, h = stats[i, :4]
             sub = comp[y:y + h, x:x + w] == i
             ly = layer[y:y + h, x:x + w]
-            hist = np.bincount(ly[sub], minlength=7)
+            hist = np.bincount(ly[sub], minlength=8)
             top = hist.argmax()
             if top and hist[top] >= 0.7 * hist.sum() and (hist[top] < hist.sum()):
-                if top == 2 or hist[2] == 0:      # never pull pieces into or out of the moved towers
+                if top == 2 or hist[2] == 0:      # never pull pieces into or out of the moved tower
                     ly[sub] = top
 
-    # bright orange glow left inside the towers (between them, along their
-    # edges) is sky: where it touches the sky it opens up, elsewhere the
-    # rock around it closes over it
-    ok = srgb_to_oklab(palette)
-    chroma = np.hypot(ok[:, 1], ok[:, 2])
-    hue = np.degrees(np.arctan2(ok[:, 2], ok[:, 1])) % 360
-    isglow = (chroma > 0.1) & (hue > 44) & (hue < 64) & (ok[:, 0] > 0.72)
-    glow = land & np.isin(layer, (2, 3)) & isglow[lab]
-    cnt, comp = cv2.connectedComponents(glow.astype(np.uint8), connectivity=8)
-    if cnt > 1:
-        sky_near = cv2.dilate((~land).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
-        opens = np.zeros(cnt, bool)
-        opens[np.unique(comp[sky_near & glow])] = True
-        opens[0] = False
-        land[opens[comp]] = False
-        layer[~land] = 0
-        rest = glow & ~opens[comp]
-        lab[rest] = -1
-        lab = despeckle_holes(lab, rest)
-
-    # the haze right of the big tower continues behind it (and over the
-    # glow along its edge), so nothing opens up when the tower is moved
+    # the haze right of the big tower also lies behind it (an extra copy
+    # under the tower), so nothing opens up when the tower is moved
+    ext = np.zeros((H, W), bool)
+    ext_lab = np.full((H, W), -1, np.int32)
     x0, x1 = 1150 * S, 1256 * S
     for y in range(380 * S, 560 * S):
         if layer[y, x1] == 1:
             behind = np.isin(layer[y, x0:x1], (0, 2))
-            layer[y, x0:x1][behind] = 1
-            land[y, x0:x1][behind] = True
-            lab[y, x0:x1][behind] = lab[y, x1 + 1]
+            ext[y, x0:x1] = behind
+            ext_lab[y, x0:x1][behind] = lab[y, x1 + 1]
 
     # the distant haze is simplified further (thin cloud lines and narrow
     # bands melt into their surroundings): this is the atmosphere
-    hz = layer == 1
-    soft = vote(np.where(hz, lab, -1), 3.0 * S)
-    lab[hz & (soft >= 0)] = soft[hz & (soft >= 0)]
+    hz = (layer == 1) | ext
+    soft = vote(np.where(layer == 1, lab, np.where(ext, ext_lab, -1)), 3.0 * S)
+    keep = hz & (soft >= 0)
+    lab[keep & (layer == 1)] = soft[keep & (layer == 1)]
+    ext_lab[keep & ext] = soft[keep & ext]
 
+    # trees: the small dark cones on the slopes are redrawn as spruces; the
+    # traced blobs are taken out (the slope colour around closes over them)
+    C = np.hypot(ok[:, 1], ok[:, 2])
+    hue = np.degrees(np.arctan2(ok[:, 2], ok[:, 1])) % 360
+    treeish = (ok[:, 0] < 0.52) & (hue > 65) & (hue < 110) & (C > 0.04)
+    region = np.zeros((H, W), bool)
+    region[620:1160, 1300:2360] = True
+    trees = []
+    holes = np.zeros((H, W), bool)
+    for k in np.nonzero(treeish)[0]:
+        cnt, comp, stats, _ = cv2.connectedComponentsWithStats(((lab == k) & region & land).astype(np.uint8), 8)
+        for i in range(1, cnt):
+            x, y, w, h, a = stats[i]
+            if 60 <= a <= 1500 and h >= 1.2 * w and h >= 18:
+                sub = comp[y:y + h, x:x + w] == i
+                ly = int(np.bincount(layer[y:y + h, x:x + w][sub], minlength=8).argmax())
+                if ly in (5, 7):
+                    trees.append((ly, int(k), x + w / 2, y, w, h))
+                    holes[y:y + h, x:x + w] |= sub
+    if trees:
+        lab[cv2.dilate(holes.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)] = -1
+        lab = despeckle_holes(lab, lab < 0)
+
+    # the sky as a smooth field: the SVG's sky colours, blurred, and carried
+    # on behind the land (at a quarter of the size)
+    q = 4
+    small = cv2.resize(ok[lab].astype(np.float32), (W // q, H // q), interpolation=cv2.INTER_AREA)
+    skyw = cv2.resize((~land).astype(np.float32), (W // q, H // q), interpolation=cv2.INTER_AREA)
+    skyw = np.where(skyw > 0.99, 1.0, 0.0).astype(np.float32)
+    field = np.zeros_like(small)
+    have = np.zeros(skyw.shape, bool)
+    for sigma in (12, 30, 80, 200):
+        num = cv2.GaussianBlur(small * skyw[..., None], (0, 0), sigma)
+        den = cv2.GaussianBlur(skyw, (0, 0), sigma)
+        ok_ = (den > 0.15) & ~have
+        field[ok_] = num[ok_] / den[ok_][:, None]
+        have |= ok_
+    for x in range(field.shape[1]):          # below the lowest sky: hold the last value
+        col = np.nonzero(have[:, x])[0]
+        if len(col):
+            field[col[-1] + 1:, x] = field[col[-1], x]
+            field[:col[0], x] = field[col[0], x]
+    field = cv2.GaussianBlur(field, (0, 0), 6)
 
     if debug:
         cols = np.array([(0, 0, 0), (200, 170, 120), (60, 60, 200), (60, 160, 60),
                          (240, 240, 240), (60, 200, 220), (40, 40, 40)], np.uint8)
+        cols = np.vstack([cols, [(120, 60, 160)]]).astype(np.uint8)
         dbg = np.where(land[..., None], cols[layer], (255, 210, 160)).astype(np.uint8)
         cv2.imwrite(f"{debug}/layers.png", cv2.resize(dbg, (W // 2, H // 2), interpolation=cv2.INTER_NEAREST))
-    return lab, palette, land, layer
+    return lab, palette, land, layer, ext, ext_lab, trees, field
 
 
 # ── tracing ───────────────────────────────────────────────────────────────
@@ -575,8 +627,20 @@ def fill_down(mask):
     return np.arange(mask.shape[0])[:, None] >= first[None, :]
 
 
+def spruce(cx, top, w, h):
+    """Path data for a small spruce: three tiers and a short trunk."""
+    hw = max(w, 0.62 * h) / 2
+    pts = [(0, 0), (0.48, 0.34), (0.26, 0.34), (0.74, 0.64), (0.46, 0.64), (1.0, 0.92),
+           (0.12, 0.92), (0.12, 1.0)]
+    side = [(cx + hw * px, top + h * py) for px, py in pts]
+    other = [(cx - hw * px, top + h * py) for px, py in reversed(pts[1:])]
+    p = [(round(x), round(y)) for x, y in side + other]
+    d = f"M{p[0][0]} {p[0][1]}l" + fmt([v for a, b in zip(p[1:], p[:-1]) for v in (a[0] - b[0], a[1] - b[1])])
+    return d + "z"
+
+
 def trace(debug=None):
-    lab, palette, land, layer = build(debug)
+    lab, palette, land, layer, ext, ext_lab, trees, field = build(debug)
     H, W = lab.shape
     P = PAD * S
 
@@ -588,90 +652,119 @@ def trace(debug=None):
     left = key[:, np.minimum(d // 4, W - 1)][:, ::-1]
     right = key[:, np.maximum(W - 1 - d // 4, 0)]
     for part in (left, right):
-        part[np.isin(part // 128, (2, 3))] = -1
+        part[np.isin(part // 128, (2, 3, 7))] = -1
     # the stretch turns diagonal edges into stairs: smooth the strips
     left, right = vote(left, 3.5 * S), vote(right, 3.5 * S)
     key = np.concatenate([left, key, right], axis=1)
-    key = key[TOP * S:]
+    oy = TOP * S
+    ox = -P
+    key = key[oy:]
     land_p = key >= 0
     layer_p = np.where(land_p, key // 128, 0)
     lab_p = np.where(land_p, key % 128, -1)
-    oy = TOP * S
-    ox = -P
-
-    # the SVG's own sky colour by height: the haze is coloured relative to it
+    rank_p = RANK[layer_p]
+    zeros = np.zeros((H, P), bool)
+    ext_p = np.concatenate([zeros, ext, zeros], axis=1)[oy:]
+    ext_lab_p = np.concatenate([zeros - 1, ext_lab, zeros - 1], axis=1)[oy:]
     okpal = srgb_to_oklab(palette)
-    rows = np.arange(H)
-    sky_rows = np.zeros((H, 3))
-    have = np.zeros(H, bool)
-    skym = ~land
-    for y in range(H):
-        sel = lab[y][skym[y]]
-        if len(sel) > 20:
-            sky_rows[y] = okpal[sel].mean(axis=0)
-            have[y] = True
-    for c in range(3):
-        sky_rows[:, c] = np.interp(rows, rows[have], sky_rows[have, c])
-        sky_rows[:, c] = cv2.GaussianBlur(sky_rows[:, c].reshape(-1, 1), (1, 0), 40).ravel()
-    scene_h = H - oy
+
+    def sky_at(x, y):
+        """The smoothed sky of the picture at source pixel (x, y) (2x units)."""
+        fy = int(np.clip(y // 4, 0, field.shape[0] - 1))
+        fx = int(np.clip(x // 4, 0, field.shape[1] - 1))
+        return field[fy, fx].astype(float)
 
     shapes = []          # (layer, class, path data)
     haze_colour = {}     # class -> {theme: hex}
+    scene_h = H - oy
 
-    for ly in range(1, 7):
+    for ly in DRAW_ORDER:
         lm = layer_p == ly
-        if not lm.any():
+        if ly == 1:
+            lm_all = lm | ext_p
+            labs_p = np.where(lm, lab_p, ext_lab_p)
+        else:
+            lm_all, labs_p = lm, lab_p
+        if not lm_all.any():
             continue
-        labs = np.unique(lab_p[lm])
-        areas = {int(k): int((lm & (lab_p == k)).sum()) for k in labs}
+        labs = np.unique(labs_p[lm_all])
+        areas = {int(k): int((lm_all & (labs_p == k)).sum()) for k in labs if k >= 0}
         order = sorted(areas, key=lambda k: -areas[k])
         prefix = "h" if ly == 1 else "c"
-        # base: the layer filled down to the bottom in its main colour (no
-        # gaps); the moved towers only get their own outline filled, so the
-        # haze behind them stays free
-        if ly == 2:
+        # base: the layer's outline filled in its main colour, so no seams
+        # open between its shapes. Towers and rocks: just their outline;
+        # the rest: filled down to the bottom, but never over anything of a
+        # layer further back
+        if ly in (2, 7):
             closed = cv2.morphologyEx(lm.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
             cnts, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             solid = np.zeros_like(closed)
             cv2.drawContours(solid, cnts, -1, 1, -1)
-            base = path_data(solid.astype(bool), ox, oy)
+            base_m = solid.astype(bool)
         else:
-            base = path_data(fill_down(lm), ox, oy)
+            base_m = fill_down(lm_all) & ((rank_p >= RANK[ly]) | ~land_p) & (land_p | lm_all)
+            base_m &= land_p | lm_all
+        base = path_data(base_m, ox, oy)
         if base:
             shapes.append((ly, f"{prefix}{order[0]}", base))
         for k in order:
-            m = lm & (lab_p == k)
+            m = lm_all & (labs_p == k)
             m = cv2.dilate(m.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)   # overlap: no seams
             dpath = path_data(m, ox, oy)
             if dpath:
                 shapes.append((ly, f"{prefix}{k}", dpath))
             if ly == 1:
-                ys_ = np.nonzero(m)[0] + oy
-                yc = float(np.median(ys_))
-                delta = okpal[k] - sky_rows[int(yc)]
+                ys_, xs_ = np.nonzero(m)
+                yc, xc = float(np.median(ys_)) + oy, float(np.median(xs_)) - P
+                sky = sky_at(xc, yc)
+                delta = okpal[k] - sky
                 t = (yc - oy) / scene_h
-                haze_colour[f"h{k}"] = {th: lab_hex(sky_colour(th, t) + delta * np.array([0.55, 0.15, 0.15]))
-                                        for th in THEMES}
+                cols = {}
+                for th in THEMES:
+                    if th == "natural":
+                        cols[th] = "#%02x%02x%02x" % tuple(palette[k])
+                    else:
+                        base_sky = shade(th, sky_map(th, sky), np.array(t))
+                        cols[th] = lab_hex(base_sky + delta * np.array([0.55, 0.15, 0.15]))
+                haze_colour[f"h{k}"] = cols
+        for ly_t, k, cx, top, w, h in trees:
+            if ly_t == ly:
+                shapes.append((ly, f"c{k}", spruce(cx, top, w, h)))
     used = sorted({int(c[1:]) for _, c, _ in shapes if c[0] == "c"})
-    colours = {f"c{k}": {th: theme_colour(th, okpal[k]) for th in THEMES} for k in used}
+    colours = {}
+    for k in used:
+        colours[f"c{k}"] = {th: ("#%02x%02x%02x" % tuple(palette[k]) if th == "natural"
+                                 else theme_colour(th, okpal[k])) for th in THEMES}
     colours.update(haze_colour)
-    source = {f"{p}{k}": "#%02x%02x%02x" % tuple(palette[k]) for k in range(len(palette)) for p in "ch"}
     size = (W + 2 * P, H - oy)
-    return shapes, colours, source, size
+
+    # the sky: one small image per theme, stretched smooth over the scene
+    fw, fh = size[0] // SKY_PX, size[1] // SKY_PX
+    pic = field[oy // 4:]                                   # picture area, 1/4 scale
+    pw = int(round(P / 4))
+    canvas = np.concatenate([np.repeat(pic[:, :1], pw, 1), pic, np.repeat(pic[:, -1:], pw, 1)], axis=1)
+    canvas = cv2.resize(canvas, (fw, fh), interpolation=cv2.INTER_AREA)
+    yfrac = (np.arange(fh)[:, None] + 0.5) / fh * np.ones((1, fw))
+    skies = {}
+    for th in THEMES:
+        img = shade(th, sky_map(th, canvas), yfrac)
+        rgb = np.clip(np.round(oklab_to_srgb(img.reshape(-1, 3))), 0, 255).reshape(fh, fw, 3).astype(np.uint8)
+        ok_, png = cv2.imencode(".png", cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        skies[th] = base64.b64encode(png.tobytes()).decode()
+    return shapes, colours, size, skies
 
 
-def svg_markup(shapes, size):
+def svg_markup(shapes, size, skies):
     w, h = size
     x0, y0 = -PAD * S, TOP * S
     sx, sy = RIGHT_ANCHOR[0] * S, RIGHT_ANCHOR[1] * S
     tx, ty = RIGHT_SHIFT[0] * S, RIGHT_SHIFT[1] * S
-    stops = "".join(f'<stop offset="{t:g}" class="k{i}"/>' for i, t in enumerate(SKY_AT))
     lines = [f'<svg class="about-scene" viewBox="{x0} {y0} {w} {h}" '
-             'preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">',
-             f'<defs><linearGradient id="about-sky" gradientUnits="userSpaceOnUse" x1="0" y1="{y0}" '
-             f'x2="0" y2="{y0 + h}">{stops}</linearGradient></defs>',
-             f'<rect class="sky" x="{x0}" y="{y0}" width="{w}" height="{h}" fill="url(#about-sky)"/>']
-    for ly in range(1, 7):
+             'preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">']
+    for th in THEMES:
+        lines.append(f'<image class="sky sky-{th}" x="{x0}" y="{y0}" width="{w}" height="{h}" '
+                     f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
+    for ly in DRAW_ORDER:
         items = [s for s in shapes if s[0] == ly]
         if not items:
             continue
@@ -685,15 +778,15 @@ def svg_markup(shapes, size):
 
 
 def scene_css(colours):
-    """Custom properties per period (Kritt is the default) and one rule per class."""
+    """Custom properties per theme (Kritt is the default), one rule per
+    class, and which sky image each theme shows."""
     def sort_key(c):
         return (c[0], int(c[1:]))
     classes = sorted(colours, key=sort_key)
     blocks = []
-    for th in ["cretaceous"] + [t for t in THEMES if t != "cretaceous"]:
-        sel = "#om-meg" if th == "cretaceous" else f'[data-theme="{th}"] #om-meg'
-        props = [f"--sk{i}: {c};" for i, c in enumerate(SKY[th]) if i]
-        props += [f"--s{c}: {colours[c][th]};" for c in classes]
+    for th in [DEFAULT] + [t for t in THEMES if t != DEFAULT]:
+        sel = "#om-meg" if th == DEFAULT else f'[data-theme="{th}"] #om-meg'
+        props = [f"--s{c}: {colours[c][th]};" for c in classes]
         lines, line = [], ""
         for p in props:
             if len(line) + len(p) > 100:
@@ -702,8 +795,10 @@ def scene_css(colours):
             line += p + " "
         lines.append(line.rstrip())
         blocks.append(sel + " {\n  " + "\n  ".join(lines) + "\n}")
-    rules = [".about-scene .k0 { stop-color: var(--bg-secondary); }"]
-    rules += [f".about-scene .k{i} {{ stop-color: var(--sk{i}); }}" for i in range(1, len(SKY_AT))]
+    rules = [".about-scene .sky { display: none; }",
+             ":root:not([data-theme]) .about-scene .sky-" + DEFAULT + ",\n"
+             + ",\n".join(f'[data-theme="{th}"] .about-scene .sky-{th}' for th in THEMES)
+             + " { display: inline; }"]
     rules += [f".about-scene .{c} {{ fill: var(--s{c}); }}" for c in classes]
     return "\n".join(blocks + rules)
 
@@ -713,20 +808,12 @@ def main():
     ap.add_argument("--debug", help="folder for check images and a preview in the original colours")
     ap.add_argument("--no-write", action="store_true")
     args = ap.parse_args()
-    shapes, colours, source, size = trace(args.debug)
-    svg = svg_markup(shapes, size)
+    shapes, colours, size, skies = trace(args.debug)
+    svg = svg_markup(shapes, size, skies)
     css = scene_css(colours)
     print(f"{len(shapes)} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
-        style = "".join(f".{c}{{fill:{source[c]}}}" for c in colours)
-        with open(f"{args.debug}/preview.html", "w") as f:
-            f.write("<!doctype html><style>body{margin:0;background:#888}svg{display:block;width:100%;height:auto}"
-                    f".k0,.k1,.k2,.k3{{stop-color:#e9a070}}{style}</style>{svg}")
-        with open(f"{args.debug}/scene.svg", "w") as f:
-            f.write(svg)
-        with open(f"{args.debug}/scene.css", "w") as f:
-            f.write(css)
-        bg = {"cretaceous": "#181a20", "hadean": "#21110d", "cambrian": "#13211b", "quaternary": "#dde1e8"}
+        bg = dict(BG2)
         for th in THEMES:
             with open(f"{args.debug}/preview-{th}.html", "w") as f:
                 f.write(f'<!doctype html><html data-theme="{th}"><style>body{{margin:0;background:{bg[th]}}}'

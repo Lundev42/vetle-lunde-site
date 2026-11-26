@@ -359,12 +359,14 @@ test.describe("Contact section link buttons", () => {
 });
 
 test.describe("Colour theme picker", () => {
-  // Themes are geological periods, in time order
+  // Themes are geological periods, in time order, then Naturlig (the About
+  // picture's own sunset colours)
   const THEMES = {
     hadean: { mode: "dark", bg: "rgb(22, 12, 10)", meta: "#160c0a" },
     cambrian: { mode: "dark", bg: "rgb(12, 22, 18)", meta: "#0c1612" },
     cretaceous: { mode: "dark", bg: "rgb(15, 17, 23)", meta: "#0f1117" },
     quaternary: { mode: "light", bg: "rgb(232, 235, 240)", meta: "#e8ebf0" },
+    natural: { mode: "dark", bg: "rgb(22, 26, 32)", meta: "#161a20" },
   };
 
   async function choose(page, theme) {
@@ -397,9 +399,9 @@ test.describe("Colour theme picker", () => {
     await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-expanded", "true");
     await expect(page.locator("#theme-menu")).toBeVisible();
     await expect(page.locator(".theme-menu-title")).toHaveText("Geologisk periode");
-    await expect(page.locator(".theme-label > span")).toHaveText(["Hadeikum", "Kambrium", "Kritt", "Kvartær"]);
+    await expect(page.locator(".theme-label > span")).toHaveText(["Hadeikum", "Kambrium", "Kritt", "Kvartær", "Naturlig"]);
     await expect(page.locator(".theme-label small")).toHaveText([
-      "4,6–4,0 mrd. år siden", "539–487 mill. år siden", "145–66 mill. år siden", "2,6 mill. år siden – i dag",
+      "4,6–4,0 mrd. år siden", "539–487 mill. år siden", "145–66 mill. år siden", "2,6 mill. år siden – i dag", "Originale solnedgangsfarger",
     ]);
     await expect(page.locator('.theme-option[data-theme-value="cretaceous"]')).toBeFocused();
   });
@@ -414,6 +416,8 @@ test.describe("Colour theme picker", () => {
     // with its curved tusk
     await expect(page.locator('.theme-option[data-theme-value="cretaceous"] .ti-trail line')).toHaveCount(3);
     await expect(page.locator('.theme-option[data-theme-value="quaternary"] .theme-icon svg .ti-tusk')).toHaveCount(1);
+    // Naturlig: a sunset sun behind mountains
+    await expect(page.locator('.theme-option[data-theme-value="natural"] .theme-icon svg circle.ti-b')).toHaveCount(1);
   });
 
   for (const [theme, expected] of Object.entries(THEMES)) {
@@ -473,14 +477,16 @@ test.describe("Colour theme picker", () => {
     await page.keyboard.press("ArrowDown");
     await expect(page.locator('.theme-option[data-theme-value="quaternary"]')).toBeFocused();
     await page.keyboard.press("ArrowDown");
+    await expect(page.locator('.theme-option[data-theme-value="natural"]')).toBeFocused();
+    await page.keyboard.press("ArrowDown");
     await expect(page.locator('.theme-option[data-theme-value="hadean"]')).toBeFocused();
     await page.keyboard.press("ArrowUp");
     await page.keyboard.press("Home");
     await expect(page.locator('.theme-option[data-theme-value="hadean"]')).toBeFocused();
     await page.keyboard.press("End");
-    await expect(page.locator('.theme-option[data-theme-value="quaternary"]')).toBeFocused();
+    await expect(page.locator('.theme-option[data-theme-value="natural"]')).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(page.locator("html")).toHaveAttribute("data-theme", "quaternary");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "natural");
   });
 
   test("clicking outside closes the menu without changing the theme", async ({ page }) => {
@@ -494,8 +500,9 @@ test.describe("Colour theme picker", () => {
     await page.click(".lang-toggle");
     await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", "Choose colour theme");
     await expect(page.locator(".theme-menu-title")).toHaveText("Geological period");
-    await expect(page.locator(".theme-label > span")).toHaveText(["Hadean", "Cambrian", "Cretaceous", "Quaternary"]);
-    await expect(page.locator(".theme-label small").last()).toHaveText("2.6 million years ago – today");
+    await expect(page.locator(".theme-label > span")).toHaveText(["Hadean", "Cambrian", "Cretaceous", "Quaternary", "Natural"]);
+    await expect(page.locator(".theme-label small").nth(3)).toHaveText("2.6 million years ago – today");
+    await expect(page.locator(".theme-label small").last()).toHaveText("Original sunset colours");
   });
 
   test("works on the mobile layout", async ({ page }) => {
@@ -1024,7 +1031,7 @@ test.describe("About me photos", () => {
 
 test.describe("About me mountain background", () => {
   const VIEWPORTS = [[2560, 1080], [1920, 1080], [1440, 900], [1280, 800], [1024, 768], [820, 1180], [390, 844], [375, 667], [320, 568]];
-  const PERIODS = ["hadean", "cambrian", "cretaceous", "quaternary"];
+  const PERIODS = ["hadean", "cambrian", "cretaceous", "quaternary", "natural"];
   const LAYERS = ["haze", "right-towers", "left-towers", "snow", "hills", "fore"];
 
   function measure() {
@@ -1050,16 +1057,27 @@ test.describe("About me mountain background", () => {
     };
   }
 
-  test("is the traced picture in depth layers over a gradient sky, hidden from screen readers", async ({ page }) => {
+  test("is the traced picture in depth layers over a smooth sky, hidden from screen readers", async ({ page }) => {
     await page.goto(PAGE_URL);
     const svg = page.locator("#om-meg svg.about-scene");
     await expect(svg).toHaveAttribute("aria-hidden", "true");
     for (const layer of LAYERS) {
       expect(await svg.locator(`g.${layer} > path`).count(), layer).toBeGreaterThan(0);
     }
-    // the banded sky of the source is replaced by one smooth gradient
-    await expect(svg.locator("rect.sky")).toHaveAttribute("fill", "url(#about-sky)");
-    expect(await svg.locator("#about-sky stop").count()).toBeGreaterThanOrEqual(3);
+    // the banded sky of the source is replaced by one smooth sky image per
+    // colour theme, and only the current theme's sky is shown
+    expect(await svg.locator("image.sky").count()).toBe(PERIODS.length);
+    for (const theme of PERIODS) {
+      await expect(svg.locator(`image.sky-${theme}`)).toHaveAttribute("href", /^data:image\/png;base64,/);
+    }
+    for (const theme of PERIODS) {
+      await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
+      const shown = await svg.locator("image.sky").evaluateAll((els) =>
+        els.filter((el) => getComputedStyle(el).display !== "none").map((el) => el.getAttribute("class")));
+      expect(shown).toEqual([`sky sky-${theme}`]);
+    }
+    // the sunlit rubble beside the big tower is its own layer
+    expect(await svg.locator("g.rocks > path").count()).toBeGreaterThan(0);
     // the right towers are moved back to the depth of the left ones
     await expect(svg.locator("g.right-towers")).toHaveAttribute("transform", /scale\(/);
     await expect(page.locator("#om-meg .about-sun, #om-meg .about-mountains")).toHaveCount(0);
@@ -1106,7 +1124,8 @@ test.describe("About me mountain background", () => {
         return {
           missing,
           tower: getComputedStyle(document.querySelector("#om-meg .left-towers path")).fill,
-          sky: Array.from(document.querySelectorAll("#about-sky stop")).map((el) => getComputedStyle(el).stopColor).join(),
+          sky: Array.from(document.querySelectorAll("#om-meg .about-scene image.sky"))
+            .filter((el) => getComputedStyle(el).display !== "none").map((el) => el.getAttribute("href")).join(),
         };
       });
       expect(r.missing, theme).toEqual([]);
@@ -1120,35 +1139,59 @@ test.describe("About me mountain background", () => {
   for (const theme of PERIODS) {
     test(`text stays readable over the sky in the ${theme} theme`, async ({ page }) => {
       await page.goto(PAGE_URL);
-      await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
-      const worst = await page.evaluate(() => {
-        const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
-        function rgb(str) {
-          ctx.clearRect(0, 0, 1, 1);
-          ctx.fillStyle = "#000";
-          ctx.fillStyle = str;
-          ctx.fillRect(0, 0, 1, 1);
-          const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-          return { r, g, b };
-        }
-        function lum(c) {
-          const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-          return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
-        }
-        function contrast(a, b) {
-          const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
-          return (x + 0.05) / (y + 0.05);
-        }
-        const text = rgb(getComputedStyle(document.querySelector("#om-meg .text-col p")).color);
-        // the text only ever sits over the upper sky (the towers start 14 %
-        // down the scene); check the sky down to 30 % and the section itself
-        const sky = Array.from(document.querySelectorAll("#about-sky stop"))
-          .filter((el) => parseFloat(el.getAttribute("offset")) <= 0.3)
-          .map((el) => rgb(getComputedStyle(el).stopColor));
-        if (sky.length < 2) return 0;
-        const bg = rgb(getComputedStyle(document.querySelector("#om-meg")).backgroundColor);
-        return Math.min(...sky.concat([bg]).map((c) => contrast(text, c)));
+      await page.evaluate((t) => {
+        document.documentElement.setAttribute("data-theme", t);
+        document.querySelectorAll(".reveal").forEach((el) => el.classList.add("visible"));
+      }, theme);
+      await page.locator("#om-meg").scrollIntoViewIfNeeded();
+      await page.waitForTimeout(700);
+      // note the text colour and where the text sits, then hide the text and
+      // check every pixel of the rendered scene and sky behind it
+      const info = await page.evaluate(() => {
+        const color = getComputedStyle(document.querySelector("#om-meg .text-col p")).color;
+        const boxes = [];
+        document.querySelectorAll("#om-meg h2, #om-meg p").forEach((el) => {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          Array.from(range.getClientRects()).forEach((r) => boxes.push([r.left, r.top, r.width, r.height]));
+        });
+        document.querySelectorAll("#om-meg h2, #om-meg p, #om-meg a").forEach((el) => el.style.setProperty("color", "transparent", "important"));
+        return { color, boxes };
       });
+      const shot = (await page.screenshot()).toString("base64");
+      const worst = await page.evaluate(async ({ shot, info }) => {
+        const pic = new Image();
+        pic.src = "data:image/png;base64," + shot;
+        await pic.decode();
+        const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+        ctx.canvas.width = pic.width;
+        ctx.canvas.height = pic.height;
+        ctx.drawImage(pic, 0, 0);
+        ctx.fillStyle = info.color;
+        ctx.fillRect(0, 0, 1, 1);
+        const t = ctx.getImageData(0, 0, 1, 1).data;
+        ctx.drawImage(pic, 0, 0);
+        const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+        const lum = (r, g, b) => 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        const text = lum(t[0], t[1], t[2]);
+        let min = Infinity;
+        let seen = 0;
+        for (const [left, top, width, height] of info.boxes) {
+          const x = Math.max(0, Math.floor(left));
+          const y = Math.max(0, Math.floor(top));
+          const w = Math.min(pic.width - x, Math.ceil(width));
+          const h = Math.min(pic.height - y, Math.ceil(height));
+          if (w < 1 || h < 1) continue;
+          const d = ctx.getImageData(x, y, w, h).data;
+          for (let i = 0; i < d.length; i += 4) {
+            const bg = lum(d[i], d[i + 1], d[i + 2]);
+            const ratio = (Math.max(text, bg) + 0.05) / (Math.min(text, bg) + 0.05);
+            if (ratio < min) min = ratio;
+            seen++;
+          }
+        }
+        return seen > 1000 ? min : 0;
+      }, { shot, info });
       expect(worst).toBeGreaterThanOrEqual(4.5);
     });
   }
