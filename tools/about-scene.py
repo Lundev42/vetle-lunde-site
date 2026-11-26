@@ -90,29 +90,32 @@ DARK_FROM, DARK_TO = (700, 1378), (60, H)
 DARK_SHAPE, DARK_BAND = 2, "#5A452A"
 TUFT = (183, 266, 1250, 1340)
 
-# Shapes of the towers' picture dropped (1-based): the hazy, layered far
-# mountains between Tre Cime and Cinque Torri, and the hazy slope at the
-# right edge. Copies of the left picture's brown mountains (RIDGE_SRC, a box
-# in scene units) stand behind them instead (RIDGES: x scale, y scale, x, y).
+# The hazy, layered far mountains between Tre Cime and Cinque Torri and the
+# hazy slope at the right edge (towers' picture, 1-based) keep their outlines
+# but turn from pale sunset haze to soft browns (haze_colour), a little
+# lighter than the rock in front of them, so they read as far away.
 HAZE = [5, 1004, 1059, 1302, (1303, 1304), 1306, (1312, 1313), (1343, 1347), (1474, 1482), 1513,
         (1603, 1606), 1638, (1641, 1642), 1648]
-RIDGE_SRC = (-1250, -60, 430, 1020)
-RIDGES = [(-0.6, 0.6, 1150, 422),      # between Tre Cime and Cinque Torri, mirrored
-          (0.6, 0.6, 3130, 422)]       # behind Cinque Torri, out to the right edge
 # The scene ends at the towers' picture's right edge (W - SHIFT): nothing is
 # added beyond it.
 
-# Left picture: shapes dropped (the spikes along the bottom edge), recoloured
-# (the trodden path in the valley becomes grass), and its small blob-like
-# trees, redrawn as copies of the towers' picture's spruces (TREE_SRC, the
-# pair of spruces by the lake, towers' units), about as tall as the spruces
-# at the same depth there: (shape, trees, height in units).
-LEFT_DROP = [96, 97, 98]
-LEFT_RECOLOUR = {383: "#868250"}
+# Left picture: shapes repainted in the colour of the ground around them (the
+# trodden path in the valley, the spikes along the bottom edge), and its
+# small blob-like trees, redrawn as copies of the towers' picture's spruces
+# (TREE_SRC, the pair of spruces by the lake, towers' units; TREE_AXES: the
+# trunk's column and the tip of each), about as tall as the spruces at the
+# same depth there: (shape, trees, height in units).
+LEFT_FILL = [383, 96, 97, 98, 39]
 LEFT_TREES = [(599, 1, 96), (600, 1, 74), (604, 1, 88), (605, 1, 80), (795, 1, 66),
               (685, 3, 72), (686, 1, 56), (855, 2, 50), (698, 4, 52)]
 TREE_SRC = (950, 1060, 1050, 1200)
-TREE_SPLIT = 997          # the two spruces of TREE_SRC part at this x
+TREE_AXES = ((984, 1096), (1017, 1067))
+# The left picture's light slope (FAN_SHAPE) runs on up to the foot of the
+# first tower, along FAN (scene units, from the tower's foot down to where it
+# meets the slope's own top edge), so the scree under the tower and the slope
+# read as one fan.
+FAN_SHAPE = 608
+FAN = [(44, 790), (34, 808), (22, 828), (6, 850), (-14, 870), (-40, 890), (-70, 906), (-100, 920)]
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 
@@ -253,6 +256,16 @@ def theme_colour(theme, hexcol):
     if theme == "quaternary":                 # ice age: blue-grey rock and snow, sage steppe
         return lch_hex(0.36 + 0.58 * L, 0.008 + 0.3 * C, 245 - 3.2 * hh)
     raise ValueError(theme)
+
+
+def haze_colour(hexcol):
+    """A pale hazy far mountain (light, sunset orange) as a soft brown: the
+    hue and chroma of the rock in front, a little lighter than it, keeping
+    the layers' differences in light (farther, lighter)."""
+    L, a, b = hex_lab(hexcol)
+    C = float(np.hypot(a, b))
+    h = float(np.degrees(np.arctan2(b, a)))
+    return lch_hex(0.63 + 0.8 * (L - 0.72), 0.042 + 0.4 * (C - 0.06), 52 + 0.5 * (h - 60)).upper()
 
 
 def sky_map(theme, lab):
@@ -494,8 +507,11 @@ def mask_polys(mask, x0, y0, up=4, eps=0.35):
 
 def tree_stamps(right_raw, ids_t):
     """The pair of spruces by the lake in the towers' picture, as outlines per
-    colour (each tree on its own, and both), relative to the foot of the
-    trunk: [(layers, height)], layers = [(fill, [polygon])]."""
+    colour, relative to the foot of the trunk: [(layers, height)], layers =
+    [(fill, [polygon])]. The two trees overlap: the small one in front is
+    taken whole from its left half, mirrored; the tall one behind keeps its
+    own outline and gets the part the small one hides from its right half,
+    mirrored, so neither has a piece missing."""
     x0, x1, y0, y1 = TREE_SRC
     sub = ids_t[y0:y1, x0 - X0:x1 - X0]
     fills = np.array(["#000000"] + [f for f, _ in right_raw])
@@ -503,14 +519,28 @@ def tree_stamps(right_raw, ids_t):
     m = np.isin(fills[sub], [dark, lit])
     n, lab, st, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8))
     m &= np.isin(lab, [i for i in range(1, n) if st[i][4] > 200])
-    xs = np.arange(x0, x1)[None, :]
+    is_lit = m & (fills[sub] == lit)
+    yy, xx = np.mgrid[y0:y1, x0:x1]
+    def mirror(a, cx):
+        out = np.zeros_like(a)
+        src = 2 * cx - np.arange(x0, x1)                  # the column each one mirrors
+        ok = (src >= x0) & (src < x1)
+        out[:, ok] = a[:, src[ok] - x0]
+        return out
+    (lx, ly), (rx, ry) = TREE_AXES
+    cone = lambda cx, cy: np.abs(xx + 0.5 - cx - 0.5) / np.maximum(yy + 0.5 - cy, 1)
+    front = m & (cone(lx, ly) < 0.3) & (xx <= lx)
+    small = front | mirror(front, lx)
+    back = m & ~small & (cone(rx, ry) < 0.4)
+    tall = back | mirror(m & (xx >= rx) & (cone(rx, ry) < 0.4), rx)
     stamps = []
-    for part in (xs < TREE_SPLIT, xs >= TREE_SPLIT):
-        tree = m & part
-        rows, cols = np.nonzero(tree)
-        foot_x, foot_y = x0 + cols.mean(), y0 + rows.max() + 1
+    for tree, cx, lit_part in ((small, lx, None), (tall, rx, tall & is_lit)):
+        rows = np.nonzero(tree.any(1))[0]
+        foot_x, foot_y = cx + 0.5, y0 + rows.max() + 1
         layers = []
-        for fill, layer in ((dark, tree), (lit, tree & (fills[sub] == lit))):
+        for fill, layer in ((dark, tree), (lit, lit_part)):
+            if layer is None:
+                continue
             polys = [p - [foot_x, foot_y] for p in mask_polys(layer, x0, y0)]
             if polys:
                 layers.append((fill, polys))
@@ -575,7 +605,7 @@ def build():
     left = [(f, pts @ m[:, :2].T + m[:, 2]) for f, pts in read_paths(SRC_LEFT)]
     right_raw = read_paths(SRC)
     haze = expand(HAZE)
-    right = [(f, None if k in haze else pts - [SHIFT, 0]) for k, (f, pts) in enumerate(right_raw, 1)]
+    right = [(haze_colour(f) if k in haze else f, pts - [SHIFT, 0]) for k, (f, pts) in enumerate(right_raw, 1)]
     ids_t = id_map(right_raw)                     # the towers' picture in its own units
     ids_r, ids_l = id_map(right), id_map(left)
     sky_r, sky_l = expand(SKY_PATHS), expand(LEFT_SKY)
@@ -590,9 +620,6 @@ def build():
         return set(np.nonzero(counts >= 8)[0].tolist()) - {0}
     shown_r = shown(ids_r, in_r)
     shown_l = shown(ids_l, in_l & ~land_r)
-    rx0, rx1, ry0, ry1 = RIDGE_SRC
-    in_src = (xs >= rx0) & (xs < rx1) & (ys[:, None] >= ry0) & (ys[:, None] < ry1)
-    shown_src = shown(ids_l, in_src)
     img_r, m_r = sky_lab(right_raw, ids_r, sky_r, in_r)
     img_l, m_l = sky_lab(left, ids_l, sky_l, ~in_r & (xs < W - SHIFT))
     field = sky_field(img_r + img_l, m_r | m_l)
@@ -600,30 +627,35 @@ def build():
 
     classes = {}                                   # fill -> class
     cls = lambda fill: classes.setdefault(fill.upper(), f"c{len(classes)}")
-    trees = {k for k, _, _ in LEFT_TREES}
-    drop_l = set(LEFT_DROP) | trees | sky_l
-    parts = {"left": [], "ridge": [], "right": []}
-    # the old trees become patches of the ground around them (nothing else
-    # may be drawn below them)
+    patches = {k for k, _, _ in LEFT_TREES} | set(LEFT_FILL)
+    parts = {"left": [], "right": []}
+    # the old trees, the path and the spikes become patches of the ground
+    # around them (they cannot simply go: the shapes below have holes there)
     fills_l = [f for f, _ in left]
-    recolour = dict(LEFT_RECOLOUR)
-    for k, _, _ in LEFT_TREES:
+    recolour = {}
+    for k in sorted(patches):
         own = (ids_l == k).astype(np.uint8)
         ring = cv2.dilate(own, np.ones((7, 7), np.uint8)).astype(bool) & ~own.astype(bool)
-        around = [fills_l[i - 1] for i in ids_l[ring] if i > 0 and i not in trees]
-        recolour.setdefault(k, max(set(around), key=around.count))
+        around = [fills_l[i - 1] for i in ids_l[ring] if i > 0 and i not in patches and i not in sky_l]
+        recolour[k] = max(set(around), key=around.count)
     for k, (fill, pts) in enumerate(left, 1):
-        if k in drop_l and k not in trees:
+        if k in sky_l and k not in patches:
             continue
         fill = recolour.get(k, fill)
         if k in shown_l:
             parts["left"].append((cls(fill), path_d(pts)))
-        if k in shown_src:
-            parts["ridge"].append((cls(fill), path_d(pts)))
+    # the light slope runs on up to the foot of the first tower
+    def fan_top(x):
+        col = ids_l[:, int(x) - X0]
+        hit = np.nonzero(col == FAN_SHAPE)[0]
+        return hit[0] + 2
+    fx = np.arange(FAN[-1][0], 91, 5)
+    fan = FAN + [(x, fan_top(x)) for x in fx] + [(90, FAN[0][1])]
+    parts["left"].append((cls(fills_l[FAN_SHAPE - 1]), poly_d(fan)))
     stamps = tree_stamps(right_raw, ids_t)
     parts["left"] += [(cls(f), d) for f, d in place_trees(left, stamps)]
     for k, (fill, pts) in enumerate(right, 1):
-        if pts is None or k in sky_r:
+        if k in sky_r:
             continue
         if k in shown_r:
             parts["right"].append((cls(fill), path_d(pts)))
@@ -636,35 +668,21 @@ def build():
 def svg_markup(parts, skies, box):
     vb = f"{X0} {TOP} {W - SHIFT - X0} {H - TOP}"
     bx, by, bw, bh = box
-    rx0, rx1, ry0, ry1 = RIDGE_SRC
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
              'aria-hidden="true" focusable="false">',
              "<defs>"]
     for side in ("left", "right"):
         lines.append(f'<clipPath id="about-{side}"><path d="{seam_clip(side)}"/></clipPath>')
-    for i, (a, d, e, f) in enumerate(RIDGES):
-        # the source box, and no further than the scene's edges
-        lo, hi = sorted(((X0 - e) / a, (W - SHIFT - e) / a))
-        x0, x1 = max(rx0, lo), min(rx1, hi)
-        lines.append(f'<clipPath id="about-ridge-{i}"><rect x="{x0:.0f}" y="{ry0}" '
-                     f'width="{x1 - x0:.0f}" height="{ry1 - ry0}"/></clipPath>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
     lines.append('<g class="land">')
     path = lambda c, d: f'<path class="{c}" d="{d}"/>'
-    # Seceda and the valley first, then the far ridges, then the towers'
-    # picture over the seam
+    # Seceda and the valley first, then the towers' picture over the seam
     lines.append('<g class="seceda" clip-path="url(#about-left)">')
     lines.extend(path(c, d) for c, d in parts["left"])
     lines.append("</g>")
-    for i, (a, d, e, f) in enumerate(RIDGES):
-        # copies, not <use>: CSS colours do not reach into <use> clones everywhere
-        lines.append(f'<g class="ridge" transform="matrix({a} 0 0 {d} {e} {f})">'
-                     f'<g clip-path="url(#about-ridge-{i})">')
-        lines.extend(path(c, dd) for c, dd in parts["ridge"])
-        lines.append("</g></g>")
     lines.append('<g class="tre-cime" clip-path="url(#about-right)">')
     lines.extend(path(c, d) for c, d in parts["right"])
     lines.append(f'<g transform="translate({-SHIFT} 0)">')
