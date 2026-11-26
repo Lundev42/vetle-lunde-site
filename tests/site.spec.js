@@ -1139,7 +1139,7 @@ test.describe("About me mountain background", () => {
     for (const theme of PERIODS) {
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
       const r = await page.evaluate(() => {
-        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path")).filter((el) => !el.closest("clipPath"));
+        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path"));
         // a class without a colour for this theme would fall back to black
         const missing = paths.filter((el) => getComputedStyle(el).fill === "rgb(0, 0, 0)").map((el) => el.getAttribute("class"));
         return {
