@@ -77,10 +77,12 @@ OVERLAP = 3                # the left picture reaches this far under the right o
 # The towers' picture sits SHIFT units left of where its Tre Cime match the
 # left picture's (so the left rock of Tre Cime stands at the middle of the
 # scene and the empty valley before it narrows). SEAM above is in the towers'
-# own units. In the sky above the seam the left picture reaches LEFT_REACH
-# (scene units), so its mountains run on behind the first tower.
+# own units. The left picture's valley narrows to match: from WARP[0] to
+# WARP[1] (scene units) it is drawn in a little, more and more, and from
+# WARP[1] on it moves the whole SHIFT, so it still meets the towers' picture
+# along shared edges (its slope runs up to the foot of the first tower).
 SHIFT = 80
-LEFT_REACH = 60
+WARP = (-1100, -150)
 
 # The towers' picture's dark foreground hill no longer rises to the left: its
 # top edge (towers' units) slopes down from DARK_FROM and runs out into the
@@ -90,12 +92,25 @@ DARK_FROM, DARK_TO = (700, 1378), (60, H)
 DARK_SHAPE, DARK_BAND = 2, "#5A452A"
 TUFT = (183, 266, 1250, 1340)
 
-# The hazy, layered far mountains between Tre Cime and Cinque Torri and the
-# hazy slope at the right edge (towers' picture, 1-based) keep their outlines
-# but turn from pale sunset haze to soft browns (haze_colour), a little
-# lighter than the rock in front of them, so they read as far away.
-HAZE = [5, 1004, 1059, 1302, (1303, 1304), 1306, (1312, 1313), (1343, 1347), (1474, 1482), 1513,
-        (1603, 1606), 1638, (1641, 1642), 1648]
+# The hazy, layered far mountains between Tre Cime and Cinque Torri (towers'
+# picture, 1-based) keep their outlines, but each mountain is one flat brown
+# (from the farthest, lightest, to the nearest, darkest), not bands of haze.
+HAZE_GROUPS = {
+    "#A87F68": [(1603, 1606), 1648, 1642, 1641, 1638, 1513],    # the big two-peaked one at the back
+    "#A07964": [1303, 1304, (1477, 1482)],                     # the peak by Cinque Torri
+    "#97735E": [1476, 1474, (1343, 1347)],                     # the pointed one in the middle
+    "#8B6957": [1475],                                         # the hump in front of it
+    "#9C7662": [1312, 1313, 1306, 1004],                       # behind Cinque Torri's towers
+    "#7F6152": [1302],                                         # the long slope in front
+    "#735A4D": [1059],                                         # the lowest, nearest one
+}
+# The hazy slope at the right edge (5) goes; a copy of the left picture's
+# mountains (RIDGE_SRC, a box in its scene units, without RIDGE_DROP, a
+# sunlit glow) stands there instead (RIDGES: x scale, y scale, x, y).
+HAZE_DROP = [5]
+RIDGE_SRC = (-1250, -60, 430, 1020)
+RIDGE_DROP = [974, 1017]
+RIDGES = [(0.6, 0.6, 3130, 422)]
 # The scene ends at the towers' picture's right edge (W - SHIFT): nothing is
 # added beyond it.
 
@@ -110,12 +125,6 @@ LEFT_TREES = [(599, 1, 96), (600, 1, 74), (604, 1, 88), (605, 1, 80), (795, 1, 6
               (685, 3, 72), (686, 1, 56), (855, 2, 50), (698, 4, 52)]
 TREE_SRC = (950, 1060, 1050, 1200)
 TREE_AXES = ((984, 1096), (1017, 1067))
-# The left picture's light slope (FAN_SHAPE) runs on up to the foot of the
-# first tower, along FAN (scene units, from the tower's foot down to where it
-# meets the slope's own top edge), so the scree under the tower and the slope
-# read as one fan.
-FAN_SHAPE = 608
-FAN = [(44, 790), (34, 808), (22, 828), (6, 850), (-14, 870), (-40, 890), (-70, 906), (-100, 920)]
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 
@@ -256,16 +265,6 @@ def theme_colour(theme, hexcol):
     if theme == "quaternary":                 # ice age: blue-grey rock and snow, sage steppe
         return lch_hex(0.36 + 0.58 * L, 0.008 + 0.3 * C, 245 - 3.2 * hh)
     raise ValueError(theme)
-
-
-def haze_colour(hexcol):
-    """A pale hazy far mountain (light, sunset orange) as a soft brown: the
-    hue and chroma of the rock in front, a little lighter than it, keeping
-    the layers' differences in light (farther, lighter)."""
-    L, a, b = hex_lab(hexcol)
-    C = float(np.hypot(a, b))
-    h = float(np.degrees(np.arctan2(b, a)))
-    return lch_hex(0.63 + 0.8 * (L - 0.72), 0.042 + 0.4 * (C - 0.06), 52 + 0.5 * (h - 60)).upper()
 
 
 def sky_map(theme, lab):
@@ -467,8 +466,7 @@ def clip_line(side):
     right = [(x - SHIFT, y) for x, y in SEAM]
     if side == "right":
         return right
-    join = 760
-    return [(LEFT_REACH, TOP), (LEFT_REACH, join)] + [(x + OVERLAP, y) for x, y in right if y > join]
+    return [(x + OVERLAP, y) for x, y in right]
 
 
 def line_x(line, ys):
@@ -478,8 +476,8 @@ def line_x(line, ys):
 
 def seam_clip(side):
     """Clip path data for one side of the seam, down to the bottom edge: the
-    left picture stops at X0, its own edge, and reaches OVERLAP (in the sky
-    LEFT_REACH) under the right one, so no hairline shows; the right one
+    left picture stops at X0, its own edge, and reaches OVERLAP under the
+    right one, so no hairline shows; the right one
     stops at its own right edge."""
     pts = clip_line(side)
     pts = pts + ([(X0, H), (X0, TOP)] if side == "left" else [(W - SHIFT, H), (W - SHIFT, TOP)])
@@ -587,7 +585,7 @@ def dark_foreground(right_raw, ids_t):
     def new(x):
         u = np.clip((fx - x) / (fx - ex), 0, 1)
         return fy + (ey - fy) * u ** 1.5
-    upper = [(x, old(x) - 1.5) for x in xs]
+    upper = [(x, old(x) - 4) for x in xs]
     lower = [(x, new(x) if x >= ex else H) for x in xs[::-1]]
     filler = poly_d(upper + lower)
     # the bush: the dark shape inside TUFT, above the old ground line
@@ -600,12 +598,21 @@ def dark_foreground(right_raw, ids_t):
     return filler, bush_d
 
 
+def warp(pts):
+    """The left picture's valley drawn in towards Seceda (see WARP)."""
+    u = np.clip((pts[:, 0] - WARP[0]) / (WARP[1] - WARP[0]), 0, 1)
+    return pts - np.stack([SHIFT * u * u * (3 - 2 * u), 0 * u], -1)
+
+
 def build():
     m = np.array(LEFT_M)
-    left = [(f, pts @ m[:, :2].T + m[:, 2]) for f, pts in read_paths(SRC_LEFT)]
+    left_src = [(f, pts @ m[:, :2].T + m[:, 2]) for f, pts in read_paths(SRC_LEFT)]
+    left = [(f, warp(pts)) for f, pts in left_src]
     right_raw = read_paths(SRC)
-    haze = expand(HAZE)
-    right = [(haze_colour(f) if k in haze else f, pts - [SHIFT, 0]) for k, (f, pts) in enumerate(right_raw, 1)]
+    haze = {k: fill for fill, spec in HAZE_GROUPS.items() for k in expand(spec)}
+    drop_r = set(HAZE_DROP)
+    right = [(haze.get(k, f), None if k in drop_r else pts - [SHIFT, 0])
+             for k, (f, pts) in enumerate(right_raw, 1)]
     ids_t = id_map(right_raw)                     # the towers' picture in its own units
     ids_r, ids_l = id_map(right), id_map(left)
     sky_r, sky_l = expand(SKY_PATHS), expand(LEFT_SKY)
@@ -620,6 +627,9 @@ def build():
         return set(np.nonzero(counts >= 8)[0].tolist()) - {0}
     shown_r = shown(ids_r, in_r)
     shown_l = shown(ids_l, in_l & ~land_r)
+    rx0, rx1, ry0, ry1 = RIDGE_SRC
+    in_src = (xs >= rx0) & (xs < rx1) & (ys[:, None] >= ry0) & (ys[:, None] < ry1)
+    shown_src = shown(id_map(left_src), in_src) - set(RIDGE_DROP)
     img_r, m_r = sky_lab(right_raw, ids_r, sky_r, in_r)
     img_l, m_l = sky_lab(left, ids_l, sky_l, ~in_r & (xs < W - SHIFT))
     field = sky_field(img_r + img_l, m_r | m_l)
@@ -628,7 +638,7 @@ def build():
     classes = {}                                   # fill -> class
     cls = lambda fill: classes.setdefault(fill.upper(), f"c{len(classes)}")
     patches = {k for k, _, _ in LEFT_TREES} | set(LEFT_FILL)
-    parts = {"left": [], "right": []}
+    parts = {"left": [], "ridge": [], "right": []}
     # the old trees, the path and the spikes become patches of the ground
     # around them (they cannot simply go: the shapes below have holes there)
     fills_l = [f for f, _ in left]
@@ -644,18 +654,12 @@ def build():
         fill = recolour.get(k, fill)
         if k in shown_l:
             parts["left"].append((cls(fill), path_d(pts)))
-    # the light slope runs on up to the foot of the first tower
-    def fan_top(x):
-        col = ids_l[:, int(x) - X0]
-        hit = np.nonzero(col == FAN_SHAPE)[0]
-        return hit[0] + 2
-    fx = np.arange(FAN[-1][0], 91, 5)
-    fan = FAN + [(x, fan_top(x)) for x in fx] + [(90, FAN[0][1])]
-    parts["left"].append((cls(fills_l[FAN_SHAPE - 1]), poly_d(fan)))
+        if k in shown_src:
+            parts["ridge"].append((cls(fill), path_d(left_src[k - 1][1])))
     stamps = tree_stamps(right_raw, ids_t)
     parts["left"] += [(cls(f), d) for f, d in place_trees(left, stamps)]
     for k, (fill, pts) in enumerate(right, 1):
-        if k in sky_r:
+        if pts is None or k in sky_r:
             continue
         if k in shown_r:
             parts["right"].append((cls(fill), path_d(pts)))
@@ -668,21 +672,35 @@ def build():
 def svg_markup(parts, skies, box):
     vb = f"{X0} {TOP} {W - SHIFT - X0} {H - TOP}"
     bx, by, bw, bh = box
+    rx0, rx1, ry0, ry1 = RIDGE_SRC
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
              'aria-hidden="true" focusable="false">',
              "<defs>"]
     for side in ("left", "right"):
         lines.append(f'<clipPath id="about-{side}"><path d="{seam_clip(side)}"/></clipPath>')
+    for i, (a, d, e, f) in enumerate(RIDGES):
+        # the source box, and no further than the scene's edges
+        lo, hi = sorted(((X0 - e) / a, (W - SHIFT - e) / a))
+        x0, x1 = max(rx0, lo), min(rx1, hi)
+        lines.append(f'<clipPath id="about-ridge-{i}"><rect x="{x0:.0f}" y="{ry0}" '
+                     f'width="{x1 - x0:.0f}" height="{ry1 - ry0}"/></clipPath>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
     lines.append('<g class="land">')
     path = lambda c, d: f'<path class="{c}" d="{d}"/>'
-    # Seceda and the valley first, then the towers' picture over the seam
+    # Seceda and the valley first, then the far mountains at the right edge,
+    # then the towers' picture over the seam
     lines.append('<g class="seceda" clip-path="url(#about-left)">')
     lines.extend(path(c, d) for c, d in parts["left"])
     lines.append("</g>")
+    for i, (a, d, e, f) in enumerate(RIDGES):
+        # copies, not <use>: CSS colours do not reach into <use> clones everywhere
+        lines.append(f'<g class="ridge" transform="matrix({a} 0 0 {d} {e} {f})">'
+                     f'<g clip-path="url(#about-ridge-{i})">')
+        lines.extend(path(c, dd) for c, dd in parts["ridge"])
+        lines.append("</g></g>")
     lines.append('<g class="tre-cime" clip-path="url(#about-right)">')
     lines.extend(path(c, d) for c, d in parts["right"])
     lines.append(f'<g transform="translate({-SHIFT} 0)">')
