@@ -1064,8 +1064,8 @@ test.describe("About me mountain background", () => {
     expect(await svg.locator("g.land > path").count()).toBeGreaterThan(300);
     // a mirrored strip on each side fills wide screens
     expect(await svg.locator("g.strip").count()).toBe(2);
-    // Torres del Paine to the left and Stetind to the right, further away
-    // (left and right of the main picture), fading into the haze at their feet
+    // Torres del Paine to the left and Stetind to the right of the main
+    // picture, each with its own ground
     const vb = (await svg.getAttribute("viewBox")).split(" ").map(Number);
     for (const [name, side] of [["torres", -1], ["stetind", 1]]) {
       const far = svg.locator(`g.far-${name}`);
@@ -1144,7 +1144,7 @@ test.describe("About me mountain background", () => {
     for (const theme of PERIODS) {
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
       const r = await page.evaluate(() => {
-        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path"));
+        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path")).filter((el) => !el.closest("clipPath"));
         // a class without a colour for this theme would fall back to black
         const missing = paths.filter((el) => getComputedStyle(el).fill === "rgb(0, 0, 0)").map((el) => el.getAttribute("class"));
         return {

@@ -18,14 +18,15 @@ index.html.
      property per colour theme: Devon keeps the picture's own colours, the
      other periods map them in OKLCH (keeping light and shadow), so every
      theme repaints the scene.
-  4. Two more mountains stand further away on each side, from the user's
-     Torres del Paine (left) and Stetind (right) pictures
-     (tools/about-scene-torres.svg, tools/about-scene-stetind.svg): only
-     their mountains, recoloured like the rest, a valley's width (GAP) from
-     the main picture's peaks, fading into the haze towards their feet.
-  5. A thin strip at each side of the main picture is mirrored and
-     stretched out to the ends as the plain in front of them; further out
-     its upper bands narrow and its lines roll gently.
+  4. Two more mountains stand on each side, from the user's Torres del
+     Paine (left) and Stetind (right) pictures (tools/about-scene-torres.svg,
+     tools/about-scene-stetind.svg): their mountains and their own ground,
+     recoloured like the rest, a short valley from the main picture's
+     peaks, with a little haze over the mountains.
+  5. Where their ground meets the main picture's, the main picture's edge
+     runs on a little as a plain (a mirrored, stretched strip) that ends in
+     a slope over theirs, and a dark foreground hill with a few spruces
+     runs over each join.
 
 Run from the repo root:  python3 tools/about-scene.py
 Needs numpy, scipy, opencv and Pillow. It rewrites the <svg class="about-scene">
@@ -48,23 +49,50 @@ HTML = "index.html"
 W, H = 2912, 1440          # canvas of the source SVG
 TOP = -67                  # first row drawn (above the canvas: only sky there), so the
                            # towers start 14 % down the scene
-GAP = 1050                 # open valley between neighbouring mountains: about the
-                           # gap between the Tre Cime and the tower in the main picture
 # Two more mountains, one on each side of the main picture (the user's
-# Torres del Paine and Stetind pictures). Only their mountains are used:
-# their skies are dropped, their feet stand behind the main picture's
-# plain, and they fade into the haze towards their feet. Each is scaled by
-# "scale" and moved so its pixel "anchor" (the foot on the side facing the
-# main picture, at the height where the plain hides it) lands at "at".
+# Torres del Paine and Stetind pictures), with their own ground. Their skies
+# are dropped. Each is scaled by "scale" and moved so its pixel "anchor"
+# (the foot on the side facing the main picture, at its ground line) lands
+# at "at": a short valley from the main picture's peaks, where the user
+# marked them. Below the ground line the picture is stretched downwards
+# more and more (the foreground is nearer), so its ground reaches the
+# bottom of the scene. Stetind's low outlying hills on the side facing the
+# main picture fade out over "blend" (pixels of the picture).
 SIDE_PICS = [
-    dict(name="torres", src="tools/about-scene-torres.svg", w=2752, h=1536, scale=0.73,
-         anchor=(2600, 1000), at=(60 - GAP, 860), fade_y=(630, 860), fade_x=None),
-    dict(name="stetind", src="tools/about-scene-stetind.svg", w=2752, h=1536, scale=0.8,
-         anchor=(440, 900), at=(2630 + GAP, 800), fade_y=(580, 800), fade_x=(150, 420)),
+    dict(name="torres", src="tools/about-scene-torres.svg", w=2752, h=1536, scale=0.62,
+         anchor=(2700, 1190), at=(-300, 820), blend=None),
+    dict(name="stetind", src="tools/about-scene-stetind.svg", w=2752, h=1536, scale=0.6,
+         anchor=(200, 1130), at=(3050, 760), blend=(0, 440)),
+]
+# Between them, the main picture's ground runs on as a plain (the strips
+# below) and ends over the side picture's ground in a slope: these points,
+# top to bottom, are that edge (scene units), so the side picture's own
+# edge stays hidden under it.
+PLAIN_EDGES = [
+    [(-200, 780), (-260, 805), (-320, 830), (-375, 870), (-420, 920), (-460, 975), (-495, 1030), (-530, 1100)],
+    [(2990, 700), (3040, 735), (3090, 760), (3140, 800), (3180, 860), (3215, 930), (3245, 1000), (3280, 1080)],
+]
+# Where a side picture's ground meets the main picture's, a dark hill in
+# the nearest foreground (the main picture's darkest ground colour) runs
+# over the join: out of the main picture's own dark foreground hill, over
+# the join, and down into the side picture's dark ground. Points along its
+# ridge, left to right, in scene units.
+FRONT_FILL = "#352816"
+FRONT_HILLS = [
+    [(-1150, 1500), (-950, 1280), (-700, 1110), (-450, 1030), (-250, 1015), (-50, 1060),
+     (150, 1180), (320, 1310), (480, 1390), (620, 1500)],
+    [(2450, 1500), (2620, 1390), (2800, 1270), (2950, 1130), (3080, 1050), (3200, 1030),
+     (3330, 1070), (3460, 1150), (3600, 1290), (3720, 1500)],
+]
+# A few spruces stand on those hills, in the same colour: (x, height).
+FRONT_TREES = [
+    [(-610, 70), (-560, 95), (-520, 62), (-180, 58), (-140, 84), (60, 66), (96, 48)],
+    [(2900, 60), (2940, 82), (3120, 64), (3160, 96), (3200, 70), (3360, 74), (3395, 52)],
 ]
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 HAZE = 0.9                 # the side mountains are further away: a little sky shows through
+MASK_PX = 8                # one pixel of a side picture's fade mask covers 8 x 8 units
 
 
 def _placed_x(pic, x):
@@ -507,10 +535,71 @@ def plain(subs, a, b, k, edge, horizon, squeeze):
     return re.sub(r" -", "-", "".join(out))
 
 
-def placed(subs, pic):
+def smooth_line(pts):
+    """A smooth line through the points (Catmull-Rom), as a list of points."""
+    P = np.array(pts, float)
+    P = np.vstack([P[0], P, P[-1]])
+    out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for t in np.linspace(0, 1, 12, endpoint=False):
+            out.append(0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t
+                              + (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3))
+    out.append(P[-2])
+    return [tuple(p) for p in out]
+
+
+def ridge_path(pts):
+    """A smooth hill through its ridge points (Catmull-Rom), filled down to
+    below the bottom of the scene."""
+    P = np.array(pts, float)
+    P = np.vstack([P[0], P, P[-1]])
+    out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for t in np.linspace(0, 1, 12, endpoint=False):
+            out.append(0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t
+                              + (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3))
+    out.append(P[-2])
+    q = np.round(np.array(out)).astype(int)
+    d = "M" + " ".join(f"{x} {y}" for x, y in q)
+    return d + f" {q[-1][0]} {H + 60} {q[0][0]} {H + 60}z"
+
+
+def placed_y(pic, y):
+    """Height in the scene of a row of a side picture: to scale above its
+    ground line, stretched more and more below it to reach the bottom."""
     s = pic["scale"]
-    (ax, ay), (X, Y) = pic["anchor"], pic["at"]
-    return [np.column_stack([X + (p[:, 0] - ax) * s, Y + (p[:, 1] - ay) * s]) for p in subs]
+    ay, Y = pic["anchor"][1], pic["at"][1]
+    d = np.asarray(y, float) - ay
+    depth = pic["h"] - ay
+    c = (H + 20 - Y - s * depth) / depth ** 2
+    return np.where(d <= 0, Y + d * s, Y + d * s + c * d * d)
+
+
+def placed(subs, pic):
+    return [np.column_stack([_placed_x(pic, p[:, 0]), placed_y(pic, p[:, 1])]) for p in subs]
+
+
+def side_mask(pic):
+    """Fade mask of a side picture (a grey PNG and its box): a little haze
+    over the mountain, solid ground, and the ground fading into the main
+    picture's plain on the side facing it."""
+    x0, x1 = sorted(_placed_x(pic, v) for v in (0, pic["w"]))
+    x0, x1 = int(x0) - 16, int(x1) + 16
+    y0, y1 = TOP, H + 40
+    xs = x0 + (np.arange((x1 - x0) // MASK_PX) + 0.5) * MASK_PX
+    ys = y0 + (np.arange((y1 - y0) // MASK_PX) + 0.5) * MASK_PX
+    gy = pic["at"][1]
+    a = HAZE + (1 - HAZE) * smoothstep((ys - (gy - 60)) / 100)[:, None] * np.ones_like(xs)[None, :]
+    if pic["blend"]:
+        b_out, b_in = (_placed_x(pic, v) for v in pic["blend"])      # edge, then where it is solid
+        f = smoothstep((xs - b_out) / (b_in - b_out))[None, :]
+        g = 1 - smoothstep((ys - (gy - 80)) / 80)                    # above the ground line only
+        a = a * (1 - g[:, None] * (1 - f))
+    img = np.clip(np.round(a * 255), 0, 255).astype(np.uint8)
+    _, png = cv2.imencode(".png", img, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+    return base64.b64encode(png.tobytes()).decode(), (x0, y0, len(xs) * MASK_PX, len(ys) * MASK_PX)
 
 
 def build():
@@ -544,13 +633,22 @@ def build():
         cnt = np.bincount(sids.ravel(), minlength=len(sp) + 1)
         out = []
         for k, (fill, subs) in enumerate(sp, 1):
-            # the sky, specks, and what lies wholly below the plain's horizon go
-            if k in ssky or cnt[k] < 8 or min(p[:, 1].min() for p in subs) > pic["anchor"][1]:
+            # the sky and specks go
+            if k in ssky or cnt[k] < 8:
                 continue
             cls = classes.setdefault(fill, f"c{len(classes)}")
             out.append((cls, path_d(placed(subs, pic))))
         print(f"{pic['name']}: {len(out)} shapes ({len(ssky)} sky shapes dropped)")
         sides.append(out)
+    front = classes[FRONT_FILL]
+    hills = []
+    for ridge, trees in zip(FRONT_HILLS, FRONT_TREES):
+        hills.append((front, ridge_path(ridge)))
+        line = np.array(smooth_line(ridge))
+        for x, h in trees:
+            y = float(np.interp(x, line[:, 0], line[:, 1])) + h * 0.12
+            hills.append((front, spruce(x, y - h, h * 0.4, h)))
+    sides.append(hills)
     colours = {cls: {th: theme_colour(th, fill) for th in THEMES} for fill, cls in classes.items()}
     return shapes, sides, colours, skies, box
 
@@ -561,46 +659,43 @@ def svg_markup(shapes, sides, skies, box):
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
              'aria-hidden="true" focusable="false">',
              "<defs>"]
-    # the side mountains fade into the haze towards their feet (and Stetind's
-    # low outlying hills fade out to the left)
+    # the side pictures: a little haze over their mountains, and their
+    # ground fading into the main picture's plain
     for i, pic in enumerate(SIDE_PICS):
-        (fy0, fy1), fx = pic["fade_y"], pic["fade_x"]
-        lines.append(f'<linearGradient id="about-fy-{i}" gradientUnits="userSpaceOnUse" x1="0" y1="{fy0}" x2="0" y2="{fy1}">'
-                     f'<stop offset="0" stop-color="#fff" stop-opacity="{HAZE}"/>'
-                     f'<stop offset="1" stop-color="#fff" stop-opacity="0.1"/></linearGradient>')
-        lines.append(f'<mask id="about-far-{i}" maskUnits="userSpaceOnUse" x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}">'
-                     f'<rect x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}" fill="url(#about-fy-{i})"/></mask>')
-        if fx:
-            x0, x1 = (round(_placed_x(pic, v)) for v in fx)
-            lines.append(f'<linearGradient id="about-fx-{i}" gradientUnits="userSpaceOnUse" x1="{x0}" y1="0" x2="{x1}" y2="0">'
-                         f'<stop offset="0" stop-color="#fff" stop-opacity="0"/>'
-                         f'<stop offset="1" stop-color="#fff"/></linearGradient>')
-            lines.append(f'<mask id="about-farx-{i}" maskUnits="userSpaceOnUse" x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}">'
-                         f'<rect x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}" fill="url(#about-fx-{i})"/></mask>')
+        png, (mx, my, mw, mh) = side_mask(pic)
+        lines.append(f'<mask id="about-far-{i}" maskUnits="userSpaceOnUse" x="{mx}" y="{my}" width="{mw}" height="{mh}">'
+                     f'<image x="{mx}" y="{my}" width="{mw}" height="{mh}" preserveAspectRatio="none" '
+                     f'href="data:image/png;base64,{png}"/></mask>')
+    # the plain shows only between the side pictures and the main one, and
+    # ends in a slope over the side picture's ground
+    for i, edge in enumerate(PLAIN_EDGES):
+        inner = 20 if i == 0 else W - 20
+        pts = [(inner, TOP), (edge[0][0], TOP)] + smooth_line(edge) + [(edge[-1][0], H + 60), (inner, H + 60)]
+        lines.append(f'<clipPath id="about-plain-{i}"><path d="M' + " ".join(f"{x:.0f} {y:.0f}" for x, y in pts)
+                     + 'z"/></clipPath>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
-    for i, (pic, out) in enumerate(zip(SIDE_PICS, sides)):
+    for i, (pic, out) in enumerate(zip(SIDE_PICS, sides[:2])):
         lines.append(f'<g class="far far-{pic["name"]}" mask="url(#about-far-{i})">')
-        if pic["fade_x"]:
-            lines.append(f'<g mask="url(#about-farx-{i})">')
         lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in out)
-        if pic["fade_x"]:
-            lines.append("</g>")
         lines.append("</g>")
-    lines.append('<g class="land">')
-    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _, _ in shapes)
-    lines.append("</g>")
     for i, (a, b, k) in enumerate(STRIPS):
         edge = a if i == 0 else b
         # the shapes in the strip, as a plain running out to the ends
         # (small details such as trees would turn into wide smudges: left out)
         horizon = PLAIN_HORIZON[i]
-        lines.append('<g class="strip">')
+        lines.append(f'<g class="strip" clip-path="url(#about-plain-{i})">')
         lines.extend(f'<path class="{c}" d="{plain(subs, a, b, k, edge, horizon, PLAIN_SQUEEZE[i])}"/>' for c, _, (x0, x1), subs in shapes
                      if subs is not None and x1 >= a and x0 <= b and not (x1 - x0 < 160 and x0 >= a and x1 <= b))
         lines.append("</g>")
+    lines.append('<g class="land">')
+    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _, _ in shapes)
+    lines.append("</g>")
+    lines.append('<g class="front">')
+    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in sides[2])
+    lines.append("</g>")
     lines.append("</svg>")
     return "\n".join(lines)
 
