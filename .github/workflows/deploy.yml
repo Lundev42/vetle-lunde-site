@@ -22,10 +22,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # Building and deploying are separate jobs. deploy-pages looks up the
+  # uploaded artifact through the Actions API, and when it ran in the same
+  # job, a fraction of a second after the upload, it sometimes found
+  # "0 artifacts" and failed. A separate job only starts once the upload
+  # has been registered.
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -50,6 +52,15 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '_site'
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
