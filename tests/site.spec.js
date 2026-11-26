@@ -1061,9 +1061,12 @@ test.describe("About me mountain background", () => {
     await page.goto(PAGE_URL);
     const svg = page.locator("#om-meg svg.about-scene");
     await expect(svg).toHaveAttribute("aria-hidden", "true");
-    expect(await svg.locator("g.land > path").count()).toBeGreaterThan(300);
-    // a mirrored strip on each side fills wide screens
-    expect(await svg.locator("g.strip").count()).toBe(2);
+    // Seceda on the left, then the Tre Cime picture, joined along a seam;
+    // nothing is added beyond the two pictures' outer edges
+    expect(await svg.locator("g.land > g.seceda > path").count()).toBeGreaterThan(200);
+    expect(await svg.locator("g.land > g.tre-cime > path").count()).toBeGreaterThan(300);
+    expect(await svg.locator("g.strip").count()).toBe(0);
+    await expect(svg).toHaveAttribute("viewBox", "-2553 -67 5465 1507");
     // the banded sky of the source is replaced by one smooth sky image per
     // colour theme, and only the current theme's sky is shown
     expect(await svg.locator("image.sky").count()).toBe(PERIODS.length);
@@ -1110,6 +1113,13 @@ test.describe("About me mountain background", () => {
       expect(Math.abs(r.next - r.section.bottom)).toBeLessThanOrEqual(1);
       expect(r.svg.left - r.section.left).toBeLessThanOrEqual(0.5);
       expect(r.section.right - r.svg.right).toBeLessThanOrEqual(0.5);
+      // beyond phones the whole picture shows, from Seceda at the left edge to
+      // Cinque Torri at the right edge (it is not cropped)
+      if (width > 768) {
+        expect(Math.abs(r.svg.left - r.section.left)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(r.svg.right - r.section.right)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs((r.svg.right - r.svg.left) / r.svg.height - 5465 / 1507)).toBeLessThan(0.01);
+      }
       // the towers start below the text and photo
       const towersTop = r.towersTop;
       expect(towersTop).toBeGreaterThanOrEqual(r.contentBottom);
@@ -1119,8 +1129,10 @@ test.describe("About me mountain background", () => {
       expect(share).toBeGreaterThan(0.15);
       expect(share).toBeLessThan(0.62);
       // on laptops and desktops the section is as tall as it was with the
-      // three photos under the text (980 px)
-      if (width >= 1280) expect(Math.abs(r.section.height - 980)).toBeLessThanOrEqual(20);
+      // three photos under the text (980 px); on very wide screens it grows a
+      // little, so the whole picture still fits edge to edge below the text
+      if (width >= 1280 && width <= 1920) expect(Math.abs(r.section.height - 980)).toBeLessThanOrEqual(20);
+      if (width > 1920) expect(r.section.height).toBeGreaterThanOrEqual(960);
     });
   }
 
@@ -1131,7 +1143,7 @@ test.describe("About me mountain background", () => {
     for (const theme of PERIODS) {
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
       const r = await page.evaluate(() => {
-        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path"));
+        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene g.land path"));
         // a class without a colour for this theme would fall back to black
         const missing = paths.filter((el) => getComputedStyle(el).fill === "rgb(0, 0, 0)").map((el) => el.getAttribute("class"));
         return {
@@ -1147,9 +1159,10 @@ test.describe("About me mountain background", () => {
     }
     expect(fills.size).toBe(PERIODS.length);
     expect(skies.size).toBe(PERIODS.length);
-    // Devon keeps the picture's own colours (its first land shape is #352816)
+    // Devon keeps the pictures' own colours (the first land shape of the Tre
+    // Cime picture is #352816)
     await page.evaluate(() => document.documentElement.setAttribute("data-theme", "devonian"));
-    await expect(page.locator("#om-meg .about-scene g.land path").first()).toHaveCSS("fill", "rgb(53, 40, 22)");
+    await expect(page.locator("#om-meg .about-scene g.tre-cime path").first()).toHaveCSS("fill", "rgb(53, 40, 22)");
   });
 
   for (const theme of PERIODS) {

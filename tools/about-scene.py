@@ -1,16 +1,28 @@
 #!/usr/bin/env python3
-"""Build the About-me background scene from the hand-off picture.
+"""Build the About-me background scene from the hand-off pictures.
 
-Source: tools/about-scene.svg, the Dolomites sunset we were given
-(file2.svg, 1709 flat-coloured shapes on a 2912 x 1440 canvas, drawn back to
-front). It is not deployed; this script writes the scene into
-index.html.
+The scene is one wide picture made of two traced pictures, side by side:
 
-  1. The shapes of the banded sky are dropped (SKY_PATHS) together with the
-     shapes nothing shows of. A smooth sky image takes the sky's place: the
-     colours of the picture's own sky, blurred, darkening upwards into a
-     night or dusk colour, and running on far above the picture so the
-     atmosphere fills the whole section up to its top edge.
+  * tools/about-scene.svg, the Dolomites sunset we were given (file2.svg,
+    1709 flat-coloured shapes on a 2912 x 1440 canvas, drawn back to front):
+    Tre Cime and Cinque Torri. It is the right part of the scene and keeps
+    its own units, so nothing in it moves or changes size.
+  * tools/about-scene-seceda.svg, the wide version made from it (Seceda on the
+    left, a valley, then Tre Cime again). Only its left part is used: Seceda
+    and the valley over to Tre Cime. It is scaled and placed (LEFT_M) so its
+    Tre Cime lie exactly on the towers of the first picture, and it hands
+    over to that picture along SEAM, a line that runs down the left edge of
+    the towers' picture, bends round behind the foot of the first tower and,
+    near the bottom, follows the edge of the dark foreground hill.
+
+The scene ends with the pictures: nothing is added beyond Seceda on the left
+or beyond Cinque Torri on the right.
+
+  1. The shapes of the banded sky are dropped (SKY_PATHS, LEFT_SKY) together
+     with the shapes nothing shows of. A smooth sky image takes the sky's
+     place: the colours of the pictures' own sky, blurred, darkening upwards
+     into a night or dusk colour, and running on far above the picture so
+     the atmosphere fills the whole section up to its top edge.
   2. Small blob-like trees (TREES, none in the current picture) can be
      redrawn as narrow spruces: a wedge, wide at the foot and pointed at
      the top, with a few short branch tips along its sides.
@@ -18,8 +30,6 @@ index.html.
      property per colour theme: Devon keeps the picture's own colours, the
      other periods map them in OKLCH (keeping light and shadow), so every
      theme repaints the scene.
-  4. Wide screens: a thin strip at each side of the picture is mirrored and
-     stretched, so the hills roll on to the edges of the screen.
 
 Run from the repo root:  python3 tools/about-scene.py
 Needs numpy, scipy, opencv and Pillow. It rewrites the <svg class="about-scene">
@@ -36,21 +46,40 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 from scipy.signal import find_peaks
 
-SRC = "tools/about-scene.svg"
+SRC = "tools/about-scene.svg"              # Tre Cime and Cinque Torri: the right part
+SRC_LEFT = "tools/about-scene-seceda.svg"  # Seceda and the valley: the left part
 HTML = "index.html"
 
-W, H = 2912, 1440          # canvas of the source SVG
+W, H = 2912, 1440          # canvas of the right picture; the scene uses its units
 TOP = -67                  # first row drawn (above the canvas: only sky there), so the
                            # towers start 14 % down the scene
-SIDE = 1800                # units added on each side for wide screens
-STRIPS = ((6, 86, -23), (2720, 2906, -10))   # (from, to, x stretch): mirrored just inside the picture's edges, so the copies overlap it
+X0 = -2553                 # the scene's left edge: the left edge of the Seceda picture
+# The left picture's units to the scene's (found by matching its Tre Cime to
+# the right picture's: scale 1.334, turned 0.54 degrees)
+LEFT_M = ((1.33369471, -0.01248107, -2553.27521),
+          (0.01248107, 1.33369471, -64.8051486))
+# Where the left picture hands over to the right one, top to bottom (scene
+# units), along edges both pictures share, so the hand-over does not show:
+# the right picture's left edge through the sky, round the foot of the
+# first tower (the left picture's mountain slopes down behind it), down the
+# edge of the light stripe of scree below the towers, across the meadow in
+# a slope that tapers the right picture's ochre band out, along the top of
+# its dark foreground hill, which then slopes down to the bottom edge.
+SEAM = [(2, TOP), (2, 718), (14, 724), (50, 736), (86, 748), (100, 754), (115, 775), (130, 792),
+        (141, 800), (136, 820), (135, 840), (146, 860), (158, 880), (170, 900), (183, 920),
+        (195, 940), (207, 960), (219, 980), (231, 1000), (243, 1020), (256, 1040), (275, 1060),
+        (288, 1080), (292, 1100), (294, 1118), (200, 1142), (120, 1160), (38, 1184), (52, 1192),
+        (65, 1200), (78, 1208), (90, 1216), (102, 1224), (110, 1232), (117, 1240), (122, 1248),
+        (125, 1256), (128, 1264), (132, 1272), (140, 1282), (148, 1290), (155, 1297), (120, 1316),
+        (90, 1338), (60, 1362), (35, 1388), (18, 1414), (10, H)]
+OVERLAP = 3                # the left picture reaches this far under the right one
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 
 THEMES = ["hadean", "cambrian", "devonian", "cretaceous", "quaternary"]
 DEFAULT = "cretaceous"
 
-# The sky's shapes (1-based, in source order), picked once: every shape
+# The sky's shapes of the right picture (1-based, in source order), picked once: every shape
 # mostly above the skyline (found from the colour edges of the rendered
 # picture), the glow seen between and beside the towers (checked by eye),
 # and the specks of colour left floating in the sky. Check them again if
@@ -75,6 +104,19 @@ SKY_PATHS = [1, 7, 9, (11, 24), (27, 58), (61, 66), (69, 80), (102, 103), (105, 
              (1586, 1597), 1599, (1607, 1623), (1625, 1627), (1631, 1636), (1644, 1647), (1649, 1666),
              (1670, 1671), 1673, 1675, (1678, 1679), (1681, 1685), 1687, 1689, (1693, 1694), (1697, 1698),
              1700, (1702, 1703), (1705, 1709)]
+
+# The sky's shapes of the left picture (1-based), picked once: grown from
+# the top edge through neighbouring shapes of nearly the same colour, then
+# checked by eye (the sunlit faces of Seceda and a dark notch between its
+# peaks are rock, not sky).
+LEFT_SKY = [2, (4, 7), (9, 10), (12, 16), (18, 31), (33, 37), (41, 44), (47, 48), (50, 52), (55, 56),
+            (63, 64), (66, 68), (70, 73), (76, 80), (101, 102), (110, 112), (115, 116), (119, 120),
+            122, (126, 127), 132, (135, 136), 151, (169, 172), 178, (187, 192), (196, 199),
+            (235, 236), (250, 251), (253, 254), (264, 266), 287, (319, 320), 335, 339, (352, 364),
+            (366, 368), (480, 482), 484, (488, 491), 498, 500, 507, (519, 520), (533, 537),
+            (539, 540), 555, (572, 575), 702, (706, 709), (713, 715), 739, 744, 749, (758, 760),
+            762, (787, 790), 873, 876, 900, 902, (904, 906), 910, 912, (937, 938), 940, (943, 950),
+            955, 1000, 1003, (1007, 1008), 1012, 1016]
 
 # Small trees to redraw as spruces (1-based; a shape may hold two trees side
 # by side). The current picture draws its spruces well already: none.
@@ -210,8 +252,8 @@ def expand(spec):
     return out
 
 
-def read_paths():
-    svg = open(SRC, encoding="utf-8").read()
+def read_paths(src):
+    svg = open(src, encoding="utf-8").read()
     found = re.findall(r'<path fill="(#[0-9A-Fa-f]{6})"[^>]*?d="([^"]*)"', svg)
     paths = []
     for fill, d in found:
@@ -232,10 +274,11 @@ def flatten(pts, steps=8):
 
 
 def id_map(paths):
-    """Which shape shows at each pixel of the canvas (1-based, 0 = none)."""
-    ids = np.zeros((H, W), np.int32)
+    """Which shape shows at each pixel of the scene, from X0 to W and from 0
+    to H (1-based, 0 = none)."""
+    ids = np.zeros((H, W - X0), np.int32)
     for k, (_, pts) in enumerate(paths, 1):
-        poly = np.round(flatten(pts) * 4).astype(np.int32)       # 2 bits of sub-pixel precision
+        poly = np.round((flatten(pts) - [X0, 0]) * 4).astype(np.int32)   # 2 bits of sub-pixel precision
         cv2.fillPoly(ids, [poly], int(k), lineType=cv2.LINE_8, shift=2)
     return ids
 
@@ -305,15 +348,21 @@ def trees_of(k, pts):
 
 # ── sky ───────────────────────────────────────────────────────────────────
 
-def sky_field(paths, ids, sky):
-    """The picture's sky, blurred into a smooth field (OKLab, 1/8 scale)."""
+def sky_lab(paths, ids, sky, where):
+    """The sky colours (OKLab) a picture shows in the pixels `where`, and
+    where it shows sky."""
     lab_of = np.array([[0, 0, 0]] + [srgb_to_oklab(hex_rgb(f)) for f, _ in paths])
     is_sky = np.zeros(len(paths) + 1, bool)
     is_sky[list(sky)] = True
-    m = is_sky[ids].astype(float)
-    img = lab_of[ids] * m[..., None]
+    m = is_sky[ids] & where
+    return lab_of[ids] * m[..., None], m
+
+
+def sky_field(img, m):
+    """The pictures' sky, blurred into a smooth field (OKLab, 1/8 scale)."""
+    m = m.astype(float)
     f = 8
-    small = lambda a: cv2.resize(a, (W // f, H // f), interpolation=cv2.INTER_AREA)
+    small = lambda a: cv2.resize(a, ((W - X0) // f, H // f), interpolation=cv2.INTER_AREA)
     m8, img8 = small(m), small(img)
     field = np.zeros_like(img8)
     weight = np.zeros(m8.shape)
@@ -335,15 +384,15 @@ def smoothstep(t):
 
 
 def sky_images(field):
-    x0, x1 = -SIDE, W + SIDE
+    x0, x1 = X0, W
     y0, y1 = TOP - EXT, H
     fw, fh = (x1 - x0) // SKY_PX, (y1 - y0) // SKY_PX
     xs = x0 + (np.arange(fw) + 0.5) * SKY_PX
     ys = y0 + (np.arange(fh) + 0.5) * SKY_PX
-    fx = np.clip(xs / 8, 0, field.shape[1] - 1).astype(int)
+    fx = np.clip((xs - X0) / 8, 0, field.shape[1] - 1).astype(int)
     fy = np.clip(ys / 8, 0, field.shape[0] - 1).astype(int)
     base = field[fy[:, None], fx[None, :]]
-    # the strips beyond the picture repeat its edge columns: soften that
+    # the rows above the picture repeat its top row: soften that
     base = np.stack([cv2.GaussianBlur(base[..., c], (0, 0), 2.0) for c in range(3)], -1)
     s = smoothstep((HORIZON_Y - ys) / (HORIZON_Y - ZENITH_Y))[:, None, None]
     out = {}
@@ -358,58 +407,82 @@ def sky_images(field):
 
 # ── output ────────────────────────────────────────────────────────────────
 
+def seam_x(ys):
+    """The seam's x at the rows ys."""
+    sx, sy = np.array(SEAM, float).T
+    return np.interp(ys, sy, sx)
+
+
+def seam_clip(side):
+    """Clip path data for one side of the seam, down to the bottom edge (the
+    left side reaches OVERLAP further, under the right picture, so no
+    hairline shows; it stops at X0, the left picture's own edge)."""
+    if side == "left":
+        pts = [(x + OVERLAP, y) for x, y in SEAM] + [(X0, H), (X0, TOP)]
+    else:
+        pts = list(SEAM) + [(W, H), (W, TOP)]
+    return "M" + "L".join(f"{num(x)} {num(y)}" for x, y in pts) + "z"
+
+
 def build():
-    paths = read_paths()
-    ids = id_map(paths)
-    sky = expand(SKY_PATHS)
+    right = read_paths(SRC)
+    m = np.array(LEFT_M)
+    left = [(f, pts @ m[:, :2].T + m[:, 2]) for f, pts in read_paths(SRC_LEFT)]
+    ids_r, ids_l = id_map(right), id_map(left)
+    sky_r, sky_l = expand(SKY_PATHS), expand(LEFT_SKY)
+    xs = X0 + np.arange(W - X0)[None, :] + 0.5
+    s = seam_x(np.arange(H) + 0.5)[:, None]
+    in_r = xs >= s                      # the right picture shows here (its sky aside)
+    in_l = xs < s + OVERLAP
+    land_r = np.isin(ids_r, list(sky_r), invert=True) & (ids_r > 0) & in_r
     # shapes nothing (or only a speck of a few pixels) shows of are dropped
-    counts = np.bincount(ids.ravel(), minlength=len(paths) + 1)
-    shown = set(np.nonzero(counts >= 8)[0].tolist()) - {0}
-    field = sky_field(paths, ids, sky)
+    def shown(ids, where):
+        counts = np.bincount(ids[where].ravel(), minlength=ids.max() + 1)
+        return set(np.nonzero(counts >= 8)[0].tolist()) - {0}
+    shown_r = shown(ids_r, in_r)
+    shown_l = shown(ids_l, in_l & ~land_r)
+    img_r, m_r = sky_lab(right, ids_r, sky_r, in_r)
+    img_l, m_l = sky_lab(left, ids_l, sky_l, ~in_r)
+    field = sky_field(img_r + img_l, m_r | m_l)
     skies, box = sky_images(field)
 
     classes = {}                                   # fill -> class
-    shapes = []                                    # (class, d)
+    parts = {}
     trees = set(TREES)
-    for k, (fill, pts) in enumerate(paths, 1):
-        if k in sky or k not in shown:
-            continue
-        cls = classes.setdefault(fill, f"c{len(classes)}")
-        if k in trees:
-            for cx, top, w, h in trees_of(k, pts):
-                shapes.append((cls, spruce(cx, top, w, h), (cx - w, cx + w)))
-        else:
-            shapes.append((cls, path_d(pts), (pts[:, 0].min(), pts[:, 0].max())))
+    for side, paths, sky, show in (("left", left, sky_l, shown_l), ("right", right, sky_r, shown_r)):
+        shapes = parts[side] = []                  # (class, d)
+        for k, (fill, pts) in enumerate(paths, 1):
+            if k in sky or k not in show:
+                continue
+            cls = classes.setdefault(fill, f"c{len(classes)}")
+            if side == "right" and k in trees:
+                for cx, top, w, h in trees_of(k, pts):
+                    shapes.append((cls, spruce(cx, top, w, h)))
+            else:
+                shapes.append((cls, path_d(pts)))
     colours = {cls: {th: theme_colour(th, fill) for th in THEMES} for fill, cls in classes.items()}
-    return shapes, colours, skies, box
+    return parts, colours, skies, box
 
 
-def svg_markup(shapes, skies, box):
-    vb = f"{-SIDE} {TOP} {W + 2 * SIDE} {H - TOP}"
+def svg_markup(parts, skies, box):
+    vb = f"{X0} {TOP} {W - X0} {H - TOP}"
     bx, by, bw, bh = box
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
              'aria-hidden="true" focusable="false">',
              "<defs>"]
-    for i, (a, b, _) in enumerate(STRIPS):
-        lines.append(f'<clipPath id="about-strip-{i}"><rect x="{a}" y="0" width="{b - a}" height="{H}"/></clipPath>')
+    for side in ("left", "right"):
+        lines.append(f'<clipPath id="about-{side}"><path d="{seam_clip(side)}"/></clipPath>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
     lines.append('<g class="land">')
-    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _ in shapes)
-    lines.append("</g>")
-    for i, (a, b, k) in enumerate(STRIPS):
-        edge = a if i == 0 else b
-        # the shapes in the strip, mirrored at the picture's edge and
-        # stretched outwards (copies, not <use>: CSS colours do not reach
-        # into <use> clones in every browser)
-        lines.append(f'<g class="strip" clip-path="url(#about-strip-{i})" '
-                     f'transform="matrix({k} 0 0 1 {edge * (1 - k)} 0)">')
-        # (small details such as trees would turn into wide smudges: left out)
-        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, (x0, x1) in shapes
-                     if x1 >= a and x0 <= b and not (x1 - x0 < 160 and x0 >= a and x1 <= b))
+    # Seceda and the valley first, so the towers' picture lies over the seam
+    for side, name in (("left", "seceda"), ("right", "tre-cime")):
+        lines.append(f'<g class="{name}" clip-path="url(#about-{side})">')
+        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in parts[side])
         lines.append("</g>")
+    lines.append("</g>")
     lines.append("</svg>")
     return "\n".join(lines)
 
@@ -441,10 +514,10 @@ def main():
     ap.add_argument("--debug", help="folder for a preview page per theme")
     ap.add_argument("--no-write", action="store_true")
     args = ap.parse_args()
-    shapes, colours, skies, box = build()
-    svg = svg_markup(shapes, skies, box)
+    parts, colours, skies, box = build()
+    svg = svg_markup(parts, skies, box)
     css = scene_css(colours)
-    print(f"{len(shapes)} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
+    print(f"{len(parts['left'])} + {len(parts['right'])} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
         for th in THEMES:
             with open(f"{args.debug}/preview-{th}.html", "w") as f:
