@@ -1062,8 +1062,10 @@ test.describe("About me mountain background", () => {
     const svg = page.locator("#om-meg svg.about-scene");
     await expect(svg).toHaveAttribute("aria-hidden", "true");
     expect(await svg.locator("g.land > path").count()).toBeGreaterThan(300);
-    // a mirrored strip on each side fills wide screens
-    expect(await svg.locator("g.strip").count()).toBe(2);
+    // layered ground on each side, in front of the side mountains
+    expect(await svg.locator("g.ground").count()).toBe(2);
+    // hazy far ridges in the gaps between the mountains
+    expect(await svg.locator("g.distant").count()).toBe(2);
     // Torres del Paine to the left and Stetind to the right of the main
     // picture, each with its own ground
     const vb = (await svg.getAttribute("viewBox")).split(" ").map(Number);
@@ -1072,8 +1074,9 @@ test.describe("About me mountain background", () => {
       expect(await far.locator("path").count()).toBeGreaterThan(150);
       await expect(far).toHaveAttribute("mask", /^url\(#about-far-\d\)$/);
       const box = await far.evaluate((g) => { const b = g.getBBox(); return { x: b.x, width: b.width }; });
+      // (the main picture spans 0 to 2912; the side mountains stand just beyond it)
       if (side < 0) expect(box.x + box.width).toBeLessThan(0);
-      else expect(box.x).toBeGreaterThan(2912);
+      else expect(box.x).toBeGreaterThan(2900);
       expect(box.x + box.width).toBeGreaterThan(vb[0]);
       expect(box.x).toBeLessThan(vb[0] + vb[2]);
     }

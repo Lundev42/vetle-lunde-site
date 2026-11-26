@@ -18,15 +18,17 @@ index.html.
      property per colour theme: Devon keeps the picture's own colours, the
      other periods map them in OKLCH (keeping light and shadow), so every
      theme repaints the scene.
-  4. Two more mountains stand on each side, from the user's Torres del
-     Paine (left) and Stetind (right) pictures (tools/about-scene-torres.svg,
-     tools/about-scene-stetind.svg): their mountains and their own ground,
-     recoloured like the rest, a short valley from the main picture's
-     peaks, with a little haze over the mountains.
-  5. Where their ground meets the main picture's, the main picture's edge
-     runs on a little as a plain (a mirrored, stretched strip) that ends in
-     a slope over theirs, and a dark foreground hill with a few spruces
-     runs over each join.
+  4. Two more mountains stand close on each side, from the user's Torres
+     del Paine (left) and Stetind (right) pictures
+     (tools/about-scene-torres.svg, tools/about-scene-stetind.svg):
+     recoloured like the rest, with a little haze over them.
+  5. The hazy far ridges from the middle of the main picture are copied
+     into the gaps between the mountains.
+  6. In front of the side mountains, layers of hills in the main picture's
+     foreground colours rise from the bottom up to the mountains' feet,
+     with a few spruces. Next to the main picture each layer runs into the
+     band of its own colour there, so the joins do not show; the main
+     picture's far ridge at its right edge is cut back into a slope.
 
 Run from the repo root:  python3 tools/about-scene.py
 Needs numpy, scipy, opencv and Pillow. It rewrites the <svg class="about-scene">
@@ -50,45 +52,67 @@ W, H = 2912, 1440          # canvas of the source SVG
 TOP = -67                  # first row drawn (above the canvas: only sky there), so the
                            # towers start 14 % down the scene
 # Two more mountains, one on each side of the main picture (the user's
-# Torres del Paine and Stetind pictures), with their own ground. Their skies
-# are dropped. Each is scaled by "scale" and moved so its pixel "anchor"
-# (the foot on the side facing the main picture, at its ground line) lands
-# at "at": a short valley from the main picture's peaks, where the user
-# marked them. Below the ground line the picture is stretched downwards
-# more and more (the foreground is nearer), so its ground reaches the
-# bottom of the scene. Stetind's low outlying hills on the side facing the
-# main picture fade out over "blend" (pixels of the picture).
+# Torres del Paine and Stetind pictures). Their skies are dropped and their
+# own foregrounds are covered by the scene's ground (below). Each is scaled
+# by "scale" and moved so its pixel "anchor" (the foot on the side facing
+# the main picture, at its ground line) lands at "at", close to the main
+# picture's peaks, where the user marked them. "cut" trims the low outlying
+# hills on the side facing the main picture along a slope (scene units, top
+# to bottom), so they do not end in the picture's straight edge.
 SIDE_PICS = [
     dict(name="torres", src="tools/about-scene-torres.svg", w=2752, h=1536, scale=0.62,
-         anchor=(2700, 1190), at=(-300, 820), blend=None),
-    dict(name="stetind", src="tools/about-scene-stetind.svg", w=2752, h=1536, scale=0.6,
-         anchor=(200, 1130), at=(3050, 760), blend=(0, 440)),
+         anchor=(2700, 1190), at=(-130, 830), cut=None),
+    dict(name="stetind", src="tools/about-scene-stetind.svg", w=2752, h=1536, scale=0.55,
+         anchor=(200, 1130), at=(3020, 860),
+         cut=[(3150, 620), (3095, 680), (3035, 735), (2975, 790), (2930, 850), (2910, 950), (2905, 1000)]),
 ]
-# Between them, the main picture's ground runs on as a plain (the strips
-# below) and ends over the side picture's ground in a slope: these points,
-# top to bottom, are that edge (scene units), so the side picture's own
-# edge stays hidden under it.
-PLAIN_EDGES = [
-    [(-200, 780), (-260, 805), (-320, 830), (-375, 870), (-420, 920), (-460, 975), (-495, 1030), (-530, 1100)],
-    [(2990, 700), (3040, 735), (3090, 760), (3140, 800), (3180, 860), (3215, 930), (3245, 1000), (3280, 1080)],
+# The hazy far ridges in the middle of the main picture (this box of it)
+# are copied into the gaps between the mountains: (x shift, y shift, mirrored).
+DISTANT_BOX = (1265, 640, 1800, 872)
+DISTANT_COPIES = [(-1600, -12, False), (1300, 8, True)]
+# The ground in front of the side mountains: layers of hills, low at the
+# front and rising towards the mountains, in the main picture's foreground
+# colours. Each is a ridge line (left to right, scene units), filled down
+# to the bottom. Next to the main picture each one runs into the band of
+# its own colour there (so the join does not show) and then drops away,
+# hidden by the next layer in front.
+GROUND = [
+    [  # left
+        ("#A48047", [(-1600, 872), (-1400, 850), (-1150, 878), (-900, 860), (-650, 846), (-420, 858),
+                     (-220, 842), (-60, 832), (60, 860), (140, 960), (200, 1060), (240, 1114), (300, 1126),
+                     (330, 1500)]),
+        ("#85703F", [(-1600, 1000), (-1350, 1030), (-1050, 985), (-760, 1020), (-480, 975), (-250, 1010),
+                     (-40, 1070), (150, 1138), (300, 1166), (400, 1180), (440, 1186), (470, 1500)]),
+        ("#5A452A", [(-1600, 1190), (-1300, 1150), (-1000, 1185), (-700, 1145), (-400, 1175), (-120, 1220),
+                     (150, 1265), (350, 1266), (550, 1252), (610, 1249), (650, 1500)]),
+        ("#352816", [(-1600, 1330), (-1200, 1310), (-850, 1340), (-500, 1320), (-200, 1345), (100, 1360),
+                     (300, 1346), (500, 1381), (700, 1384), (760, 1500)]),
+    ],
+    [  # right
+        ("#A48047", [(2500, 1420), (2640, 1240), (2760, 1080), (2880, 958), (3000, 878), (3150, 862),
+                     (3350, 872), (3550, 895), (3780, 935), (3980, 985), (4200, 1012), (4500, 1000)]),
+        ("#85703F", [(2600, 1430), (2760, 1290), (2920, 1170), (3100, 1070), (3350, 1035), (3600, 1060),
+                     (3880, 1105), (4200, 1122), (4500, 1110)]),
+        ("#5A452A", [(2700, 1440), (2860, 1330), (3020, 1245), (3220, 1200), (3480, 1215), (3750, 1250),
+                     (4050, 1268), (4500, 1245)]),
+        ("#352816", [(2420, 1430), (2550, 1370), (2650, 1349), (2750, 1340), (2850, 1335), (3000, 1345),
+                     (3200, 1362), (3500, 1376), (3800, 1394), (4100, 1384), (4500, 1392)]),
+    ],
 ]
-# Where a side picture's ground meets the main picture's, a dark hill in
-# the nearest foreground (the main picture's darkest ground colour) runs
-# over the join: out of the main picture's own dark foreground hill, over
-# the join, and down into the side picture's dark ground. Points along its
-# ridge, left to right, in scene units.
-FRONT_FILL = "#352816"
-FRONT_HILLS = [
-    [(-1150, 1500), (-950, 1280), (-700, 1110), (-450, 1030), (-250, 1015), (-50, 1060),
-     (150, 1180), (320, 1310), (480, 1390), (620, 1500)],
-    [(2450, 1500), (2620, 1390), (2800, 1270), (2950, 1130), (3080, 1050), (3200, 1030),
-     (3330, 1070), (3460, 1150), (3600, 1290), (3720, 1500)],
+# Spruces on the ground layers: (side, layer, x, height).
+GROUND_TREE_FILL = "#534021"
+GROUND_TREES = [
+    (0, 0, -1180, 46), (0, 0, -1150, 60), (0, 0, -1120, 40), (0, 0, -470, 44), (0, 0, -440, 58),
+    (0, 0, -300, 38), (0, 1, -880, 62), (0, 1, -840, 82), (0, 1, -800, 56), (0, 1, -120, 70),
+    (0, 1, -80, 52), (0, 2, -1350, 90), (0, 2, -1300, 70), (0, 2, -420, 84),
+    (1, 0, 3180, 42), (1, 0, 3210, 56), (1, 0, 3240, 38), (1, 0, 3720, 46), (1, 0, 3750, 36),
+    (1, 1, 2990, 70), (1, 1, 3030, 54), (1, 1, 3560, 66), (1, 1, 3600, 84), (1, 1, 3640, 58),
+    (1, 2, 3280, 88), (1, 2, 3330, 70), (1, 2, 4050, 92),
 ]
-# A few spruces stand on those hills, in the same colour: (x, height).
-FRONT_TREES = [
-    [(-610, 70), (-560, 95), (-520, 62), (-180, 58), (-140, 84), (60, 66), (96, 48)],
-    [(2900, 60), (2940, 82), (3120, 64), (3160, 96), (3200, 70), (3360, 74), (3395, 52)],
-]
+# Near the main picture's right edge its far ridge is cut back along this
+# line (scene units, top to bottom), so it slopes down instead of ending in
+# a straight cut; the ground in front hides the rest of the edge.
+LAND_CUT = [(2660, 772), (2730, 792), (2800, 838), (2865, 910), (2912, 1000)]
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 HAZE = 0.9                 # the side mountains are further away: a little sky shows through
@@ -100,19 +124,11 @@ def _placed_x(pic, x):
 
 
 # The drawing is centred on the main picture and reaches to the outer edge
-# of the nearer side picture (its edge cuts through a ridge, so it must
-# never show); the farther one runs on past the end.
+# of Stetind's picture (its edge cuts through a ridge, so it must never
+# show); Torres' picture runs on past the other end.
 CX = W / 2
-HALF = int(min(CX - _placed_x(SIDE_PICS[0], 0),
-               _placed_x(SIDE_PICS[1], SIDE_PICS[1]["w"]) - CX))
+HALF = int(_placed_x(SIDE_PICS[1], SIDE_PICS[1]["w"]) - CX)
 X0, X1 = int(CX - HALF), int(CX + HALF)
-# A thin strip at each edge of the main picture is mirrored and stretched
-# out to the ends, as the plain in front of the side mountains: (from, to,
-# x stretch); mirrored just inside the picture's edges so the copies overlap it.
-PLAIN_HORIZON = (800, 735)  # where the land meets the sky at each edge of the picture
-PLAIN_DROP = 40            # how much lower the far plain's horizon lies
-PLAIN_SQUEEZE = (0.8, 1.6)  # how much the plain's upper bands narrow far out
-STRIPS = ((6, 86, -((6 - X0 + 60) / 80)), (2720, 2906, -((X1 + 60 - 2906) / 186)))
 
 THEMES = ["hadean", "cambrian", "devonian", "cretaceous", "quaternary"]
 DEFAULT = "cretaceous"
@@ -481,60 +497,6 @@ def sky_images(field):
 
 # ── output ────────────────────────────────────────────────────────────────
 
-def clip_x(poly, a, b):
-    """Clip a polygon to a <= x <= b (Sutherland-Hodgman)."""
-    for keep, lim in ((lambda p: p[0] >= a, a), (lambda p: p[0] <= b, b)):
-        out = []
-        n = len(poly)
-        for i in range(n):
-            p, q = poly[i], poly[(i + 1) % n]
-            if keep(p):
-                out.append(p)
-            if keep(p) != keep(q):
-                t = (lim - p[0]) / (q[0] - p[0])
-                out.append((lim, p[1] + t * (q[1] - p[1])))
-        poly = out
-        if not poly:
-            break
-    return poly
-
-
-def plain(subs, a, b, k, edge, horizon, squeeze):
-    """A strip shape mirrored at the picture's edge and stretched outwards
-    into a rolling plain: next to the picture it matches the edge; further
-    out the upper bands narrow (the plain recedes towards the horizon) and
-    the lines between the bands roll gently."""
-    out = []
-    for pts in subs:
-        poly = clip_x([tuple(p) for p in flatten(pts)], a, b)
-        if len(poly) < 3:
-            continue
-        P = np.array(poly)
-        P[:, 0] = edge + k * (P[:, 0] - edge)
-        # short segments, so the rolling shows
-        dense = []
-        for i in range(len(P)):
-            p, q = P[i], P[(i + 1) % len(P)]
-            m = max(1, int(abs(q[0] - p[0]) / 24))
-            dense.extend(p + (q - p) * j / m for j in range(m))
-        P = np.array(dense)
-        x, y = P[:, 0], P[:, 1]
-        r = smoothstep(np.abs(x - edge) / 800)
-        t = np.clip((y - horizon) / (H - horizon), 0, 1)
-        top = horizon + r * PLAIN_DROP          # the far plain lies a little lower
-        y2 = np.where((y > horizon) & (y < H), top + (H - top) * t ** (1 + squeeze * r), y + r * PLAIN_DROP)
-        # long, uneven swells (no two waves share a period)
-        wave1 = np.sin(x / 430 + 1.3) + 0.45 * np.sin(x / 251 + 0.4)
-        wave2 = np.sin(x / 347 + 2.1) + 0.4 * np.sin(x / 163 + 1.7)
-        y2 = y2 + r * (9 * (1 - t) * wave1 + 20 * np.sin(np.pi * t) * wave2)
-        q = np.round(np.column_stack([x, y2])).astype(int)
-        keep = np.r_[True, np.any(q[1:] != q[:-1], 1)]
-        q = q[keep]
-        d = np.diff(q, axis=0)
-        out.append(f"M{q[0][0]} {q[0][1]}l" + " ".join(f"{dx} {dy}" for dx, dy in d) + "z")
-    return re.sub(r" -", "-", "".join(out))
-
-
 def smooth_line(pts):
     """A smooth line through the points (Catmull-Rom), as a list of points."""
     P = np.array(pts, float)
@@ -566,19 +528,18 @@ def ridge_path(pts):
     return d + f" {q[-1][0]} {H + 60} {q[0][0]} {H + 60}z"
 
 
-def placed_y(pic, y):
-    """Height in the scene of a row of a side picture: to scale above its
-    ground line, stretched more and more below it to reach the bottom."""
-    s = pic["scale"]
-    ay, Y = pic["anchor"][1], pic["at"][1]
-    d = np.asarray(y, float) - ay
-    depth = pic["h"] - ay
-    c = (H + 20 - Y - s * depth) / depth ** 2
-    return np.where(d <= 0, Y + d * s, Y + d * s + c * d * d)
+def land_clip():
+    """Outline of the main picture's land: all of it, but for the far ridge
+    at its right edge, cut back along LAND_CUT."""
+    pts = [(-40, TOP - 40), (LAND_CUT[0][0], TOP - 40)] + smooth_line(LAND_CUT)
+    pts += [(W + 40, LAND_CUT[-1][1]), (W + 40, H + 80), (-40, H + 80)]
+    return "M" + " ".join(f"{x:.0f} {y:.0f}" for x, y in pts) + "z"
 
 
 def placed(subs, pic):
-    return [np.column_stack([_placed_x(pic, p[:, 0]), placed_y(pic, p[:, 1])]) for p in subs]
+    s = pic["scale"]
+    (ax, ay), (X, Y) = pic["anchor"], pic["at"]
+    return [np.column_stack([X + (p[:, 0] - ax) * s, Y + (p[:, 1] - ay) * s]) for p in subs]
 
 
 def side_mask(pic):
@@ -592,11 +553,6 @@ def side_mask(pic):
     ys = y0 + (np.arange((y1 - y0) // MASK_PX) + 0.5) * MASK_PX
     gy = pic["at"][1]
     a = HAZE + (1 - HAZE) * smoothstep((ys - (gy - 60)) / 100)[:, None] * np.ones_like(xs)[None, :]
-    if pic["blend"]:
-        b_out, b_in = (_placed_x(pic, v) for v in pic["blend"])      # edge, then where it is solid
-        f = smoothstep((xs - b_out) / (b_in - b_out))[None, :]
-        g = 1 - smoothstep((ys - (gy - 80)) / 80)                    # above the ground line only
-        a = a * (1 - g[:, None] * (1 - f))
     img = np.clip(np.round(a * 255), 0, 255).astype(np.uint8)
     _, png = cv2.imencode(".png", img, [cv2.IMWRITE_PNG_COMPRESSION, 9])
     return base64.b64encode(png.tobytes()).decode(), (x0, y0, len(xs) * MASK_PX, len(ys) * MASK_PX)
@@ -613,19 +569,25 @@ def build():
     skies, box = sky_images(field)
 
     classes = {}                                   # fill -> class
-    shapes = []                                    # (class, d, x range)
+    cls_of = lambda fill: classes.setdefault(fill.upper(), f"c{len(classes)}")
+    shapes = []                                    # (class, d)
+    distant = []                                   # main shapes in DISTANT_BOX
+    bx0, by0, bx1, by1 = DISTANT_BOX
     trees = set(TREES)
     for k, (fill, subs) in enumerate(paths, 1):
         if k in sky or k not in shown:
             continue
-        cls = classes.setdefault(fill, f"c{len(classes)}")
+        cls = cls_of(fill)
         if k in trees:
             for cx, top, w, h in trees_of(k, subs):
-                shapes.append((cls, spruce(cx, top, w, h), (cx - w, cx + w), None))
-        else:
-            shapes.append((cls, path_d(subs), (subs[0][:, 0].min(), subs[0][:, 0].max()), subs))
+                shapes.append((cls, spruce(cx, top, w, h)))
+            continue
+        shapes.append((cls, path_d(subs)))
+        p = subs[0]
+        if p[:, 0].max() > bx0 and p[:, 0].min() < bx1 and p[:, 1].max() > by0 and p[:, 1].min() < by1:
+            distant.append((cls, subs))
 
-    sides = []                                     # per side picture: [(class, d)]
+    far = []                                       # per side picture: [(class, d)]
     for pic in SIDE_PICS:
         sp = read_paths(pic["src"])
         sids = id_map(sp, pic["w"], pic["h"])
@@ -633,69 +595,82 @@ def build():
         cnt = np.bincount(sids.ravel(), minlength=len(sp) + 1)
         out = []
         for k, (fill, subs) in enumerate(sp, 1):
-            # the sky and specks go
-            if k in ssky or cnt[k] < 8:
+            # the sky, specks, and the foreground the ground covers go
+            pts = placed(subs, pic)
+            if k in ssky or cnt[k] < 8 or min(p[:, 1].min() for p in pts) > 1000:
                 continue
-            cls = classes.setdefault(fill, f"c{len(classes)}")
-            out.append((cls, path_d(placed(subs, pic))))
+            out.append((cls_of(fill), path_d(pts)))
         print(f"{pic['name']}: {len(out)} shapes ({len(ssky)} sky shapes dropped)")
-        sides.append(out)
-    front = classes[FRONT_FILL]
-    hills = []
-    for ridge, trees in zip(FRONT_HILLS, FRONT_TREES):
-        hills.append((front, ridge_path(ridge)))
-        line = np.array(smooth_line(ridge))
-        for x, h in trees:
-            y = float(np.interp(x, line[:, 0], line[:, 1])) + h * 0.12
-            hills.append((front, spruce(x, y - h, h * 0.4, h)))
-    sides.append(hills)
+        far.append(out)
+
+    ridges = []                                    # per copy: [(class, d)]
+    for dx, dy, mirror in DISTANT_COPIES:
+        cx = (bx0 + bx1) / 2
+        out = []
+        for cls, subs in distant:
+            moved = [np.column_stack([(2 * cx - p[:, 0] if mirror else p[:, 0]) + dx, p[:, 1] + dy]) for p in subs]
+            out.append((cls, path_d(moved)))
+        ridges.append(out)
+
+    ground = []                                    # per side: [(class, d)]
+    tree_cls = cls_of(GROUND_TREE_FILL)
+    for side, layers in enumerate(GROUND):
+        out = []
+        for li, (fill, ridge) in enumerate(layers):
+            out.append((cls_of(fill), ridge_path(ridge)))
+            line = np.array(smooth_line(ridge))
+            for s_, l_, x, h in GROUND_TREES:
+                if s_ == side and l_ == li:
+                    y = float(np.interp(x, line[:, 0], line[:, 1])) + h * 0.12
+                    out.append((tree_cls, spruce(x, y - h, h * 0.4, h)))
+        ground.append(out)
     colours = {cls: {th: theme_colour(th, fill) for th in THEMES} for fill, cls in classes.items()}
-    return shapes, sides, colours, skies, box
+    return dict(shapes=shapes, far=far, ridges=ridges, ground=ground), colours, skies, box
 
 
-def svg_markup(shapes, sides, skies, box):
+def svg_markup(parts, skies, box):
     vb = f"{X0} {TOP} {X1 - X0} {H - TOP}"
     bx, by, bw, bh = box
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
              'aria-hidden="true" focusable="false">',
              "<defs>"]
-    # the side pictures: a little haze over their mountains, and their
-    # ground fading into the main picture's plain
+    # the side pictures: a little haze over their mountains
     for i, pic in enumerate(SIDE_PICS):
         png, (mx, my, mw, mh) = side_mask(pic)
         lines.append(f'<mask id="about-far-{i}" maskUnits="userSpaceOnUse" x="{mx}" y="{my}" width="{mw}" height="{mh}">'
                      f'<image x="{mx}" y="{my}" width="{mw}" height="{mh}" preserveAspectRatio="none" '
                      f'href="data:image/png;base64,{png}"/></mask>')
-    # the plain shows only between the side pictures and the main one, and
-    # ends in a slope over the side picture's ground
-    for i, edge in enumerate(PLAIN_EDGES):
-        inner = 20 if i == 0 else W - 20
-        pts = [(inner, TOP), (edge[0][0], TOP)] + smooth_line(edge) + [(edge[-1][0], H + 60), (inner, H + 60)]
-        lines.append(f'<clipPath id="about-plain-{i}"><path d="M' + " ".join(f"{x:.0f} {y:.0f}" for x, y in pts)
-                     + 'z"/></clipPath>')
+    lines.append(f'<clipPath id="about-land"><path d="{land_clip()}"/></clipPath>')
+    for i, pic in enumerate(SIDE_PICS):
+        if pic["cut"]:
+            c = pic["cut"]
+            pts = [(c[-1][0], H + 80), (X1 + 400, H + 80), (X1 + 400, TOP - 40), (c[0][0], TOP - 40)] + smooth_line(c)
+            lines.append(f'<clipPath id="about-cut-{i}"><path d="M' + " ".join(f"{x:.0f} {y:.0f}" for x, y in pts) + 'z"/></clipPath>')
+    bx0, by0, bx1, by1 = DISTANT_BOX
+    for i, (dx, dy, _) in enumerate(DISTANT_COPIES):
+        # the copied ridges are cut to the box (its bottom edge is hidden by the ground)
+        lines.append(f'<clipPath id="about-ridge-{i}"><rect x="{bx0 + dx}" y="{by0 + dy - 400}" '
+                     f'width="{bx1 - bx0}" height="{by1 - by0 + 400}"/></clipPath>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
-    for i, (pic, out) in enumerate(zip(SIDE_PICS, sides[:2])):
-        lines.append(f'<g class="far far-{pic["name"]}" mask="url(#about-far-{i})">')
+    for i, ((dx, dy, _), out) in enumerate(zip(DISTANT_COPIES, parts["ridges"])):
+        lines.append(f'<g class="distant" clip-path="url(#about-ridge-{i})">')
         lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in out)
         lines.append("</g>")
-    for i, (a, b, k) in enumerate(STRIPS):
-        edge = a if i == 0 else b
-        # the shapes in the strip, as a plain running out to the ends
-        # (small details such as trees would turn into wide smudges: left out)
-        horizon = PLAIN_HORIZON[i]
-        lines.append(f'<g class="strip" clip-path="url(#about-plain-{i})">')
-        lines.extend(f'<path class="{c}" d="{plain(subs, a, b, k, edge, horizon, PLAIN_SQUEEZE[i])}"/>' for c, _, (x0, x1), subs in shapes
-                     if subs is not None and x1 >= a and x0 <= b and not (x1 - x0 < 160 and x0 >= a and x1 <= b))
+    for i, (pic, out) in enumerate(zip(SIDE_PICS, parts["far"])):
+        clip = f' clip-path="url(#about-cut-{i})"' if pic["cut"] else ""
+        lines.append(f'<g class="far far-{pic["name"]}" mask="url(#about-far-{i})"{clip}>')
+        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in out)
         lines.append("</g>")
-    lines.append('<g class="land">')
-    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _, _ in shapes)
+    lines.append('<g class="land" clip-path="url(#about-land)">')
+    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in parts["shapes"])
     lines.append("</g>")
-    lines.append('<g class="front">')
-    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in sides[2])
-    lines.append("</g>")
+    for side, out in zip(("left", "right"), parts["ground"]):
+        lines.append(f'<g class="ground ground-{side}">')
+        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in out)
+        lines.append("</g>")
     lines.append("</svg>")
     return "\n".join(lines)
 
@@ -718,7 +693,12 @@ def scene_css(colours):
              ":root:not([data-theme]) .about-scene .sky-" + DEFAULT + ",\n"
              + ",\n".join(f'[data-theme="{th}"] .about-scene .sky-{th}' for th in THEMES)
              + " { display: inline; }"]
-    rules += [f".about-scene .{c} {{ fill: var(--s{c}); }}" for c in classes]
+    rules += [f".about-scene .{c} {{ fill: var(--s{c}); stroke: var(--s{c}); }}" for c in classes]
+    # the side pictures and the copied ridges are scaled or moved: a thin
+    # outline in each shape's own colour closes the hairline seams between
+    # their shapes (elsewhere no outline)
+    rules += [".about-scene path { stroke-width: 0; }",
+              ".about-scene .far path, .about-scene .distant path { stroke-width: 1.5px; stroke-linejoin: round; }"]
     return "\n".join(blocks + rules)
 
 
@@ -727,10 +707,10 @@ def main():
     ap.add_argument("--debug", help="folder for a preview page per theme")
     ap.add_argument("--no-write", action="store_true")
     args = ap.parse_args()
-    shapes, sides, colours, skies, box = build()
-    svg = svg_markup(shapes, sides, skies, box)
+    parts, colours, skies, box = build()
+    svg = svg_markup(parts, skies, box)
     css = scene_css(colours)
-    print(f"{len(shapes)} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
+    print(f"{len(parts['shapes'])} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
         for th in THEMES:
             with open(f"{args.debug}/preview-{th}.html", "w") as f:
