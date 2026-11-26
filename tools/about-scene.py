@@ -70,9 +70,49 @@ SEAM = [(2, TOP), (2, 718), (14, 724), (50, 736), (86, 748), (100, 754), (115, 7
         (195, 940), (207, 960), (219, 980), (231, 1000), (243, 1020), (256, 1040), (275, 1060),
         (288, 1080), (292, 1100), (294, 1118), (200, 1142), (120, 1160), (38, 1184), (52, 1192),
         (65, 1200), (78, 1208), (90, 1216), (102, 1224), (110, 1232), (117, 1240), (122, 1248),
-        (125, 1256), (128, 1264), (132, 1272), (140, 1282), (148, 1290), (155, 1297), (120, 1316),
-        (90, 1338), (60, 1362), (35, 1388), (18, 1414), (10, H)]
+        (125, 1256), (128, 1264), (132, 1272), (140, 1282), (148, 1290), (155, 1297), (115, 1326),
+        (78, 1358), (48, 1392), (26, 1420), (16, H)]
 OVERLAP = 3                # the left picture reaches this far under the right one
+
+# The towers' picture sits SHIFT units left of where its Tre Cime match the
+# left picture's (so the left rock of Tre Cime stands at the middle of the
+# scene and the empty valley before it narrows). SEAM above is in the towers'
+# own units. In the sky above the seam the left picture reaches LEFT_REACH
+# (scene units), so its mountains run on behind the first tower.
+SHIFT = 80
+LEFT_REACH = 60
+
+# The towers' picture's dark foreground hill no longer rises to the left: its
+# top edge (towers' units) slopes down from DARK_FROM and runs out into the
+# bottom edge at DARK_TO; above it the brown band (DARK_BAND) carries on.
+# The bush on the old hill top (TUFT box) is kept where it is.
+DARK_FROM, DARK_TO = (700, 1378), (60, H)
+DARK_SHAPE, DARK_BAND = 2, "#5A452A"
+TUFT = (183, 266, 1250, 1340)
+
+# Shapes of the towers' picture dropped (1-based): the hazy, layered far
+# mountains between Tre Cime and Cinque Torri, and the hazy slope at the
+# right edge. Copies of the left picture's brown mountains (RIDGE_SRC, a box
+# in scene units) stand behind them instead (RIDGES: x scale, y scale, x, y).
+HAZE = [5, 1004, 1059, 1302, (1303, 1304), 1306, (1312, 1313), (1343, 1347), (1474, 1482), 1513,
+        (1603, 1606), 1638, (1641, 1642), 1648]
+RIDGE_SRC = (-1250, -60, 430, 1020)
+RIDGES = [(-0.6, 0.6, 1150, 422),      # between Tre Cime and Cinque Torri, mirrored
+          (0.6, 0.6, 3130, 422)]       # behind Cinque Torri, out to the right edge
+# The scene ends at the towers' picture's right edge (W - SHIFT): nothing is
+# added beyond it.
+
+# Left picture: shapes dropped (the spikes along the bottom edge), recoloured
+# (the trodden path in the valley becomes grass), and its small blob-like
+# trees, redrawn as copies of the towers' picture's spruces (TREE_SRC, the
+# pair of spruces by the lake, towers' units), about as tall as the spruces
+# at the same depth there: (shape, trees, height in units).
+LEFT_DROP = [96, 97, 98]
+LEFT_RECOLOUR = {383: "#868250"}
+LEFT_TREES = [(599, 1, 96), (600, 1, 74), (604, 1, 88), (605, 1, 80), (795, 1, 66),
+              (685, 3, 72), (686, 1, 56), (855, 2, 50), (698, 4, 52)]
+TREE_SRC = (950, 1060, 1050, 1200)
+TREE_SPLIT = 997          # the two spruces of TREE_SRC part at this x
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 
@@ -278,6 +318,8 @@ def id_map(paths):
     to H (1-based, 0 = none)."""
     ids = np.zeros((H, W - X0), np.int32)
     for k, (_, pts) in enumerate(paths, 1):
+        if pts is None:                                    # a dropped shape
+            continue
         poly = np.round((flatten(pts) - [X0, 0]) * 4).astype(np.int32)   # 2 bits of sub-pixel precision
         cv2.fillPoly(ids, [poly], int(k), lineType=cv2.LINE_8, shift=2)
     return ids
@@ -384,7 +426,7 @@ def smoothstep(t):
 
 
 def sky_images(field):
-    x0, x1 = X0, W
+    x0, x1 = X0, W - SHIFT
     y0, y1 = TOP - EXT, H
     fw, fh = (x1 - x0) // SKY_PX, (y1 - y0) // SKY_PX
     xs = x0 + (np.arange(fw) + 0.5) * SKY_PX
@@ -407,33 +449,140 @@ def sky_images(field):
 
 # ── output ────────────────────────────────────────────────────────────────
 
-def seam_x(ys):
-    """The seam's x at the rows ys."""
-    sx, sy = np.array(SEAM, float).T
+def clip_line(side):
+    """The seam as each side's clip sees it, top to bottom (scene units)."""
+    right = [(x - SHIFT, y) for x, y in SEAM]
+    if side == "right":
+        return right
+    join = 760
+    return [(LEFT_REACH, TOP), (LEFT_REACH, join)] + [(x + OVERLAP, y) for x, y in right if y > join]
+
+
+def line_x(line, ys):
+    sx, sy = np.array(line, float).T
     return np.interp(ys, sy, sx)
 
 
 def seam_clip(side):
-    """Clip path data for one side of the seam, down to the bottom edge (the
-    left side reaches OVERLAP further, under the right picture, so no
-    hairline shows; it stops at X0, the left picture's own edge)."""
-    if side == "left":
-        pts = [(x + OVERLAP, y) for x, y in SEAM] + [(X0, H), (X0, TOP)]
-    else:
-        pts = list(SEAM) + [(W, H), (W, TOP)]
-    return "M" + "L".join(f"{num(x)} {num(y)}" for x, y in pts) + "z"
+    """Clip path data for one side of the seam, down to the bottom edge: the
+    left picture stops at X0, its own edge, and reaches OVERLAP (in the sky
+    LEFT_REACH) under the right one, so no hairline shows; the right one
+    stops at its own right edge."""
+    pts = clip_line(side)
+    pts = pts + ([(X0, H), (X0, TOP)] if side == "left" else [(W - SHIFT, H), (W - SHIFT, TOP)])
+    return poly_d(pts)
+
+
+def poly_d(pts):
+    return "M" + "L".join(f"{x:.1f} {y:.1f}".replace(".0 ", " ").replace(".0L", "L") for x, y in pts) + "z"
+
+
+def mask_polys(mask, x0, y0, up=4, eps=0.35):
+    """Outlines of a pixel mask (one pixel = one unit, its corner at x0, y0),
+    smoothed: upsampled, softened and traced again."""
+    big = cv2.resize(mask.astype(np.float32), None, fx=up, fy=up, interpolation=cv2.INTER_LINEAR)
+    big = cv2.GaussianBlur(big, (0, 0), up * 0.5)
+    cs, _ = cv2.findContours((big > 0.5).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    out = []
+    for c in cs:
+        if cv2.contourArea(c) < 4 * up * up:
+            continue
+        c = cv2.approxPolyDP(c, eps * up, True)[:, 0, :].astype(float)
+        out.append(c / up + [x0, y0])
+    return out
+
+
+def tree_stamps(right_raw, ids_t):
+    """The pair of spruces by the lake in the towers' picture, as outlines per
+    colour (each tree on its own, and both), relative to the foot of the
+    trunk: [(layers, height)], layers = [(fill, [polygon])]."""
+    x0, x1, y0, y1 = TREE_SRC
+    sub = ids_t[y0:y1, x0 - X0:x1 - X0]
+    fills = np.array(["#000000"] + [f for f, _ in right_raw])
+    dark, lit = "#4F3E20", "#604D25"
+    m = np.isin(fills[sub], [dark, lit])
+    n, lab, st, _ = cv2.connectedComponentsWithStats(m.astype(np.uint8))
+    m &= np.isin(lab, [i for i in range(1, n) if st[i][4] > 200])
+    xs = np.arange(x0, x1)[None, :]
+    stamps = []
+    for part in (xs < TREE_SPLIT, xs >= TREE_SPLIT):
+        tree = m & part
+        rows, cols = np.nonzero(tree)
+        foot_x, foot_y = x0 + cols.mean(), y0 + rows.max() + 1
+        layers = []
+        for fill, layer in ((dark, tree), (lit, tree & (fills[sub] == lit))):
+            polys = [p - [foot_x, foot_y] for p in mask_polys(layer, x0, y0)]
+            if polys:
+                layers.append((fill, polys))
+        stamps.append((layers, rows.max() + 1 - rows.min()))
+    return stamps
+
+
+def place_trees(left, stamps):
+    """New spruces for LEFT_TREES: [(fill, path data)]."""
+    out = []
+    for i, (k, count, h) in enumerate(LEFT_TREES):
+        pts = left[k - 1][1]
+        (bx0, by0), (bx1, by1) = pts.min(0), pts.max(0)
+        for j in range(count):
+            t = (j + 0.5) / count
+            cx = bx0 + (bx1 - bx0) * t
+            hh = h * (1.0 if count == 1 else (0.8 + 0.4 * ((j * 7 + i) % 3) / 2))
+            layers, sh = stamps[(i + j) % 2]
+            sc = hh / sh
+            flip = -1 if (i + j) % 3 == 1 else 1
+            for fill, polys in layers:
+                for poly in polys:
+                    q = poly * [sc * flip, sc] + [cx, by1]
+                    out.append((fill, poly_d(q)))
+    return out
+
+
+def dark_foreground(right_raw, ids_t):
+    """Item for the towers' picture's bottom-left: the brown band carried down
+    over the old dark hill top, the new sloping top edge of the dark ground
+    below it, and the bush redrawn where it stood (towers' units)."""
+    xs = np.arange(2, DARK_FROM[0] + 1, 2)
+    def top(x):
+        col = ids_t[1150:H, x - X0]
+        hit = np.nonzero(col == DARK_SHAPE)[0]
+        return 1150 + hit[0] if len(hit) else H
+    tx0, tx1 = TUFT[0] - 1, TUFT[1] + 1
+    t0, t1 = top(tx0), top(tx1)
+    def old(x):
+        if tx0 < x < tx1:
+            return t0 + (t1 - t0) * (x - tx0) / (tx1 - tx0)
+        return top(x)
+    (fx, fy), (ex, ey) = (DARK_FROM[0], old(DARK_FROM[0])), DARK_TO
+    def new(x):
+        u = np.clip((fx - x) / (fx - ex), 0, 1)
+        return fy + (ey - fy) * u ** 1.5
+    upper = [(x, old(x) - 1.5) for x in xs]
+    lower = [(x, new(x) if x >= ex else H) for x in xs[::-1]]
+    filler = poly_d(upper + lower)
+    # the bush: the dark shape inside TUFT, above the old ground line
+    bx0, bx1, by0, by1 = TUFT
+    sub = ids_t[by0:by1, bx0 - X0:bx1 - X0] == DARK_SHAPE
+    yy = np.arange(by0, by1)[:, None]
+    base = np.array([old(x) for x in range(bx0, bx1)])[None, :]
+    bush = sub & (yy < base + 2)
+    bush_d = [poly_d(p) for p in mask_polys(bush, bx0, by0, eps=0.25)]
+    return filler, bush_d
 
 
 def build():
-    right = read_paths(SRC)
     m = np.array(LEFT_M)
     left = [(f, pts @ m[:, :2].T + m[:, 2]) for f, pts in read_paths(SRC_LEFT)]
+    right_raw = read_paths(SRC)
+    haze = expand(HAZE)
+    right = [(f, None if k in haze else pts - [SHIFT, 0]) for k, (f, pts) in enumerate(right_raw, 1)]
+    ids_t = id_map(right_raw)                     # the towers' picture in its own units
     ids_r, ids_l = id_map(right), id_map(left)
     sky_r, sky_l = expand(SKY_PATHS), expand(LEFT_SKY)
     xs = X0 + np.arange(W - X0)[None, :] + 0.5
-    s = seam_x(np.arange(H) + 0.5)[:, None]
-    in_r = xs >= s                      # the right picture shows here (its sky aside)
-    in_l = xs < s + OVERLAP
+    ys = np.arange(H) + 0.5
+    in_r = (xs >= line_x(clip_line("right"), ys)[:, None]) & (xs < W - SHIFT)
+    in_l = xs < line_x(clip_line("left"), ys)[:, None]
     land_r = np.isin(ids_r, list(sky_r), invert=True) & (ids_r > 0) & in_r
     # shapes nothing (or only a speck of a few pixels) shows of are dropped
     def shown(ids, where):
@@ -441,47 +590,86 @@ def build():
         return set(np.nonzero(counts >= 8)[0].tolist()) - {0}
     shown_r = shown(ids_r, in_r)
     shown_l = shown(ids_l, in_l & ~land_r)
-    img_r, m_r = sky_lab(right, ids_r, sky_r, in_r)
-    img_l, m_l = sky_lab(left, ids_l, sky_l, ~in_r)
+    rx0, rx1, ry0, ry1 = RIDGE_SRC
+    in_src = (xs >= rx0) & (xs < rx1) & (ys[:, None] >= ry0) & (ys[:, None] < ry1)
+    shown_src = shown(ids_l, in_src)
+    img_r, m_r = sky_lab(right_raw, ids_r, sky_r, in_r)
+    img_l, m_l = sky_lab(left, ids_l, sky_l, ~in_r & (xs < W - SHIFT))
     field = sky_field(img_r + img_l, m_r | m_l)
     skies, box = sky_images(field)
 
     classes = {}                                   # fill -> class
-    parts = {}
-    trees = set(TREES)
-    for side, paths, sky, show in (("left", left, sky_l, shown_l), ("right", right, sky_r, shown_r)):
-        shapes = parts[side] = []                  # (class, d)
-        for k, (fill, pts) in enumerate(paths, 1):
-            if k in sky or k not in show:
-                continue
-            cls = classes.setdefault(fill, f"c{len(classes)}")
-            if side == "right" and k in trees:
-                for cx, top, w, h in trees_of(k, pts):
-                    shapes.append((cls, spruce(cx, top, w, h)))
-            else:
-                shapes.append((cls, path_d(pts)))
-    colours = {cls: {th: theme_colour(th, fill) for th in THEMES} for fill, cls in classes.items()}
+    cls = lambda fill: classes.setdefault(fill.upper(), f"c{len(classes)}")
+    trees = {k for k, _, _ in LEFT_TREES}
+    drop_l = set(LEFT_DROP) | trees | sky_l
+    parts = {"left": [], "ridge": [], "right": []}
+    # the old trees become patches of the ground around them (nothing else
+    # may be drawn below them)
+    fills_l = [f for f, _ in left]
+    recolour = dict(LEFT_RECOLOUR)
+    for k, _, _ in LEFT_TREES:
+        own = (ids_l == k).astype(np.uint8)
+        ring = cv2.dilate(own, np.ones((7, 7), np.uint8)).astype(bool) & ~own.astype(bool)
+        around = [fills_l[i - 1] for i in ids_l[ring] if i > 0 and i not in trees]
+        recolour.setdefault(k, max(set(around), key=around.count))
+    for k, (fill, pts) in enumerate(left, 1):
+        if k in drop_l and k not in trees:
+            continue
+        fill = recolour.get(k, fill)
+        if k in shown_l:
+            parts["left"].append((cls(fill), path_d(pts)))
+        if k in shown_src:
+            parts["ridge"].append((cls(fill), path_d(pts)))
+    stamps = tree_stamps(right_raw, ids_t)
+    parts["left"] += [(cls(f), d) for f, d in place_trees(left, stamps)]
+    for k, (fill, pts) in enumerate(right, 1):
+        if pts is None or k in sky_r:
+            continue
+        if k in shown_r:
+            parts["right"].append((cls(fill), path_d(pts)))
+    filler, bush = dark_foreground(right_raw, ids_t)
+    parts["fore"] = [(cls(DARK_BAND), filler)] + [(cls(right_raw[DARK_SHAPE - 1][0]), d) for d in bush]
+    colours = {c: {th: theme_colour(th, fill) for th in THEMES} for fill, c in classes.items()}
     return parts, colours, skies, box
 
 
 def svg_markup(parts, skies, box):
-    vb = f"{X0} {TOP} {W - X0} {H - TOP}"
+    vb = f"{X0} {TOP} {W - SHIFT - X0} {H - TOP}"
     bx, by, bw, bh = box
+    rx0, rx1, ry0, ry1 = RIDGE_SRC
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
              'aria-hidden="true" focusable="false">',
              "<defs>"]
     for side in ("left", "right"):
         lines.append(f'<clipPath id="about-{side}"><path d="{seam_clip(side)}"/></clipPath>')
+    for i, (a, d, e, f) in enumerate(RIDGES):
+        # the source box, and no further than the scene's edges
+        lo, hi = sorted(((X0 - e) / a, (W - SHIFT - e) / a))
+        x0, x1 = max(rx0, lo), min(rx1, hi)
+        lines.append(f'<clipPath id="about-ridge-{i}"><rect x="{x0:.0f}" y="{ry0}" '
+                     f'width="{x1 - x0:.0f}" height="{ry1 - ry0}"/></clipPath>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
     lines.append('<g class="land">')
-    # Seceda and the valley first, so the towers' picture lies over the seam
-    for side, name in (("left", "seceda"), ("right", "tre-cime")):
-        lines.append(f'<g class="{name}" clip-path="url(#about-{side})">')
-        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in parts[side])
-        lines.append("</g>")
+    path = lambda c, d: f'<path class="{c}" d="{d}"/>'
+    # Seceda and the valley first, then the far ridges, then the towers'
+    # picture over the seam
+    lines.append('<g class="seceda" clip-path="url(#about-left)">')
+    lines.extend(path(c, d) for c, d in parts["left"])
+    lines.append("</g>")
+    for i, (a, d, e, f) in enumerate(RIDGES):
+        # copies, not <use>: CSS colours do not reach into <use> clones everywhere
+        lines.append(f'<g class="ridge" transform="matrix({a} 0 0 {d} {e} {f})">'
+                     f'<g clip-path="url(#about-ridge-{i})">')
+        lines.extend(path(c, dd) for c, dd in parts["ridge"])
+        lines.append("</g></g>")
+    lines.append('<g class="tre-cime" clip-path="url(#about-right)">')
+    lines.extend(path(c, d) for c, d in parts["right"])
+    lines.append(f'<g transform="translate({-SHIFT} 0)">')
+    lines.extend(path(c, d) for c, d in parts["fore"])
+    lines.append("</g></g>")
     lines.append("</g>")
     lines.append("</svg>")
     return "\n".join(lines)
@@ -517,7 +705,7 @@ def main():
     parts, colours, skies, box = build()
     svg = svg_markup(parts, skies, box)
     css = scene_css(colours)
-    print(f"{len(parts['left'])} + {len(parts['right'])} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
+    print(f"{' + '.join(str(len(v)) for v in parts.values())} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
         for th in THEMES:
             with open(f"{args.debug}/preview-{th}.html", "w") as f:

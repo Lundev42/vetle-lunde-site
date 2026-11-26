@@ -1066,7 +1066,10 @@ test.describe("About me mountain background", () => {
     expect(await svg.locator("g.land > g.seceda > path").count()).toBeGreaterThan(200);
     expect(await svg.locator("g.land > g.tre-cime > path").count()).toBeGreaterThan(300);
     expect(await svg.locator("g.strip").count()).toBe(0);
-    await expect(svg).toHaveAttribute("viewBox", "-2553 -67 5465 1507");
+    // far mountains (copies of the brown ones beside Seceda) behind Tre Cime
+    // and Cinque Torri, in place of the hazy layers
+    expect(await svg.locator("g.land > g.ridge").count()).toBe(2);
+    await expect(svg).toHaveAttribute("viewBox", "-2553 -67 5385 1507");
     // the banded sky of the source is replaced by one smooth sky image per
     // colour theme, and only the current theme's sky is shown
     expect(await svg.locator("image.sky").count()).toBe(PERIODS.length);
@@ -1118,7 +1121,7 @@ test.describe("About me mountain background", () => {
       if (width > 768) {
         expect(Math.abs(r.svg.left - r.section.left)).toBeLessThanOrEqual(0.5);
         expect(Math.abs(r.svg.right - r.section.right)).toBeLessThanOrEqual(0.5);
-        expect(Math.abs((r.svg.right - r.svg.left) / r.svg.height - 5465 / 1507)).toBeLessThan(0.01);
+        expect(Math.abs((r.svg.right - r.svg.left) / r.svg.height - 5385 / 1507)).toBeLessThan(0.01);
       }
       // the towers start below the text and photo
       const towersTop = r.towersTop;
