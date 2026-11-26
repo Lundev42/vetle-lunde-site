@@ -2,8 +2,8 @@
 """Build the About-me background scene from the hand-off picture.
 
 Source: tools/about-scene.svg, the Dolomites sunset we were given
-(DOLOMITES_TRUE.svg, 852 flat-coloured shapes on a 2752 x 1536 canvas, drawn
-back to front). It is not deployed; this script writes the scene into
+(file2.svg, 1709 flat-coloured shapes on a 2912 x 1440 canvas, drawn back to
+front). It is not deployed; this script writes the scene into
 index.html.
 
   1. The shapes of the banded sky are dropped (SKY_PATHS) together with the
@@ -11,9 +11,9 @@ index.html.
      colours of the picture's own sky, blurred, darkening upwards into a
      night or dusk colour, and running on far above the picture so the
      atmosphere fills the whole section up to its top edge.
-  2. The small trees on the slopes (TREES) are redrawn as narrow spruces:
-     a wedge, wide at the foot and pointed at the top, with a few short
-     branch tips along its sides.
+  2. Small blob-like trees (TREES, none in the current picture) can be
+     redrawn as narrow spruces: a wedge, wide at the foot and pointed at
+     the top, with a few short branch tips along its sides.
   3. Every other shape keeps its outline. Its colour becomes a CSS custom
      property per colour theme: Devon keeps the picture's own colours, the
      other periods map them in OKLCH (keeping light and shadow), so every
@@ -39,37 +39,51 @@ from scipy.signal import find_peaks
 SRC = "tools/about-scene.svg"
 HTML = "index.html"
 
-W, H = 2752, 1536          # canvas of the source SVG
-TOP = 100                  # first row drawn: the towers start 14 % down the scene
+W, H = 2912, 1440          # canvas of the source SVG
+TOP = -67                  # first row drawn (above the canvas: only sky there), so the
+                           # towers start 14 % down the scene
 SIDE = 1800                # units added on each side for wide screens
-STRIPS = ((6, 156, -12), (2546, 2746, -9))   # (from, to, x stretch): mirrored just inside the picture's edges (x 2 and 2750), so the copies overlap it
+STRIPS = ((6, 86, -23), (2720, 2906, -10))   # (from, to, x stretch): mirrored just inside the picture's edges, so the copies overlap it
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 
 THEMES = ["hadean", "cambrian", "devonian", "cretaceous", "quaternary"]
 DEFAULT = "cretaceous"
 
-# The sky's shapes (1-based, in source order), picked once by comparing every
-# shape with the land/sky split of the first version of the scene, plus the
-# specks of colour left floating in the sky and the sky seen between the
-# left towers (401). Check them again if the source picture changes.
-SKY_PATHS = [(3, 5), (7, 9), (11, 15), (17, 25), (27, 32), 34, (36, 43), 45, (49, 50), (79, 80),
-             (83, 95), (99, 107), (109, 112), (114, 121), 130, 135, (137, 140), 144, (146, 164),
-             (167, 168), (171, 176), (178, 179), (181, 183), (198, 203), 207, (210, 213),
-             (216, 223), 237, (239, 242), 244, (250, 253), (264, 265), (286, 287), (296, 307),
-             (310, 313), (320, 321), (323, 329), 333, (336, 341), (343, 347), (349, 357),
-             (388, 394), 401, (403, 405), (410, 412), 414, 416, 418, (423, 424), (426, 427),
-             (431, 432), (543, 544), 547, (550, 558), 560, 563, (566, 570), (577, 580), 599,
-             (602, 603), 605, 609, 611, (722, 724), (732, 733), (735, 739), (741, 747),
-             (750, 754), 772, 774, 803, 806, 813, (832, 833), (837, 841), 848]
+# The sky's shapes (1-based, in source order), picked once: every shape
+# mostly above the skyline (found from the colour edges of the rendered
+# picture), the glow seen between and beside the towers (checked by eye),
+# and the specks of colour left floating in the sky. Check them again if
+# the source picture changes.
+SKY_PATHS = [1, 7, 9, (11, 24), (27, 58), (61, 66), (69, 80), (102, 103), (105, 129), (131, 132),
+             (137, 153), (158, 159), (161, 166), 169, (171, 183), (185, 188), 190, 192, (194, 207),
+             (211, 215), (217, 234), (239, 249), (276, 281), (283, 284), (287, 289), (291, 292), (294, 300),
+             (302, 305), 309, 313, (316, 320), (322, 328), 330, (332, 353), (355, 356), (361, 368), 370,
+             (375, 376), (382, 389), (391, 392), (395, 401), (403, 413), (415, 419), (421, 424), (430, 436),
+             521, (523, 530), 532, (534, 535), (537, 545), (547, 548), (550, 558), (564, 568), 570, 573,
+             575, (583, 590), 613, (627, 631), (633, 635), (640, 644), (646, 652), (654, 657), 661, 664,
+             (671, 676), 679, (682, 683), (685, 687), 689, 691, 694, 697, (699, 700), (702, 703), 705,
+             (707, 715), (717, 719), 722, 841, 846, 850, (852, 853), 855, 857, (859, 865), 867, 874, 876,
+             (878, 882), (884, 887), (890, 896), 898, (900, 902), 910, 942, (944, 948), (952, 955),
+             (957, 962), (1122, 1126), 1130, 1134, 1137, (1140, 1141), 1146, (1148, 1149), (1151, 1154),
+             (1156, 1157), (1164, 1165), 1180, 1189, 1198, (1200, 1201), (1203, 1204), (1207, 1221),
+             (1223, 1246), (1248, 1251), 1254, (1256, 1267), (1270, 1271), (1275, 1276), (1314, 1315),
+             (1364, 1365), (1367, 1386), (1388, 1389), (1391, 1393), (1396, 1410), 1413, 1417, (1419, 1422),
+             (1425, 1432), (1435, 1436), (1438, 1439), (1441, 1442), (1447, 1448), (1450, 1454),
+             (1456, 1459), 1461, (1463, 1464), (1468, 1470), 1472, (1488, 1495), 1498, (1504, 1508),
+             (1516, 1549), 1554, 1556, 1558, (1561, 1565), 1567, (1569, 1571), (1573, 1575), (1579, 1583),
+             (1586, 1597), 1599, (1607, 1623), (1625, 1627), (1631, 1636), (1644, 1647), (1649, 1666),
+             (1670, 1671), 1673, 1675, (1678, 1679), (1681, 1685), 1687, 1689, (1693, 1694), (1697, 1698),
+             1700, (1702, 1703), (1705, 1709)]
 
-# The small trees (1-based). A shape may hold two trees side by side.
-TREES = [714, 715, 716, 787, 793, 800, 818, 819, 823, 825, 842]
+# Small trees to redraw as spruces (1-based; a shape may hold two trees side
+# by side). The current picture draws its spruces well already: none.
+TREES = []
 
 # The sky darkens from the horizon (HORIZON_Y) upwards and reaches the
 # theme's zenith colour at ZENITH_Y (units of the source canvas).
-HORIZON_Y = 1000
-ZENITH_Y = -250
+HORIZON_Y = 880
+ZENITH_Y = -430
 ZENITH = {
     "devonian": "#191d2b",      # dusk blue above the sunset
     "cretaceous": "#0f121a",
@@ -348,7 +362,9 @@ def build():
     paths = read_paths()
     ids = id_map(paths)
     sky = expand(SKY_PATHS)
-    shown = set(np.unique(ids).tolist()) - {0}
+    # shapes nothing (or only a speck of a few pixels) shows of are dropped
+    counts = np.bincount(ids.ravel(), minlength=len(paths) + 1)
+    shown = set(np.nonzero(counts >= 8)[0].tolist()) - {0}
     field = sky_field(paths, ids, sky)
     skies, box = sky_images(field)
 
@@ -390,7 +406,9 @@ def svg_markup(shapes, skies, box):
         # into <use> clones in every browser)
         lines.append(f'<g class="strip" clip-path="url(#about-strip-{i})" '
                      f'transform="matrix({k} 0 0 1 {edge * (1 - k)} 0)">')
-        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, (x0, x1) in shapes if x1 >= a and x0 <= b)
+        # (small details such as trees would turn into wide smudges: left out)
+        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, (x0, x1) in shapes
+                     if x1 >= a and x0 <= b and not (x1 - x0 < 160 and x0 >= a and x1 <= b))
         lines.append("</g>")
     lines.append("</svg>")
     return "\n".join(lines)

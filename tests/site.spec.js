@@ -1079,14 +1079,6 @@ test.describe("About me mountain background", () => {
     await expect(page.locator("#om-meg .about-sun, #om-meg .about-mountains")).toHaveCount(0);
   });
 
-  test("the small trees are drawn as spruces", async ({ page }) => {
-    await page.goto(PAGE_URL);
-    // a spruce outline: pointed top, a few branch tips per side, a stub of trunk
-    const spruces = await page.locator("#om-meg svg.about-scene g.land > path").evaluateAll((els) =>
-      els.filter((el) => /^M[\d.]+ [\d.]+( [\d.]+ [\d.]+){12,}z$/.test(el.getAttribute("d"))).length);
-    expect(spruces).toBeGreaterThanOrEqual(10);
-  });
-
   for (const [width, height] of [[1920, 1080], [1280, 800], [390, 844]]) {
     test(`the sky fills the whole section up to its top edge at ${width}x${height}`, async ({ page }) => {
       await page.setViewportSize({ width, height });
@@ -1155,9 +1147,9 @@ test.describe("About me mountain background", () => {
     }
     expect(fills.size).toBe(PERIODS.length);
     expect(skies.size).toBe(PERIODS.length);
-    // Devon keeps the picture's own colours (its first shape is #2E2513)
+    // Devon keeps the picture's own colours (its first land shape is #352816)
     await page.evaluate(() => document.documentElement.setAttribute("data-theme", "devonian"));
-    await expect(page.locator("#om-meg .about-scene g.land path").first()).toHaveCSS("fill", "rgb(46, 37, 19)");
+    await expect(page.locator("#om-meg .about-scene g.land path").first()).toHaveCSS("fill", "rgb(53, 40, 22)");
   });
 
   for (const theme of PERIODS) {
