@@ -68,21 +68,23 @@ LEFT_M = ((1.33369471, -0.01248107, -2553.27521),
 SEAM = [(2, TOP), (2, 718), (14, 724), (50, 736), (86, 748), (100, 754), (115, 775), (130, 792),
         (141, 800), (136, 820), (135, 840), (146, 860), (158, 880), (170, 900), (183, 920),
         (195, 940), (207, 960), (219, 980), (231, 1000), (243, 1020), (256, 1040), (275, 1060),
-        (288, 1080), (292, 1100), (294, 1118), (200, 1142), (120, 1160), (38, 1184), (52, 1192),
-        (65, 1200), (78, 1208), (90, 1216), (102, 1224), (110, 1232), (117, 1240), (122, 1248),
-        (125, 1256), (128, 1264), (132, 1272), (140, 1282), (148, 1290), (155, 1297), (115, 1326),
+        (288, 1080), (292, 1100), (294, 1118), (200, 1142), (120, 1160), (42, 1184), (56, 1192),
+        (69, 1200), (82, 1208), (94, 1216), (106, 1224), (114, 1232), (121, 1240), (126, 1248),
+        (129, 1256), (132, 1264), (136, 1272), (144, 1282), (152, 1290), (159, 1297), (115, 1326),
         (78, 1358), (48, 1392), (26, 1420), (16, H)]
 OVERLAP = 3                # the left picture reaches this far under the right one
 
 # The towers' picture sits SHIFT units left of where its Tre Cime match the
-# left picture's (so the left rock of Tre Cime stands at the middle of the
-# scene and the empty valley before it narrows). SEAM above is in the towers'
-# own units. The left picture's valley narrows to match: from WARP[0] to
-# WARP[1] (scene units) it is drawn in a little, more and more, and from
-# WARP[1] on it moves the whole SHIFT, so it still meets the towers' picture
-# along shared edges (its slope runs up to the foot of the first tower).
-SHIFT = 80
+# left picture's, so its first tower stands in front of the left picture's
+# mountains where they slope down towards it. SEAM above is in the towers'
+# own units. The left picture's valley narrows too: from WARP[0] to WARP[1]
+# (scene units) it is drawn in a little, more and more, and from WARP[1] on
+# it moves WARP_SHIFT. In the sky the left picture reaches REACH (towers'
+# units) behind the first tower, so its mountains run on behind it.
+SHIFT = 215
 WARP = (-1100, -150)
+WARP_SHIFT = 80
+REACH = 140
 
 # The towers' picture's dark foreground hill no longer rises to the left: its
 # top edge (towers' units) slopes down from DARK_FROM and runs out into the
@@ -94,15 +96,16 @@ TUFT = (183, 266, 1250, 1340)
 
 # The hazy, layered far mountains between Tre Cime and Cinque Torri (towers'
 # picture, 1-based) keep their outlines, but each mountain is one flat brown
-# (from the farthest, lightest, to the nearest, darkest), not bands of haze.
+# (from the farthest, lightest, to the nearest, darkest), not bands of haze;
+# the ones behind Cinque Torri stay clearly lighter than its rock.
 HAZE_GROUPS = {
-    "#A87F68": [(1603, 1606), 1648, 1642, 1641, 1638, 1513],    # the big two-peaked one at the back
-    "#A07964": [1303, 1304, (1477, 1482)],                     # the peak by Cinque Torri
-    "#97735E": [1476, 1474, (1343, 1347)],                     # the pointed one in the middle
-    "#8B6957": [1475],                                         # the hump in front of it
-    "#9C7662": [1312, 1313, 1306, 1004],                       # behind Cinque Torri's towers
-    "#7F6152": [1302],                                         # the long slope in front
-    "#735A4D": [1059],                                         # the lowest, nearest one
+    "#BD977F": [(1603, 1606), 1648, 1642, 1641, 1638, 1513],    # the big two-peaked one at the back
+    "#B9937C": [1303, 1304, (1477, 1482)],                     # the peak by Cinque Torri
+    "#A58069": [1476, 1474, (1343, 1347)],                     # the pointed one in the middle
+    "#967360": [1475],                                         # the hump in front of it
+    "#BA957F": [1312, 1313, 1306, 1004],                       # behind Cinque Torri's towers
+    "#86685A": [1302],                                         # the long slope in front
+    "#7A604F": [1059],                                         # the lowest, nearest one
 }
 # The hazy slope at the right edge (5) goes; a copy of the left picture's
 # mountains (RIDGE_SRC, a box in its scene units, without RIDGE_DROP, a
@@ -110,7 +113,7 @@ HAZE_GROUPS = {
 HAZE_DROP = [5]
 RIDGE_SRC = (-1250, -60, 430, 1020)
 RIDGE_DROP = [974, 1017]
-RIDGES = [(0.6, 0.6, 3130, 422)]
+RIDGES = [(0.6, 0.6, 3210 - SHIFT, 422)]
 # The scene ends at the towers' picture's right edge (W - SHIFT): nothing is
 # added beyond it.
 
@@ -125,6 +128,18 @@ LEFT_TREES = [(599, 1, 96), (600, 1, 74), (604, 1, 88), (605, 1, 80), (795, 1, 6
               (685, 3, 72), (686, 1, 56), (855, 2, 50), (698, 4, 52)]
 TREE_SRC = (950, 1060, 1050, 1200)
 TREE_AXES = ((984, 1096), (1017, 1067))
+# The left picture's light slope (FAN_SHAPE) rises as a scree fan to the
+# foot of the first tower, along FAN (scene units, from the foot down to
+# where it meets the slope's own top edge), so tower, scree and slope join.
+FAN_SHAPE = 608
+FAN = [(-117, 764), (-123, 782), (-132, 800), (-145, 820), (-161, 842), (-182, 865), (-207, 887),
+       (-238, 908), (-272, 932)]
+# Specks: shapes of the towers' picture of at most SPECK_AREA pixels lying on
+# the far mountains, and the left picture's small (under SPECK_SIZE units)
+# sunlit orange shapes right of SPECK_FROM (scene units), off Seceda.
+SPECK_AREA = 150
+SPECK_SIZE = 45
+SPECK_FROM = -1300
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 
@@ -466,7 +481,9 @@ def clip_line(side):
     right = [(x - SHIFT, y) for x, y in SEAM]
     if side == "right":
         return right
-    return [(x + OVERLAP, y) for x, y in right]
+    join = 760
+    return ([(REACH - SHIFT, TOP), (REACH - SHIFT, join)]
+            + [(x + OVERLAP, y) for x, y in right if y > join])
 
 
 def line_x(line, ys):
@@ -601,7 +618,7 @@ def dark_foreground(right_raw, ids_t):
 def warp(pts):
     """The left picture's valley drawn in towards Seceda (see WARP)."""
     u = np.clip((pts[:, 0] - WARP[0]) / (WARP[1] - WARP[0]), 0, 1)
-    return pts - np.stack([SHIFT * u * u * (3 - 2 * u), 0 * u], -1)
+    return pts - np.stack([WARP_SHIFT * u * u * (3 - 2 * u), 0 * u], -1)
 
 
 def build():
@@ -611,9 +628,20 @@ def build():
     right_raw = read_paths(SRC)
     haze = {k: fill for fill, spec in HAZE_GROUPS.items() for k in expand(spec)}
     drop_r = set(HAZE_DROP)
+    ids_t = id_map(right_raw)                     # the towers' picture in its own units
+    # specks of snow on the far mountains take their mountain's colour
+    sizes = np.bincount(ids_t.ravel(), minlength=len(right_raw) + 1)
+    for k in range(1, len(right_raw) + 1):
+        if k in haze or not 0 < sizes[k] <= SPECK_AREA:
+            continue
+        own = (ids_t == k).astype(np.uint8)
+        ring = cv2.dilate(own, np.ones((5, 5), np.uint8)).astype(bool) & ~own.astype(bool)
+        around = [i for i in ids_t[ring] if i > 0]
+        near = [haze[i] for i in around if i in haze]
+        if around and len(near) >= 0.6 * len(around):
+            haze[k] = max(set(near), key=near.count)
     right = [(haze.get(k, f), None if k in drop_r else pts - [SHIFT, 0])
              for k, (f, pts) in enumerate(right_raw, 1)]
-    ids_t = id_map(right_raw)                     # the towers' picture in its own units
     ids_r, ids_l = id_map(right), id_map(left)
     sky_r, sky_l = expand(SKY_PATHS), expand(LEFT_SKY)
     xs = X0 + np.arange(W - X0)[None, :] + 0.5
@@ -638,6 +666,14 @@ def build():
     classes = {}                                   # fill -> class
     cls = lambda fill: classes.setdefault(fill.upper(), f"c{len(classes)}")
     patches = {k for k, _, _ in LEFT_TREES} | set(LEFT_FILL)
+    # small specks of sunlit orange on the far mountains (they read as holes
+    # showing the sky) take the colour around them too
+    for k, (fill, pts) in enumerate(left, 1):
+        (bx0, by0), (bx1, by1) = pts.min(0), pts.max(0)
+        L, a, b = hex_lab(fill)
+        if (k not in sky_l and bx0 > SPECK_FROM and max(bx1 - bx0, by1 - by0) < SPECK_SIZE
+                and np.hypot(a, b) > 0.09):
+            patches.add(k)
     parts = {"left": [], "ridge": [], "right": []}
     # the old trees, the path and the spikes become patches of the ground
     # around them (they cannot simply go: the shapes below have holes there)
@@ -647,15 +683,25 @@ def build():
         own = (ids_l == k).astype(np.uint8)
         ring = cv2.dilate(own, np.ones((7, 7), np.uint8)).astype(bool) & ~own.astype(bool)
         around = [fills_l[i - 1] for i in ids_l[ring] if i > 0 and i not in patches and i not in sky_l]
-        recolour[k] = max(set(around), key=around.count)
+        if around:
+            recolour[k] = max(set(around), key=around.count)
+        else:                                      # a speck floating in the sky: goes
+            sky_l = sky_l | {k}
     for k, (fill, pts) in enumerate(left, 1):
-        if k in sky_l and k not in patches:
+        if k in sky_l and k not in recolour:
             continue
         fill = recolour.get(k, fill)
         if k in shown_l:
             parts["left"].append((cls(fill), path_d(pts)))
         if k in shown_src:
             parts["ridge"].append((cls(fill), path_d(left_src[k - 1][1])))
+    # the light slope rises to the foot of the first tower
+    def fan_top(x):
+        hit = np.nonzero(ids_l[:, int(x) - X0] == FAN_SHAPE)[0]
+        return hit[0] + 2
+    right_x = FAN[0][0] + 60                      # under the towers' picture from here
+    edge = [(x, fan_top(x)) for x in np.arange(FAN[-1][0], right_x + 1, 5)]
+    parts["left"].append((cls(fills_l[FAN_SHAPE - 1]), poly_d(FAN + edge + [(right_x, FAN[0][1])])))
     stamps = tree_stamps(right_raw, ids_t)
     parts["left"] += [(cls(f), d) for f, d in place_trees(left, stamps)]
     for k, (fill, pts) in enumerate(right, 1):
