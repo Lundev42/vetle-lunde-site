@@ -1062,24 +1062,8 @@ test.describe("About me mountain background", () => {
     const svg = page.locator("#om-meg svg.about-scene");
     await expect(svg).toHaveAttribute("aria-hidden", "true");
     expect(await svg.locator("g.land > path").count()).toBeGreaterThan(300);
-    // layered ground on each side, in front of the side mountains
-    expect(await svg.locator("g.ground").count()).toBe(2);
-    // hazy far ridges in the gaps between the mountains
-    expect(await svg.locator("g.distant").count()).toBe(2);
-    // Torres del Paine to the left and Stetind to the right of the main
-    // picture, each with its own ground
-    const vb = (await svg.getAttribute("viewBox")).split(" ").map(Number);
-    for (const [name, side] of [["torres", -1], ["stetind", 1]]) {
-      const far = svg.locator(`g.far-${name}`);
-      expect(await far.locator("path").count()).toBeGreaterThan(150);
-      await expect(far).toHaveAttribute("mask", /^url\(#about-far-\d\)$/);
-      const box = await far.evaluate((g) => { const b = g.getBBox(); return { x: b.x, width: b.width }; });
-      // (the main picture spans 0 to 2912; the side mountains stand just beyond it)
-      if (side < 0) expect(box.x + box.width).toBeLessThan(0);
-      else expect(box.x).toBeGreaterThan(2900);
-      expect(box.x + box.width).toBeGreaterThan(vb[0]);
-      expect(box.x).toBeLessThan(vb[0] + vb[2]);
-    }
+    // a mirrored strip on each side fills wide screens
+    expect(await svg.locator("g.strip").count()).toBe(2);
     // the banded sky of the source is replaced by one smooth sky image per
     // colour theme, and only the current theme's sky is shown
     expect(await svg.locator("image.sky").count()).toBe(PERIODS.length);
@@ -1147,7 +1131,7 @@ test.describe("About me mountain background", () => {
     for (const theme of PERIODS) {
       await page.evaluate((t) => document.documentElement.setAttribute("data-theme", t), theme);
       const r = await page.evaluate(() => {
-        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path")).filter((el) => !el.closest("clipPath"));
+        const paths = Array.from(document.querySelectorAll("#om-meg .about-scene path"));
         // a class without a colour for this theme would fall back to black
         const missing = paths.filter((el) => getComputedStyle(el).fill === "rgb(0, 0, 0)").map((el) => el.getAttribute("class"));
         return {
