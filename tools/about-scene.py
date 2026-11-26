@@ -18,8 +18,14 @@ index.html.
      property per colour theme: Devon keeps the picture's own colours, the
      other periods map them in OKLCH (keeping light and shadow), so every
      theme repaints the scene.
-  4. Wide screens: a thin strip at each side of the picture is mirrored and
-     stretched, so the hills roll on to the edges of the screen.
+  4. Two more mountains stand further away on each side, from the user's
+     Torres del Paine (left) and Stetind (right) pictures
+     (tools/about-scene-torres.svg, tools/about-scene-stetind.svg): only
+     their mountains, recoloured like the rest, a valley's width (GAP) from
+     the main picture's peaks, fading into the haze towards their feet.
+  5. A thin strip at each side of the main picture is mirrored and
+     stretched out to the ends as the plain in front of them; further out
+     its upper bands narrow and its lines roll gently.
 
 Run from the repo root:  python3 tools/about-scene.py
 Needs numpy, scipy, opencv and Pillow. It rewrites the <svg class="about-scene">
@@ -42,10 +48,43 @@ HTML = "index.html"
 W, H = 2912, 1440          # canvas of the source SVG
 TOP = -67                  # first row drawn (above the canvas: only sky there), so the
                            # towers start 14 % down the scene
-SIDE = 1800                # units added on each side for wide screens
-STRIPS = ((6, 86, -23), (2720, 2906, -10))   # (from, to, x stretch): mirrored just inside the picture's edges, so the copies overlap it
+GAP = 1050                 # open valley between neighbouring mountains: about the
+                           # gap between the Tre Cime and the tower in the main picture
+# Two more mountains, one on each side of the main picture (the user's
+# Torres del Paine and Stetind pictures). Only their mountains are used:
+# their skies are dropped, their feet stand behind the main picture's
+# plain, and they fade into the haze towards their feet. Each is scaled by
+# "scale" and moved so its pixel "anchor" (the foot on the side facing the
+# main picture, at the height where the plain hides it) lands at "at".
+SIDE_PICS = [
+    dict(name="torres", src="tools/about-scene-torres.svg", w=2752, h=1536, scale=0.73,
+         anchor=(2600, 1000), at=(60 - GAP, 860), fade_y=(630, 860), fade_x=None),
+    dict(name="stetind", src="tools/about-scene-stetind.svg", w=2752, h=1536, scale=0.8,
+         anchor=(440, 900), at=(2630 + GAP, 800), fade_y=(580, 800), fade_x=(150, 420)),
+]
 EXT = 10000                # the sky runs on this far above the picture
 SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
+HAZE = 0.9                 # the side mountains are further away: a little sky shows through
+
+
+def _placed_x(pic, x):
+    return pic["at"][0] + (x - pic["anchor"][0]) * pic["scale"]
+
+
+# The drawing is centred on the main picture and reaches to the outer edge
+# of the nearer side picture (its edge cuts through a ridge, so it must
+# never show); the farther one runs on past the end.
+CX = W / 2
+HALF = int(min(CX - _placed_x(SIDE_PICS[0], 0),
+               _placed_x(SIDE_PICS[1], SIDE_PICS[1]["w"]) - CX))
+X0, X1 = int(CX - HALF), int(CX + HALF)
+# A thin strip at each edge of the main picture is mirrored and stretched
+# out to the ends, as the plain in front of the side mountains: (from, to,
+# x stretch); mirrored just inside the picture's edges so the copies overlap it.
+PLAIN_HORIZON = (800, 735)  # where the land meets the sky at each edge of the picture
+PLAIN_DROP = 40            # how much lower the far plain's horizon lies
+PLAIN_SQUEEZE = (0.8, 1.6)  # how much the plain's upper bands narrow far out
+STRIPS = ((6, 86, -((6 - X0 + 60) / 80)), (2720, 2906, -((X1 + 60 - 2906) / 186)))
 
 THEMES = ["hadean", "cambrian", "devonian", "cretaceous", "quaternary"]
 DEFAULT = "cretaceous"
@@ -210,14 +249,18 @@ def expand(spec):
     return out
 
 
-def read_paths():
-    svg = open(SRC, encoding="utf-8").read()
+def read_paths(src=SRC):
+    """The shapes of a traced picture: (fill, [subpath points]). Each subpath
+    is M x y, then C in threes, closed; a second subpath is a hole."""
+    svg = open(src, encoding="utf-8").read()
     found = re.findall(r'<path fill="(#[0-9A-Fa-f]{6})"[^>]*?d="([^"]*)"', svg)
     paths = []
     for fill, d in found:
-        nums = [float(v) for v in re.findall(r"-?\d+(?:\.\d+)?", d)]
-        pts = np.array(nums).reshape(-1, 2)
-        paths.append((fill.upper(), pts))      # M x y, then C in threes, closed
+        subs = []
+        for part in d.split("M")[1:]:
+            nums = [float(v) for v in re.findall(r"-?\d+(?:\.\d+)?", part)]
+            subs.append(np.array(nums).reshape(-1, 2))
+        paths.append((fill.upper(), subs))
     return paths
 
 
@@ -231,12 +274,12 @@ def flatten(pts, steps=8):
     return np.array(out)
 
 
-def id_map(paths):
+def id_map(paths, w=W, h=H):
     """Which shape shows at each pixel of the canvas (1-based, 0 = none)."""
-    ids = np.zeros((H, W), np.int32)
-    for k, (_, pts) in enumerate(paths, 1):
-        poly = np.round(flatten(pts) * 4).astype(np.int32)       # 2 bits of sub-pixel precision
-        cv2.fillPoly(ids, [poly], int(k), lineType=cv2.LINE_8, shift=2)
+    ids = np.zeros((h, w), np.int32)
+    for k, (_, subs) in enumerate(paths, 1):
+        polys = [np.round(flatten(pts) * 4).astype(np.int32) for pts in subs]   # 2 bits of sub-pixel precision
+        cv2.fillPoly(ids, polys, int(k), lineType=cv2.LINE_8, shift=2)
     return ids
 
 
@@ -245,18 +288,19 @@ def num(v):
     return s
 
 
-def path_d(pts):
+def path_d(subs):
     """Compact path data: integer units, relative curves."""
-    q = np.round(pts).astype(int)
-    out = [f"M{q[0][0]} {q[0][1]}c"]
-    cur = q[0]
-    parts = []
-    for i in range(1, len(q) - 2, 3):
-        seg = [q[i] - cur, q[i + 1] - cur, q[i + 2] - cur]
-        parts.append(" ".join(f"{x} {y}" for x, y in seg))
-        cur = q[i + 2]
-    s = out[0] + " ".join(parts) + "z"
-    return re.sub(r" -", "-", s)
+    out = []
+    for pts in subs:
+        q = np.round(pts).astype(int)
+        cur = q[0]
+        parts = []
+        for i in range(1, len(q) - 2, 3):
+            seg = [q[i] - cur, q[i + 1] - cur, q[i + 2] - cur]
+            parts.append(" ".join(f"{x} {y}" for x, y in seg))
+            cur = q[i + 2]
+        out.append(f"M{q[0][0]} {q[0][1]}c" + " ".join(parts) + "z")
+    return re.sub(r" -", "-", "".join(out))
 
 
 # ── trees ─────────────────────────────────────────────────────────────────
@@ -281,9 +325,9 @@ def spruce(cx, top, w, h):
     return "M" + " ".join(f"{x:.1f} {y:.1f}" for x, y in pts) + "z"
 
 
-def trees_of(k, pts):
+def trees_of(k, subs):
     """Split one tree shape into its trees (peaks of its top edge)."""
-    poly = flatten(pts)
+    poly = flatten(subs[0])
     x0, y0 = poly.min(0)
     x1, y1 = poly.max(0)
     mask = np.zeros((int(y1 - y0) + 3, int(x1 - x0) + 3), np.uint8)
@@ -329,21 +373,72 @@ def sky_field(paths, ids, sky):
     return field
 
 
+def side_sky(paths, ids, thr=0.05, frac=0.35):
+    """The sky shapes of a side picture, found from its colours: starting at
+    the top row, spread to neighbouring shapes of nearly the same colour
+    that reach the picture's side edges (the sky's bands); then take in
+    shapes of the sky's colours with much of their outline on the sky (the
+    bands seen between peaks) and specks surrounded by sky."""
+    n = len(paths)
+    h, w = ids.shape
+    lab = np.array([[0, 0, 0]] + [srgb_to_oklab(hex_rgb(f)) for f, _ in paths])
+    xs = [(min(p[:, 0].min() for p in subs), max(p[:, 0].max() for p in subs)) for _, subs in paths]
+    edge = [False] + [a <= 4 or b >= w - 4 for a, b in xs]
+    keys = []
+    for a, b in ((ids[:, :-1], ids[:, 1:]), (ids[:-1, :], ids[1:, :])):
+        m = a != b
+        keys += [a[m].astype(np.int64) * (n + 1) + b[m], b[m].astype(np.int64) * (n + 1) + a[m]]
+    keys, counts = np.unique(np.concatenate(keys), return_counts=True)
+    border = {i: {} for i in range(n + 1)}
+    for k, c in zip(keys.tolist(), counts.tolist()):
+        border[k // (n + 1)][k % (n + 1)] = c
+    sky = set()
+    todo = list(set(np.unique(ids[6]).tolist()) - {0})
+    while todo:
+        k = todo.pop()
+        if k in sky:
+            continue
+        sky.add(k)
+        todo += [j for j in border[k] if j and j not in sky and edge[j]
+                 and np.linalg.norm(lab[j] - lab[k]) < thr]
+    changed = True
+    while changed:
+        changed = False
+        for j in range(1, n + 1):
+            if j in sky or not border[j]:
+                continue
+            total = sum(border[j].values())
+            on_sky = sum(c for i, c in border[j].items() if i in sky)
+            close = min((np.linalg.norm(lab[j] - lab[i]) for i in border[j] if i in sky), default=9)
+            if close < thr and on_sky / total >= frac:
+                sky.add(j)
+                changed = True
+    for j in range(1, n + 1):
+        if j not in sky and border[j]:
+            total = sum(border[j].values())
+            if total < 600 and sum(c for i, c in border[j].items() if i in sky) / total > 0.9:
+                sky.add(j)
+    return sky
+
+
 def smoothstep(t):
     t = np.clip(t, 0, 1)
     return t * t * (3 - 2 * t)
 
 
 def sky_images(field):
-    x0, x1 = -SIDE, W + SIDE
+    x0, x1 = X0, X1
     y0, y1 = TOP - EXT, H
     fw, fh = (x1 - x0) // SKY_PX, (y1 - y0) // SKY_PX
     xs = x0 + (np.arange(fw) + 0.5) * SKY_PX
     ys = y0 + (np.arange(fh) + 0.5) * SKY_PX
-    fx = np.clip(xs / 8, 0, field.shape[1] - 1).astype(int)
+    # beyond the picture the sky is mirrored: the sunset glow at the left
+    # edge is the sun between the main picture and the left mountain
+    xr = np.abs(xs)
+    xr = np.where(xr > W, 2 * W - xr, xr)
+    fx = np.clip(xr / 8, 0, field.shape[1] - 1).astype(int)
     fy = np.clip(ys / 8, 0, field.shape[0] - 1).astype(int)
     base = field[fy[:, None], fx[None, :]]
-    # the strips beyond the picture repeat its edge columns: soften that
     base = np.stack([cv2.GaussianBlur(base[..., c], (0, 0), 2.0) for c in range(3)], -1)
     s = smoothstep((HORIZON_Y - ys) / (HORIZON_Y - ZENITH_Y))[:, None, None]
     out = {}
@@ -358,6 +453,66 @@ def sky_images(field):
 
 # ── output ────────────────────────────────────────────────────────────────
 
+def clip_x(poly, a, b):
+    """Clip a polygon to a <= x <= b (Sutherland-Hodgman)."""
+    for keep, lim in ((lambda p: p[0] >= a, a), (lambda p: p[0] <= b, b)):
+        out = []
+        n = len(poly)
+        for i in range(n):
+            p, q = poly[i], poly[(i + 1) % n]
+            if keep(p):
+                out.append(p)
+            if keep(p) != keep(q):
+                t = (lim - p[0]) / (q[0] - p[0])
+                out.append((lim, p[1] + t * (q[1] - p[1])))
+        poly = out
+        if not poly:
+            break
+    return poly
+
+
+def plain(subs, a, b, k, edge, horizon, squeeze):
+    """A strip shape mirrored at the picture's edge and stretched outwards
+    into a rolling plain: next to the picture it matches the edge; further
+    out the upper bands narrow (the plain recedes towards the horizon) and
+    the lines between the bands roll gently."""
+    out = []
+    for pts in subs:
+        poly = clip_x([tuple(p) for p in flatten(pts)], a, b)
+        if len(poly) < 3:
+            continue
+        P = np.array(poly)
+        P[:, 0] = edge + k * (P[:, 0] - edge)
+        # short segments, so the rolling shows
+        dense = []
+        for i in range(len(P)):
+            p, q = P[i], P[(i + 1) % len(P)]
+            m = max(1, int(abs(q[0] - p[0]) / 24))
+            dense.extend(p + (q - p) * j / m for j in range(m))
+        P = np.array(dense)
+        x, y = P[:, 0], P[:, 1]
+        r = smoothstep(np.abs(x - edge) / 800)
+        t = np.clip((y - horizon) / (H - horizon), 0, 1)
+        top = horizon + r * PLAIN_DROP          # the far plain lies a little lower
+        y2 = np.where((y > horizon) & (y < H), top + (H - top) * t ** (1 + squeeze * r), y + r * PLAIN_DROP)
+        # long, uneven swells (no two waves share a period)
+        wave1 = np.sin(x / 430 + 1.3) + 0.45 * np.sin(x / 251 + 0.4)
+        wave2 = np.sin(x / 347 + 2.1) + 0.4 * np.sin(x / 163 + 1.7)
+        y2 = y2 + r * (9 * (1 - t) * wave1 + 20 * np.sin(np.pi * t) * wave2)
+        q = np.round(np.column_stack([x, y2])).astype(int)
+        keep = np.r_[True, np.any(q[1:] != q[:-1], 1)]
+        q = q[keep]
+        d = np.diff(q, axis=0)
+        out.append(f"M{q[0][0]} {q[0][1]}l" + " ".join(f"{dx} {dy}" for dx, dy in d) + "z")
+    return re.sub(r" -", "-", "".join(out))
+
+
+def placed(subs, pic):
+    s = pic["scale"]
+    (ax, ay), (X, Y) = pic["anchor"], pic["at"]
+    return [np.column_stack([X + (p[:, 0] - ax) * s, Y + (p[:, 1] - ay) * s]) for p in subs]
+
+
 def build():
     paths = read_paths()
     ids = id_map(paths)
@@ -369,46 +524,82 @@ def build():
     skies, box = sky_images(field)
 
     classes = {}                                   # fill -> class
-    shapes = []                                    # (class, d)
+    shapes = []                                    # (class, d, x range)
     trees = set(TREES)
-    for k, (fill, pts) in enumerate(paths, 1):
+    for k, (fill, subs) in enumerate(paths, 1):
         if k in sky or k not in shown:
             continue
         cls = classes.setdefault(fill, f"c{len(classes)}")
         if k in trees:
-            for cx, top, w, h in trees_of(k, pts):
-                shapes.append((cls, spruce(cx, top, w, h), (cx - w, cx + w)))
+            for cx, top, w, h in trees_of(k, subs):
+                shapes.append((cls, spruce(cx, top, w, h), (cx - w, cx + w), None))
         else:
-            shapes.append((cls, path_d(pts), (pts[:, 0].min(), pts[:, 0].max())))
+            shapes.append((cls, path_d(subs), (subs[0][:, 0].min(), subs[0][:, 0].max()), subs))
+
+    sides = []                                     # per side picture: [(class, d)]
+    for pic in SIDE_PICS:
+        sp = read_paths(pic["src"])
+        sids = id_map(sp, pic["w"], pic["h"])
+        ssky = side_sky(sp, sids)
+        cnt = np.bincount(sids.ravel(), minlength=len(sp) + 1)
+        out = []
+        for k, (fill, subs) in enumerate(sp, 1):
+            # the sky, specks, and what lies wholly below the plain's horizon go
+            if k in ssky or cnt[k] < 8 or min(p[:, 1].min() for p in subs) > pic["anchor"][1]:
+                continue
+            cls = classes.setdefault(fill, f"c{len(classes)}")
+            out.append((cls, path_d(placed(subs, pic))))
+        print(f"{pic['name']}: {len(out)} shapes ({len(ssky)} sky shapes dropped)")
+        sides.append(out)
     colours = {cls: {th: theme_colour(th, fill) for th in THEMES} for fill, cls in classes.items()}
-    return shapes, colours, skies, box
+    return shapes, sides, colours, skies, box
 
 
-def svg_markup(shapes, skies, box):
-    vb = f"{-SIDE} {TOP} {W + 2 * SIDE} {H - TOP}"
+def svg_markup(shapes, sides, skies, box):
+    vb = f"{X0} {TOP} {X1 - X0} {H - TOP}"
     bx, by, bw, bh = box
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
              'aria-hidden="true" focusable="false">',
              "<defs>"]
-    for i, (a, b, _) in enumerate(STRIPS):
-        lines.append(f'<clipPath id="about-strip-{i}"><rect x="{a}" y="0" width="{b - a}" height="{H}"/></clipPath>')
+    # the side mountains fade into the haze towards their feet (and Stetind's
+    # low outlying hills fade out to the left)
+    for i, pic in enumerate(SIDE_PICS):
+        (fy0, fy1), fx = pic["fade_y"], pic["fade_x"]
+        lines.append(f'<linearGradient id="about-fy-{i}" gradientUnits="userSpaceOnUse" x1="0" y1="{fy0}" x2="0" y2="{fy1}">'
+                     f'<stop offset="0" stop-color="#fff" stop-opacity="{HAZE}"/>'
+                     f'<stop offset="1" stop-color="#fff" stop-opacity="0.1"/></linearGradient>')
+        lines.append(f'<mask id="about-far-{i}" maskUnits="userSpaceOnUse" x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}">'
+                     f'<rect x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}" fill="url(#about-fy-{i})"/></mask>')
+        if fx:
+            x0, x1 = (round(_placed_x(pic, v)) for v in fx)
+            lines.append(f'<linearGradient id="about-fx-{i}" gradientUnits="userSpaceOnUse" x1="{x0}" y1="0" x2="{x1}" y2="0">'
+                         f'<stop offset="0" stop-color="#fff" stop-opacity="0"/>'
+                         f'<stop offset="1" stop-color="#fff"/></linearGradient>')
+            lines.append(f'<mask id="about-farx-{i}" maskUnits="userSpaceOnUse" x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}">'
+                         f'<rect x="{X0 - 4000}" y="{TOP}" width="{X1 - X0 + 8000}" height="{H - TOP}" fill="url(#about-fx-{i})"/></mask>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
+    for i, (pic, out) in enumerate(zip(SIDE_PICS, sides)):
+        lines.append(f'<g class="far far-{pic["name"]}" mask="url(#about-far-{i})">')
+        if pic["fade_x"]:
+            lines.append(f'<g mask="url(#about-farx-{i})">')
+        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d in out)
+        if pic["fade_x"]:
+            lines.append("</g>")
+        lines.append("</g>")
     lines.append('<g class="land">')
-    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _ in shapes)
+    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _, _ in shapes)
     lines.append("</g>")
     for i, (a, b, k) in enumerate(STRIPS):
         edge = a if i == 0 else b
-        # the shapes in the strip, mirrored at the picture's edge and
-        # stretched outwards (copies, not <use>: CSS colours do not reach
-        # into <use> clones in every browser)
-        lines.append(f'<g class="strip" clip-path="url(#about-strip-{i})" '
-                     f'transform="matrix({k} 0 0 1 {edge * (1 - k)} 0)">')
+        # the shapes in the strip, as a plain running out to the ends
         # (small details such as trees would turn into wide smudges: left out)
-        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, (x0, x1) in shapes
-                     if x1 >= a and x0 <= b and not (x1 - x0 < 160 and x0 >= a and x1 <= b))
+        horizon = PLAIN_HORIZON[i]
+        lines.append('<g class="strip">')
+        lines.extend(f'<path class="{c}" d="{plain(subs, a, b, k, edge, horizon, PLAIN_SQUEEZE[i])}"/>' for c, _, (x0, x1), subs in shapes
+                     if subs is not None and x1 >= a and x0 <= b and not (x1 - x0 < 160 and x0 >= a and x1 <= b))
         lines.append("</g>")
     lines.append("</svg>")
     return "\n".join(lines)
@@ -441,8 +632,8 @@ def main():
     ap.add_argument("--debug", help="folder for a preview page per theme")
     ap.add_argument("--no-write", action="store_true")
     args = ap.parse_args()
-    shapes, colours, skies, box = build()
-    svg = svg_markup(shapes, skies, box)
+    shapes, sides, colours, skies, box = build()
+    svg = svg_markup(shapes, sides, skies, box)
     css = scene_css(colours)
     print(f"{len(shapes)} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
@@ -463,6 +654,12 @@ def main():
                       html, count=1, flags=re.S)
     if n != 1:
         sys.exit("no scene-tones markers in index.html")
+    # the drawing's proportions, used by the layout
+    vw, vh = X1 - X0, H - TOP
+    html, n1 = re.subn(r"aspect-ratio: \d+ / \d+;", f"aspect-ratio: {vw} / {vh};", html, count=1)
+    html, n2 = re.subn(r"calc\(100vw / [\d.]+\)", f"calc(100vw / {vw / vh:.4f})", html, count=1)
+    if n1 != 1 or n2 != 1:
+        sys.exit("could not find the scene's proportions in index.html")
     open(HTML, "w", encoding="utf-8").write(html)
 
 

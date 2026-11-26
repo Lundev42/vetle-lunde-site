@@ -1064,6 +1064,19 @@ test.describe("About me mountain background", () => {
     expect(await svg.locator("g.land > path").count()).toBeGreaterThan(300);
     // a mirrored strip on each side fills wide screens
     expect(await svg.locator("g.strip").count()).toBe(2);
+    // Torres del Paine to the left and Stetind to the right, further away
+    // (left and right of the main picture), fading into the haze at their feet
+    const vb = (await svg.getAttribute("viewBox")).split(" ").map(Number);
+    for (const [name, side] of [["torres", -1], ["stetind", 1]]) {
+      const far = svg.locator(`g.far-${name}`);
+      expect(await far.locator("path").count()).toBeGreaterThan(150);
+      await expect(far).toHaveAttribute("mask", /^url\(#about-far-\d\)$/);
+      const box = await far.evaluate((g) => { const b = g.getBBox(); return { x: b.x, width: b.width }; });
+      if (side < 0) expect(box.x + box.width).toBeLessThan(0);
+      else expect(box.x).toBeGreaterThan(2912);
+      expect(box.x + box.width).toBeGreaterThan(vb[0]);
+      expect(box.x).toBeLessThan(vb[0] + vb[2]);
+    }
     // the banded sky of the source is replaced by one smooth sky image per
     // colour theme, and only the current theme's sky is shown
     expect(await svg.locator("image.sky").count()).toBe(PERIODS.length);
