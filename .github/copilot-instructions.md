@@ -1,4 +1,4 @@
-# Copilot Instructions – vetle-lunde-site
+# Copilot Instructions – lundev42.github.io
 
 ## Project Overview
 
@@ -8,7 +8,7 @@ This is a **static portfolio website** for Vetle Øyvind Larsen Lunde, showcasin
 - **Languages**: Bilingual — Norwegian Bokmål (`nb`) and English (`en`) with inline i18n
 - **Testing**: Playwright end-to-end tests
 - **Deployment**: GitHub Pages via GitHub Actions (push to `main`)
-- **Live site**: `https://Lundev42.github.io/vetle-lunde-site/`
+- **Live site**: `https://lundev42.github.io/`
 
 ## Repository Structure & Conventions
 

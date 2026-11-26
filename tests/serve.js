@@ -30,9 +30,7 @@ http.createServer((req, res) => {
     res.writeHead(400).end();
     return;
   }
-  // GitHub Pages serves the project site under /vetle-lunde-site/
-  if (rel === "/vetle-lunde-site") rel = "/";
-  if (rel.startsWith("/vetle-lunde-site/")) rel = rel.slice("/vetle-lunde-site".length);
+  // GitHub Pages serves the site at the root of lundev42.github.io
   if (rel.endsWith("/")) rel += "index.html";
   const file = path.join(root, rel);
   if (!file.startsWith(root + path.sep)) {

@@ -8,16 +8,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Lundev42/vetle-lunde-site.git"
+    "url": "git+https://github.com/lundev42/lundev42.github.io.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/Lundev42/vetle-lunde-site/issues"
+    "url": "https://github.com/lundev42/lundev42.github.io/issues"
   },
-  "homepage": "https://github.com/Lundev42/vetle-lunde-site#readme",
+  "homepage": "https://github.com/lundev42/lundev42.github.io#readme",
   "devDependencies": {
     "@playwright/test": "^1.58.2"
   }

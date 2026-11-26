@@ -236,7 +236,7 @@ test.describe("SEO and accessibility must-haves", () => {
   test("has Open Graph meta tags", async ({ page }) => {
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute("content", /Vetle/);
     await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "website");
-    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", /vetle-lunde-site/);
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute("content", "https://lundev42.github.io/");
   });
 
   test("has a theme-color meta tag matching the theme", async ({ page }) => {
@@ -834,25 +834,25 @@ test.describe("SEO improvements", () => {
   test("index has canonical URL", async ({ page }) => {
     await page.goto(PAGE_URL);
     const canonical = page.locator('link[rel="canonical"]');
-    await expect(canonical).toHaveAttribute("href", "https://Lundev42.github.io/vetle-lunde-site/");
+    await expect(canonical).toHaveAttribute("href", "https://lundev42.github.io/");
   });
 
   test("bacheloroppgave has correct canonical URL", async ({ page }) => {
     await page.goto(BACHELOR_URL);
     const canonical = page.locator('link[rel="canonical"]');
-    await expect(canonical).toHaveAttribute("href", "https://Lundev42.github.io/vetle-lunde-site/bacheloroppgave.html");
+    await expect(canonical).toHaveAttribute("href", "https://lundev42.github.io/bacheloroppgave.html");
   });
 
   test("starsteer has correct canonical URL", async ({ page }) => {
     await page.goto(STARSTEER_URL);
     const canonical = page.locator('link[rel="canonical"]');
-    await expect(canonical).toHaveAttribute("href", "https://Lundev42.github.io/vetle-lunde-site/starsteer.html");
+    await expect(canonical).toHaveAttribute("href", "https://lundev42.github.io/starsteer.html");
   });
 
   test("bacheloroppgave has correct og:url", async ({ page }) => {
     await page.goto(BACHELOR_URL);
     const ogUrl = page.locator('meta[property="og:url"]');
-    await expect(ogUrl).toHaveAttribute("content", "https://Lundev42.github.io/vetle-lunde-site/bacheloroppgave.html");
+    await expect(ogUrl).toHaveAttribute("content", "https://lundev42.github.io/bacheloroppgave.html");
   });
 
   test("all pages have og:image meta tag", async ({ page }) => {

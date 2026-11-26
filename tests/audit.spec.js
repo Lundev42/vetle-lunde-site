@@ -164,7 +164,7 @@ test.describe("SEO files", () => {
     expect(await robots.text()).toContain("sitemap.xml");
     const sitemap = await (await request.get("/sitemap.xml")).text();
     for (const path of PAGES) {
-      const loc = path === "/index.html" ? "/vetle-lunde-site/</loc>" : "/vetle-lunde-site" + path + "</loc>";
+      const loc = "https://lundev42.github.io" + (path === "/index.html" ? "/" : path) + "</loc>";
       expect(sitemap).toContain(loc);
     }
   });
@@ -180,11 +180,11 @@ test.describe("SEO files", () => {
   });
 
   test("404 page renders with working links from a nested path", async ({ page }) => {
-    await page.goto("/vetle-lunde-site/some/missing/page");
+    await page.goto("/some/missing/page");
     await expect(page.locator("h1")).toHaveText("Fant ikke siden");
     await expect(page.locator("body")).toHaveCSS("background-color", /rgb/);
     const home = await page.locator(".home-link").evaluate((a) => a.href);
-    expect(home).toMatch(/\/vetle-lunde-site\/index\.html$/);
+    expect(new URL(home).pathname).toBe("/index.html");
   });
 });
 
