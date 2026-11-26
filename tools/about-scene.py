@@ -34,6 +34,7 @@ import sys
 import cv2
 import numpy as np
 from scipy.ndimage import gaussian_filter
+from scipy.interpolate import PchipInterpolator
 from scipy.signal import find_peaks
 
 SRC = "tools/about-scene.svg"
@@ -66,16 +67,19 @@ SKY_PATHS = [(3, 5), (7, 9), (11, 15), (17, 25), (27, 32), 34, (36, 43), 45, (49
 # The small trees (1-based). A shape may hold two trees side by side.
 TREES = [714, 715, 716, 787, 793, 800, 818, 819, 823, 825, 842]
 
-# The sky darkens from the horizon (HORIZON_Y) upwards and reaches the
-# theme's zenith colour at ZENITH_Y (units of the source canvas).
-HORIZON_Y = 1000
-ZENITH_Y = -250
-ZENITH = {
-    "devonian": "#191d2b",      # dusk blue above the sunset
-    "cretaceous": "#0f121a",
-    "hadean": "#170b08",
-    "cambrian": "#0b1713",
-    "quaternary": "#c9d2de",    # light theme: a cool, slightly darker blue-grey
+# The sky above the picture's own sunset: the picture's sky shows up to
+# GLOW_TOP and fades out by GLOW_END; above it the colours run through an
+# afterglow (A0, A), a dusk band (B) and end in the zenith colour (Z) at
+# these heights (units of the source canvas; the text sits around y -450..60
+# on laptops, so A and B are dark enough for it in the dark themes).
+GLOW_TOP, GLOW_END = 820, 120
+DUSK_Y = (800, 150, -450, -1500)
+DUSK = {                     # A0, A, B, Z
+    "devonian":   ("#c9725c", "#58334a", "#2e2443", "#191d2b"),   # coral, mauve, violet, dusk blue
+    "cretaceous": ("#4f6f9a", "#2d3a5c", "#1b2238", "#0f121a"),
+    "hadean":     ("#a8452a", "#5c2118", "#2e110c", "#170b08"),
+    "cambrian":   ("#3f8a6c", "#21493b", "#132b22", "#0b1713"),
+    "quaternary": ("#f0dccb", "#ddd3e2", "#d0d6e3", "#c9d2de"),   # light: peach, lilac, ice
 }
 
 
@@ -289,6 +293,140 @@ def trees_of(k, pts):
     return out
 
 
+# ── side mountains ────────────────────────────────────────────────────────
+#
+# Beyond the picture the land would only be the stretched strips, which are
+# flat. Mountains of our own rise behind them: same flat-colour style and
+# light (sun low on the right: right-hand faces lit, left-hand faces in
+# shadow), but different shapes from the towers: a hazy far range on each
+# side, a table mountain with sandstone layers on the left, a pyramid peak
+# with snow and a row of rock teeth on the right. Colours are in the
+# picture's own palette; every theme maps them like the rest of the land.
+
+PULL = (600, -400)          # shift of the near mountains, left and right
+
+
+def catmull(points, closed=True):
+    """Points to a smooth Bézier chain (M + C...), as in the source paths."""
+    p = np.asarray(points, float)
+    n = len(p)
+    out = [p[0]]
+    for i in range(n if closed else n - 1):
+        p0, p1 = p[(i - 1) % n], p[i]
+        p2, p3 = p[(i + 1) % n], p[(i + 2) % n]
+        if not closed:
+            p0 = p[max(i - 1, 0)]
+            p3 = p[min(i + 2, n - 1)]
+        out += [p1 + (p2 - p0) / 6, p2 - (p3 - p1) / 6, p2]
+    return np.array(out)
+
+
+def ridge(rng, keys, step=22, rough=7.0):
+    """A ridge line through key points, with small rocky irregularities."""
+    pts = []
+    for (x0, y0), (x1, y1) in zip(keys[:-1], keys[1:]):
+        n = max(int(np.hypot(x1 - x0, y1 - y0) / step), 1)
+        for t in np.arange(n) / n:
+            jitter = rng.normal(0, rough) if 0 < t else 0.0
+            pts.append((x0 + (x1 - x0) * t + rng.normal(0, rough * 0.4), y0 + (y1 - y0) * t + jitter))
+    pts.append(keys[-1])
+    return pts
+
+
+def blob(rng, cx, cy, rx, ry, n=9, wobble=0.28):
+    a = np.sort(rng.uniform(0, 2 * np.pi, n))
+    r = 1 + rng.uniform(-wobble, wobble, n)
+    return [(cx + rx * ri * np.cos(ai), cy + ry * ri * np.sin(ai)) for ai, ri in zip(a, r)]
+
+
+def body(top):
+    """Close a ridge line down below the bottom of the scene."""
+    return top + [(top[-1][0], H + 40), (top[0][0], H + 40)]
+
+
+def side_mountains():
+    """Returns [(name, body points, fill, [(points, fill), ...] drawn inside it)]."""
+    rng = np.random.default_rng(1376)
+    m = []
+
+    # far ranges, hazy in the sunset light
+    far_l = ridge(rng, [(-1900, 930), (-1640, 760), (-1500, 700), (-1330, 745), (-1120, 790), (-900, 720),
+                        (-760, 735), (-560, 800), (-330, 770), (-120, 840), (120, 905), (340, 960)], rough=5)
+    m.append(("far-l", body(far_l), "#9C8C8A", [
+        (body(ridge(rng, [(-1500, 700), (-1560, 860), (-1640, 1000), (-1900, 1000), (-1900, 700)], rough=9)), "#8A7F82"),
+        (body(ridge(rng, [(-900, 720), (-990, 860), (-1080, 1000), (-1250, 1000), (-1120, 790)], rough=9)), "#8A7F82"),
+    ]))
+    far_r = ridge(rng, [(2420, 960), (2700, 860), (2960, 735), (3120, 770), (3300, 820), (3520, 760),
+                        (3800, 690), (3960, 730), (4200, 800), (4400, 745), (4660, 820)], rough=5)
+    m.append(("far-r", body(far_r), "#9C8C8A", [
+        (body(ridge(rng, [(2960, 735), (2900, 860), (2860, 1000), (2600, 1000), (2700, 860)], rough=9)), "#8A7F82"),
+        (body(ridge(rng, [(3800, 690), (3740, 830), (3700, 1000), (3420, 1000), (3520, 760)], rough=9)), "#8A7F82"),
+    ]))
+
+    # left: a table mountain, cliffs of tilted sandstone layers on a scree base
+    mesa = ridge(rng, [(-1720, 1000), (-1560, 905), (-1430, 830), (-1340, 770), (-1305, 700), (-1270, 645),
+                       (-1215, 615), (-1150, 622), (-1080, 600), (-1010, 612), (-950, 640), (-905, 690),
+                       (-870, 770), (-780, 830), (-640, 890), (-470, 965), (-300, 1010)], rough=7)
+    strata = []
+    for y, hgt, col in ((690, 15, "#D9A47E"), (735, 10, "#C08B66"), (780, 16, "#D9A47E")):
+        band = ridge(rng, [(-1450, y + 40), (-1100, y + 5), (-750, y - 45)], step=30, rough=4) + \
+            ridge(rng, [(-750, y - 45 + hgt), (-1100, y + 5 + hgt * 1.3), (-1450, y + 40 + hgt)], step=30, rough=4)
+        strata.append((band, col))
+    gullies = [(ridge(rng, [(x, 640), (x + 12, 700), (x + 30, 860), (x - 6, 860), (x - 6, 700)], rough=3),
+                "#B98F70") for x in (-960, -900)]
+    m.append(("mesa", body(mesa), "#A48A7A", [
+        # shadowed left half of the cliffs and the scree below them
+        (ridge(rng, [(-1800, 560), (-1170, 560), (-1185, 690), (-1235, 800), (-1310, 1100), (-1800, 1100)], rough=10),
+         "#6E6062"),
+        *strata,
+        # sunlit right-hand cliff and scree
+        (ridge(rng, [(-1010, 560), (-860, 560), (-820, 1100), (-700, 1100), (-760, 880), (-860, 780),
+                     (-950, 660)], rough=6), "#E7B48C"),
+        *gullies,
+    ]))
+    # a rounded grassy hill in front of it
+    hill = ridge(rng, [(-1260, 1010), (-1100, 930), (-930, 890), (-760, 880), (-600, 905), (-420, 960),
+                       (-220, 1010)], rough=3)
+    m.append(("hill", body(hill), "#8A7135", [
+        (ridge(rng, [(-760, 860), (-560, 880), (-200, 1000), (-200, 1100), (-700, 1100), (-700, 960)], rough=6),
+         "#A9893F"),
+    ]))
+
+    # right: a row of rock teeth
+    teeth = ridge(rng, [(2620, 900), (2700, 800), (2735, 735), (2770, 790), (2830, 720), (2880, 700),
+                        (2920, 760), (2990, 690), (3040, 745), (3110, 715), (3170, 780), (3290, 850),
+                        (3380, 900)], rough=6)
+    m.append(("teeth", body(teeth), "#6D5F5D", [
+        (ridge(rng, [(2880, 700), (2905, 800), (2950, 1100), (3080, 1100), (3010, 820), (2990, 690)], rough=5),
+         "#9C8174"),
+        (ridge(rng, [(3110, 715), (3150, 800), (3250, 1100), (3400, 1100), (3290, 850), (3170, 780)], rough=5),
+         "#B98F70"),
+    ]))
+    # and a pyramid peak with snow, its right face in the sun
+    peak = ridge(rng, [(3080, 900), (3260, 760), (3380, 640), (3470, 520), (3540, 440), (3575, 430),
+                       (3610, 455), (3700, 540), (3800, 640), (3930, 730), (4080, 810), (4250, 880),
+                       (4420, 930)], rough=7)
+    spine = ridge(rng, [(3575, 430), (3590, 560), (3640, 700), (3660, 820), (3720, 1100)], rough=8)
+    m.append(("peak", body(peak), "#9B8578", [
+        (ridge(rng, [(3000, 300), (3575, 300)], rough=1) + spine + [(3000, 1100)], "#5D5354"),
+        (spine + ridge(rng, [(4500, 1100), (4500, 300), (3575, 300)], rough=1), "#D79A76"),
+        (ridge(rng, [(3575, 420), (3640, 470), (3740, 560), (3700, 590), (3640, 560), (3600, 600),
+                     (3590, 520)], rough=4), "#F1C29C"),
+        (blob(rng, 3520, 520, 45, 22), "#C9BDBE"),
+        (blob(rng, 3470, 600, 30, 14), "#C9BDBE"),
+        (blob(rng, 3640, 520, 40, 18), "#F3E6D8"),
+        (blob(rng, 3700, 610, 34, 14), "#F3E6D8"),
+    ]))
+    # most screens only show a little beyond the picture (about 600 units
+    # on each side at 1840 px wide), so the near mountains are moved in
+    # towards it (keeping their shapes); the far ranges run on to the edges
+    # for very wide screens
+    def pull(pts):
+        return [((x + PULL[0] if x < W / 2 else x + PULL[1]), y) for x, y in pts]
+    return [(n, b, f, parts) if n.startswith("far") else
+            (n, pull(b), f, [(pull(p), c) for p, c in parts]) for n, b, f, parts in m]
+
+
 # ── sky ───────────────────────────────────────────────────────────────────
 
 def sky_field(paths, ids, sky):
@@ -331,11 +469,15 @@ def sky_images(field):
     base = field[fy[:, None], fx[None, :]]
     # the strips beyond the picture repeat its edge columns: soften that
     base = np.stack([cv2.GaussianBlur(base[..., c], (0, 0), 2.0) for c in range(3)], -1)
-    s = smoothstep((HORIZON_Y - ys) / (HORIZON_Y - ZENITH_Y))[:, None, None]
+    m = smoothstep((ys - GLOW_END) / (GLOW_TOP - GLOW_END))[:, None, None]
     out = {}
     for th in THEMES:
         sky = sky_map(th, base)
-        img = sky * (1 - s) + hex_lab(ZENITH[th]) * s
+        stops = np.array([hex_lab(c) for c in DUSK[th]])
+        # monotone cubic through the stops, flat above the last one
+        yk = np.array(DUSK_Y[::-1], float)
+        dusk = PchipInterpolator(yk, stops[::-1], axis=0, extrapolate=False)(np.clip(ys, yk[0], yk[-1]))
+        img = sky * m + dusk[:, None, :] * (1 - m)
         rgb = np.clip(np.round(oklab_to_srgb(img.reshape(-1, 3))), 0, 255).reshape(fh, fw, 3).astype(np.uint8)
         _, png = cv2.imencode(".png", cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_PNG_COMPRESSION, 9])
         out[th] = base64.b64encode(png.tobytes()).decode()
@@ -364,11 +506,16 @@ def build():
                 shapes.append((cls, spruce(cx, top, w, h), (cx - w, cx + w)))
         else:
             shapes.append((cls, path_d(pts), (pts[:, 0].min(), pts[:, 0].max())))
+    peaks = []                                     # (id, class, d, [(class, d)])
+    for name, outline, fill, parts in side_mountains():
+        cls = classes.setdefault(fill, f"c{len(classes)}")
+        inner = [(classes.setdefault(f, f"c{len(classes)}"), path_d(catmull(p))) for p, f in parts]
+        peaks.append((name, cls, path_d(catmull(outline)), inner))
     colours = {cls: {th: theme_colour(th, fill) for th in THEMES} for fill, cls in classes.items()}
-    return shapes, colours, skies, box
+    return shapes, colours, skies, box, peaks
 
 
-def svg_markup(shapes, skies, box):
+def svg_markup(shapes, skies, box, peaks):
     vb = f"{-SIDE} {TOP} {W + 2 * SIDE} {H - TOP}"
     bx, by, bw, bh = box
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
@@ -376,10 +523,22 @@ def svg_markup(shapes, skies, box):
              "<defs>"]
     for i, (a, b, _) in enumerate(STRIPS):
         lines.append(f'<clipPath id="about-strip-{i}"><rect x="{a}" y="0" width="{b - a}" height="{H}"/></clipPath>')
+    for name, _, d, _ in peaks:
+        lines.append(f'<clipPath id="about-{name}"><path d="{d}"/></clipPath>')
     lines.append("</defs>")
     for th in THEMES:
         lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
                      f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
+    def own(group):
+        lines.append(f'<g class="{group}">')
+        for name, cls, d, inner in peaks:
+            lines.append(f'<path class="{cls}" d="{d}"/>')
+            lines.append(f'<g clip-path="url(#about-{name})">')
+            lines.extend(f'<path class="{c}" d="{dd}"/>' for c, dd in inner)
+            lines.append("</g>")
+        lines.append("</g>")
+    # our own mountains beside the picture, behind it
+    own("peaks")
     lines.append('<g class="land">')
     lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _ in shapes)
     lines.append("</g>")
@@ -423,8 +582,8 @@ def main():
     ap.add_argument("--debug", help="folder for a preview page per theme")
     ap.add_argument("--no-write", action="store_true")
     args = ap.parse_args()
-    shapes, colours, skies, box = build()
-    svg = svg_markup(shapes, skies, box)
+    shapes, colours, skies, box, peaks = build()
+    svg = svg_markup(shapes, skies, box, peaks)
     css = scene_css(colours)
     print(f"{len(shapes)} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
