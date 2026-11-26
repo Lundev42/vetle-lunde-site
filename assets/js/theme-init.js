@@ -4,18 +4,18 @@
  * - Applies the saved colour theme, or the operating system preference, so
  *   the page never flashes the wrong colours.
  *
- * data-theme is a geological period (hadean, cambrian, cretaceous or
- * quaternary) or natural, the About picture's own sunset colours. data-mode
- * is dark or light and drives the few styles shared by all dark (hadean,
- * cambrian, cretaceous, natural) or light (quaternary) themes.
+ * data-theme is a geological period: hadean, cambrian, devonian, cretaceous
+ * or quaternary. data-mode is dark or light and drives the few styles shared
+ * by all dark (hadean, cambrian, devonian, cretaceous) or light (quaternary)
+ * themes.
  * Choices saved under the old names (dark, light, ...) are carried over.
  */
 (function () {
   var root = document.documentElement;
   root.classList.add("js");
 
-  var MODES = { hadean: "dark", cambrian: "dark", cretaceous: "dark", quaternary: "light", natural: "dark" };
-  var OLD = { dark: "cretaceous", light: "quaternary", white: "quaternary", green: "cambrian", purple: "hadean" };
+  var MODES = { hadean: "dark", cambrian: "dark", devonian: "dark", cretaceous: "dark", quaternary: "light" };
+  var OLD = { dark: "cretaceous", light: "quaternary", white: "quaternary", green: "cambrian", purple: "hadean", natural: "devonian" };
 
   var theme = null;
   try { theme = localStorage.getItem("theme"); } catch (e) { /* storage unavailable */ }

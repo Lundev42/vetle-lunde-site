@@ -1,100 +1,82 @@
 #!/usr/bin/env python3
 """Build the About-me background scene from the hand-off picture.
 
-Sources (both in tools/, neither is deployed):
+Source: tools/about-scene.svg, the Dolomites sunset we were given
+(DOLOMITES_TRUE.svg, 852 flat-coloured shapes on a 2752 x 1536 canvas, drawn
+back to front). It is not deployed; this script writes the scene into
+index.html.
 
-  about-scene-labels.png  the Dolomites SVG we were given (dolomites_background.svg,
-                          70 flat colours, 7 MB), rendered at 2752 x 1536 without
-                          anti-aliasing (tools/about-scene-render.js), so every
-                          pixel holds one of its colours exactly
-  about-scene-source.png  the original 1376 x 768 picture the SVG was traced
-                          from; its smooth sky gives a clean skyline and the
-                          depth layers
-
-The script turns the labels back into smooth, light SVG paths whose colours
-come from CSS, so every colour theme repaints the scene:
-
-  1. clean the labels (thin slivers and specks join their neighbours),
-  2. split land from sky and sort the land into depth layers (distant haze,
-     right towers, left towers, snow, hills, foreground),
-  3. trace each colour of each layer with potrace (curves, not pixels),
-  4. drop the banded sky of the SVG: a smooth gradient takes its place,
-  5. write one class per colour ("c<n>", or "h<n>" for the distant haze)
-     and one colour per class and theme as CSS custom properties.
-
-The theme colours keep the light and shadow of the picture: lightness,
-chroma and hue of each colour are mapped in OKLCH by a rule per period. The
-distant haze is coloured relative to the theme's sky, so it always sits in it.
-The tower group on the right is scaled and moved down so it stands at the
-same depth as the three towers on the left, and the outer strips of the
-picture are mirrored and stretched (without the towers) to fill wide screens.
+  1. The shapes of the banded sky are dropped (SKY_PATHS) together with the
+     shapes nothing shows of. A smooth sky image takes the sky's place: the
+     colours of the picture's own sky, blurred, darkening upwards into a
+     night or dusk colour, and running on far above the picture so the
+     atmosphere fills the whole section up to its top edge.
+  2. The small trees on the slopes (TREES) are redrawn as narrow spruces:
+     a wedge, wide at the foot and pointed at the top, with a few short
+     branch tips along its sides.
+  3. Every other shape keeps its outline. Its colour becomes a CSS custom
+     property per colour theme: Devon keeps the picture's own colours, the
+     other periods map them in OKLCH (keeping light and shadow), so every
+     theme repaints the scene.
+  4. Wide screens: a thin strip at each side of the picture is mirrored and
+     stretched, so the hills roll on to the edges of the screen.
 
 Run from the repo root:  python3 tools/about-scene.py
-Needs numpy, opencv, scikit-learn, Pillow and the potrace command
-(apt install potrace). It rewrites the <svg class="about-scene"> element and
-the generated CSS between the scene-tones markers in index.html. Use
---debug DIR to write check images and a preview in the original colours.
+Needs numpy, scipy, opencv and Pillow. It rewrites the <svg class="about-scene">
+element and the generated CSS between the scene-tones markers in index.html.
+Use --debug DIR to write a preview page per theme.
 """
 import argparse
 import base64
 import re
-import subprocess
 import sys
 
 import cv2
 import numpy as np
-from PIL import Image
-from scipy.ndimage import distance_transform_edt
-from sklearn.cluster import MiniBatchKMeans
+from scipy.ndimage import gaussian_filter
+from scipy.signal import find_peaks
 
-SRC = "tools/about-scene-source.png"
-LABELS = "tools/about-scene-labels.png"
+SRC = "tools/about-scene.svg"
 HTML = "index.html"
 
-S = 2              # the labels are twice the size of the source picture
-PAD = 900          # extension on each side for wide screens, in source pixels
-TOP = 100          # crop: first source row that is drawn
-LAYERS = [None, "haze", "right-towers", "left-towers", "snow", "hills", "fore", "rocks"]
-DRAW_ORDER = [1, 2, 3, 7, 4, 5, 6]      # back to front ("rocks" stand in front of the big tower)
-RANK = np.zeros(8, np.int32)
-RANK[DRAW_ORDER] = np.arange(1, 8)
-# the big right tower (moved); the rocks and the spire left of it stay put
-TOWER_ZONE = np.array([(1016, 100), (1300, 100), (1300, 480), (1025, 480), (1025, 322),
-                       (1016, 316)], np.int32)
+W, H = 2752, 1536          # canvas of the source SVG
+TOP = 100                  # first row drawn: the towers start 14 % down the scene
+SIDE = 1800                # units added on each side for wide screens
+STRIPS = ((6, 156, -12), (2546, 2746, -9))   # (from, to, x stretch): mirrored just inside the picture's edges (x 2 and 2750), so the copies overlap it
+EXT = 10000                # the sky runs on this far above the picture
+SKY_PX = 24                # one pixel of the sky image covers 24 x 24 units
 
-# Zones in source pixels (1376 x 768), drawn by eye from the picture.
-TRIO_SNOWLINE = [(0, 472), (60, 468), (100, 462), (150, 474), (200, 470), (250, 458),
-                 (300, 478), (350, 474), (400, 484), (450, 497), (500, 506), (550, 495),
-                 (600, 500), (630, 508), (655, 508), (700, 548), (745, 580)]
-TRIO_RIGHT = [(560, 140), (575, 380), (612, 395), (628, 415), (652, 448), (655, 508)]
-TRIO_ZONE = np.array([(66, 140)] + TRIO_RIGHT
-                     + [p for p in reversed(TRIO_SNOWLINE) if 66 < p[0] < 655]
-                     + [(66, 468)], np.int32)
-RIGHT_ZONE = np.array([(900, 360), (905, 350), (930, 345), (985, 300), (1000, 280),
-                       (1030, 140), (1245, 140), (1243, 340), (1249, 360), (1249, 462),
-                       (1200, 450), (1100, 436), (1056, 466), (1040, 458), (1000, 480),
-                       (940, 462), (900, 458)], np.int32)
-HAZE_ZONES = [np.array(p, np.int32) for p in (
-    [(0, 340), (66, 340), (66, 468), (0, 472)],
-    [(560, 140), (990, 140), (985, 300), (900, 360), (898, 440), (840, 452), (790, 470),
-     (760, 500), (745, 560), (700, 548)] + TRIO_RIGHT[::-1][:-1],
-    [(1249, 320), (1376, 320), (1376, 560), (1340, 560), (1249, 462)],
-)]
-
-# Moving the right-hand towers to the depth of the left ones: scale about the
-# point where they meet the hill, then shift down (source pixels).
-RIGHT_SCALE = 0.93
-RIGHT_ANCHOR = (1080, 470)
-RIGHT_SHIFT = (0, 34)
-
-# Colour themes. "natural" keeps the picture's own sunset colours; the others
-# are the geological periods. BG2 is each theme's --bg-secondary in
-# assets/css/site.css: the sky darkens into it towards the top of the scene.
-THEMES = ["natural", "hadean", "cambrian", "cretaceous", "quaternary"]
+THEMES = ["hadean", "cambrian", "devonian", "cretaceous", "quaternary"]
 DEFAULT = "cretaceous"
-BG2 = {"natural": "#1d222a", "hadean": "#21110d", "cambrian": "#13211b",
-       "cretaceous": "#181a20", "quaternary": "#dde1e8"}
-SKY_PX = 40        # one pixel of the sky image covers 40 x 40 units
+
+# The sky's shapes (1-based, in source order), picked once by comparing every
+# shape with the land/sky split of the first version of the scene, plus the
+# specks of colour left floating in the sky and the sky seen between the
+# left towers (401). Check them again if the source picture changes.
+SKY_PATHS = [(3, 5), (7, 9), (11, 15), (17, 25), (27, 32), 34, (36, 43), 45, (49, 50), (79, 80),
+             (83, 95), (99, 107), (109, 112), (114, 121), 130, 135, (137, 140), 144, (146, 164),
+             (167, 168), (171, 176), (178, 179), (181, 183), (198, 203), 207, (210, 213),
+             (216, 223), 237, (239, 242), 244, (250, 253), (264, 265), (286, 287), (296, 307),
+             (310, 313), (320, 321), (323, 329), 333, (336, 341), (343, 347), (349, 357),
+             (388, 394), 401, (403, 405), (410, 412), 414, 416, 418, (423, 424), (426, 427),
+             (431, 432), (543, 544), 547, (550, 558), 560, 563, (566, 570), (577, 580), 599,
+             (602, 603), 605, 609, 611, (722, 724), (732, 733), (735, 739), (741, 747),
+             (750, 754), 772, 774, 803, 806, 813, (832, 833), (837, 841), 848]
+
+# The small trees (1-based). A shape may hold two trees side by side.
+TREES = [714, 715, 716, 787, 793, 800, 818, 819, 823, 825, 842]
+
+# The sky darkens from the horizon (HORIZON_Y) upwards and reaches the
+# theme's zenith colour at ZENITH_Y (units of the source canvas).
+HORIZON_Y = 1000
+ZENITH_Y = -250
+ZENITH = {
+    "devonian": "#191d2b",      # dusk blue above the sunset
+    "cretaceous": "#0f121a",
+    "hadean": "#170b08",
+    "cambrian": "#0b1713",
+    "quaternary": "#c9d2de",    # light theme: a cool, slightly darker blue-grey
+}
 
 
 # ── colour ────────────────────────────────────────────────────────────────
@@ -141,25 +123,24 @@ def lch_hex(L, C, h):
     return "#%02x%02x%02x" % tuple(rgb)
 
 
-def lab_hex(lab):
-    L, a, b = lab
-    return lch_hex(L, float(np.hypot(a, b)), float(np.degrees(np.arctan2(b, a))))
+def hex_rgb(h):
+    h = h.lstrip("#")
+    return [int(h[i:i + 2], 16) for i in (0, 2, 4)]
 
 
 def hex_lab(h):
-    h = h.lstrip("#")
-    return srgb_to_oklab([int(h[i:i + 2], 16) for i in (0, 2, 4)])
+    return srgb_to_oklab(hex_rgb(h))
 
 
-def theme_colour(theme, lab):
-    """Map one colour of the picture (OKLab) into a period's palette.
+def theme_colour(theme, hexcol):
+    """Map one colour of the picture into a period's palette.
 
-    The picture is a sunset: rock and sky are orange (hue about 55), grass is
+    The picture is a sunset: rock is orange-brown (hue about 55), grass is
     olive (about 85). Each rule keeps the lightness order and the difference
     between rock and grass, and moves them to the period's hues."""
-    L, a, b = lab
-    if theme == "natural":
-        return lab_hex(lab)
+    if theme == "devonian":
+        return hexcol.lower()
+    L, a, b = hex_lab(hexcol)
     C = float(np.hypot(a, b))
     h = float(np.degrees(np.arctan2(b, a)) % 360)
     # 0 = sunlit rock, 30 = grass; greys (little chroma, unreliable hue) count as rock
@@ -179,610 +160,244 @@ def theme_colour(theme, lab):
 
 
 def sky_map(theme, lab):
-    """Map the picture's sky (OKLab, any shape [..., 3]) into a theme's sky.
-
-    The sunset glow (the lightest, orange part) becomes the theme's horizon
-    glow; the blue-grey upper sky becomes its darker upper sky."""
+    """Map the picture's sky (OKLab, shape [..., 3]) into a theme's sky: the
+    sunset glow (light, orange) becomes the theme's horizon glow, the
+    blue-grey upper sky its darker upper sky."""
     lab = np.asarray(lab, float)
-    if theme == "natural":
+    if theme == "devonian":
         return lab
     L = lab[..., 0]
     C = np.hypot(lab[..., 1], lab[..., 2])
-    t = np.clip((L - 0.62) / 0.18, 0, 1)
+    t = np.clip((L - 0.6) / 0.2, 0, 1)
     if theme == "cretaceous":
-        L2, C2, h2 = 0.22 + 0.28 * t, 0.025 + 0.3 * C, 265 - 20 * t
+        L2, C2, h2 = 0.3 + 0.3 * t, 0.025 + 0.3 * C, 265 - 20 * t
     elif theme == "hadean":
-        L2, C2, h2 = 0.17 + 0.36 * t, 0.07 + 0.55 * C, 28 + 22 * t
+        L2, C2, h2 = 0.26 + 0.34 * t, 0.07 + 0.55 * C, 28 + 22 * t
     elif theme == "cambrian":
-        L2, C2, h2 = 0.2 + 0.3 * t, 0.03 + 0.4 * C, 165 - 15 * t
+        L2, C2, h2 = 0.28 + 0.32 * t, 0.03 + 0.4 * C, 165 - 15 * t
     elif theme == "quaternary":
         # winter dusk: blue-grey above, a pale warm glow on the horizon
-        L2, C2, h2 = 0.76 + 0.18 * t, 0.018 + 0.12 * C, 245 - 170 * t ** 2
+        L2, C2, h2 = 0.8 + 0.15 * t, 0.018 + 0.12 * C, 245 - 170 * t ** 2
     else:
         raise ValueError(theme)
     hr = np.radians(h2)
     return np.stack([L2, C2 * np.cos(hr), C2 * np.sin(hr)], -1)
 
 
-def shade(theme, lab, y):
-    """Darken (or, for the light theme, soften) the sky towards the section
-    colour near the top of the scene; y is 0 at the top, 1 at the bottom."""
-    s = np.clip(1 - np.asarray(y, float) / 0.45, 0, 1) ** 1.4
-    return lab * (1 - s[..., None]) + hex_lab(BG2[theme]) * s[..., None]
+# ── paths ─────────────────────────────────────────────────────────────────
 
-
-# ── depth layers from the original picture (source pixels) ───────────────
-
-def snowline_y(x):
-    xs, ys = zip(*TRIO_SNOWLINE)
-    return np.interp(x, xs, ys)
-
-
-def skyline(img):
-    lab = cv2.cvtColor(cv2.GaussianBlur(img, (0, 0), 1.0), cv2.COLOR_BGR2LAB).astype(np.float32)
-    gx = cv2.Sobel(lab, cv2.CV_32F, 1, 0, ksize=3)
-    gy = cv2.Sobel(lab, cv2.CV_32F, 0, 1, ksize=3)
-    mag = np.sqrt((gx ** 2 + gy ** 2).sum(axis=2))
-    h, w = mag.shape
-    ys = np.full(w, h)
-    for x in range(w):
-        idx = np.where(mag[5:, x] > 30)[0]
-        if len(idx):
-            ys[x] = idx[0] + 5
-    # opening of the profile removes thin leaks through soft tower edges
-    k = 7
-    pad = np.pad(ys, k, mode="edge")
-    er = np.array([pad[i:i + 2 * k + 1].min() for i in range(w + 2 * k)])
-    return np.array([er[i:i + 2 * k + 1].max() for i in range(w)])
-
-
-def lab_to_lch(c):
-    L = c[0] * 100 / 255
-    a, b = c[1] - 128, c[2] - 128
-    return L, float(np.hypot(a, b)), float(np.degrees(np.arctan2(b, a)) % 360)
-
-
-def depth_layers():
-    """Land mask and drawing layer for every source pixel.
-
-    Layers, back to front: 1 haze, 2 right towers, 3 left towers, 4 snow,
-    5 hills, 6 foreground, 7 rocks left of the big tower (drawn after the
-    towers, before the snow; 0 = sky)."""
-    img = cv2.imread(SRC)
-    if img is None:
-        sys.exit("missing " + SRC)
-    h, w = img.shape[:2]
-    img[-3:] = img[-4]                       # the last rows are blurred by the frame
-    ms = cv2.pyrMeanShiftFiltering(img, 8, 18, maxLevel=2)
-    ys = skyline(img)
-    # the light band right of the big tower is cloud; the hills behind it
-    # slope gently down to the right
-    ys[1249:] = np.maximum(ys[1249:], (405 + (np.arange(1249, w) - 1249) * 0.25).astype(int))
-    land = np.arange(h)[:, None] >= ys[None, :]
-
-    # the soft glow along the tower edges belongs to the sky
-    sky = (~land).astype(np.float32)
-    num = cv2.GaussianBlur(ms.astype(np.float32) * sky[..., None], (0, 0), 28)
-    den = cv2.GaussianBlur(sky, (0, 0), 28)[..., None]
-    sky_img = np.clip(num / np.maximum(den, 1e-4), 0, 255).astype(np.uint8)
-    near = cv2.dilate((~land).astype(np.uint8), np.ones((9, 9), np.uint8)).astype(bool) & land
-    d = np.linalg.norm(cv2.cvtColor(ms, cv2.COLOR_BGR2LAB).astype(np.float32)
-                       - cv2.cvtColor(sky_img, cv2.COLOR_BGR2LAB).astype(np.float32), axis=2)
-    land &= ~(near & (d < 14))
-
-    # a few dozen flat colours tell rock, grass and dark foreground apart
-    lab = cv2.cvtColor(ms, cv2.COLOR_BGR2LAB).reshape(-1, 3).astype(np.float32)
-    sel = land.reshape(-1)
-    km = MiniBatchKMeans(24, random_state=3, batch_size=8192, n_init=4).fit(lab[sel][::3])
-    labels = np.full((h, w), -1, np.int32)
-    labels.reshape(-1)[sel] = km.predict(lab[sel])
-    lch = np.array([lab_to_lch(c) for c in km.cluster_centers_])
-    L, C, hue = (lch[np.clip(labels, 0, None), i] for i in range(3))
-
-    yy, xx = np.mgrid[0:h, 0:w]
-    grass = (C >= 22) & (hue >= 70) & ~((C < 30) & (hue < 80)) & (L < 72)
-    grass |= (L < 20) & (yy < 600)          # small dark trees on the slopes
-    dark = (L < 20) & (yy >= 600)
-
-    def in_poly(poly):
-        m = np.zeros((h, w), np.uint8)
-        cv2.fillPoly(m, [poly], 1)
-        return m.astype(bool)
-
-    right = in_poly(RIGHT_ZONE)
-    haze = [in_poly(z) for z in HAZE_ZONES]
-    trio = in_poly(TRIO_ZONE)
-    snowz = (xx < 760) & (yy >= snowline_y(np.arange(w))[None, :]) & (yy < 650) & ~haze[1]
-
-    layer = np.zeros((h, w), np.int32)
-    done = np.zeros((h, w), bool)
-
-    def put(m, ly):
-        m = m & land & ~done
-        layer[m] = ly
-        done[m] = True
-
-    put(dark, 6)
-    put(right & in_poly(TOWER_ZONE) & ~(grass & (yy > 420)), 2)
-    put(right & ~(grass & (yy > 420)), 7)    # the rocks left of the big tower stay where they are
-    put(haze[2] & (yy < 440), 1)            # a thin cloud line along the haze
-    put(trio, 3)
-    put(haze[2] & ~grass & (L > 74) & (C < 18), 4)
-    for z in haze:
-        put(z & ~grass, 1)
-    put(snowz & ~grass, 4)
-    put(grass, 5)
-    put((L < 42) & (C < 18), 5)
-    put(land & (yy < 430), 1)
-    put(land, 5)
-    return land, layer
-
-
-# ── labels (twice the source size) ───────────────────────────────────────
-
-def vote(keys, sigma, values=None):
-    """Smooth a label map: each pixel takes the label with the most weight
-    under a Gaussian around it (removes slivers, rounds stair steps)."""
-    values = np.unique(keys) if values is None else values
-    best = np.full(keys.shape, -1.0, np.float32)
-    out = keys.copy()
-    for k in values:
-        score = cv2.GaussianBlur((keys == k).astype(np.float32), (0, 0), sigma)
-        better = score > best
-        out[better] = k
-        best[better] = score[better]
-    return out
-
-
-def despeckle(labels, min_area):
-    """Merge patches smaller than min_area into their most common neighbour."""
-    out = labels.copy()
-    kernel = np.ones((3, 3), np.uint8)
-    for lab in np.unique(out):
-        if lab < 0:
-            continue
-        n, comp, stats, _ = cv2.connectedComponentsWithStats((out == lab).astype(np.uint8), 8)
-        for i in range(1, n):
-            if stats[i, cv2.CC_STAT_AREA] >= min_area:
-                continue
-            x, y, w, h = stats[i, :4]
-            x0, y0, x1, y1 = max(x - 2, 0), max(y - 2, 0), x + w + 2, y + h + 2
-            sub = comp[y0:y1, x0:x1] == i
-            ring = cv2.dilate(sub.astype(np.uint8), kernel).astype(bool) & ~sub
-            nb = out[y0:y1, x0:x1][ring]
-            nb = nb[(nb >= 0) & (nb != lab)]
-            if len(nb):
-                vals, counts = np.unique(nb, return_counts=True)
-                out[y0:y1, x0:x1][sub] = vals[counts.argmax()]
-    return out
-
-
-def despeckle_holes(lab, holes):
-    """Fill pixels marked -1 with their most common labelled neighbour,
-    working inwards from the edge of each hole."""
-    lab = lab.copy()
-    for _ in range(200):
-        miss = lab < 0
-        if not (miss & holes).any():
-            break
-        best = np.full(lab.shape, -1, np.int32)
-        bestn = np.zeros(lab.shape, np.int32)
-        edge = miss & holes & cv2.dilate((~miss).astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)
-        ys, xs = np.nonzero(edge)
-        for y, x in zip(ys, xs):
-            nb = lab[max(y - 1, 0):y + 2, max(x - 1, 0):x + 2].ravel()
-            nb = nb[nb >= 0]
-            if len(nb):
-                vals, counts = np.unique(nb, return_counts=True)
-                best[y, x] = vals[counts.argmax()]
-        lab[edge & (best >= 0)] = best[edge & (best >= 0)]
-    lab[lab < 0] = 0
-    return lab
-
-
-def build(debug=None):
-    land1, layer1 = depth_layers()
-    im = Image.open(LABELS)
-    if im.mode != "P":
-        sys.exit(LABELS + " must be a palette image")
-    lab = np.array(im).astype(np.int32)
-    palette = np.array(im.getpalette()[:3 * (lab.max() + 1)]).reshape(-1, 3)
-    H, W = lab.shape
-    lab[-6:] = lab[-7]                        # the last rows follow the blurred frame
-
-    lab = vote(lab, 1.6)                      # smoother edges than the SVG's own
-    lab = despeckle(lab, 30)
-    ok = srgb_to_oklab(palette)
-
-    # land: the source's land mask, with its edge moved onto the edges of
-    # the SVG's own colours (a colour that is mostly land is land)
-    up = cv2.resize(land1.astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST).astype(bool)
-    k5 = np.ones((5, 5), np.uint8)
-    band = cv2.dilate(up.astype(np.uint8), k5).astype(bool) & ~cv2.erode(up.astype(np.uint8), k5).astype(bool)
-    n = len(palette)
-    total = np.bincount(lab[~band], minlength=n)
-    on_land = np.bincount(lab[~band & up], minlength=n)
-    landish = on_land > 0.5 * np.maximum(total, 1)
-    land = up.copy()
-    land[band] = landish[lab[band]]
-    # a patch of one SVG colour is sky or land as a whole, by majority (this
-    # removes boxes the column-wise skyline leaves in gaps between towers)
-    for k in range(n):
-        cnt, comp = cv2.connectedComponents((lab == k).astype(np.uint8), connectivity=4)
-        if cnt < 2:
-            continue
-        flat = comp.ravel()
-        frac = np.bincount(flat, weights=land.ravel(), minlength=cnt) / np.maximum(np.bincount(flat, minlength=cnt), 1)
-        sel = comp > 0
-        land[sel] = (frac >= 0.5)[comp[sel]]
-    land = cv2.GaussianBlur(land.astype(np.float32), (0, 0), 1.0) > 0.5
-    # the far-left strip of distant haze is sunset sky in all but name: as
-    # land it would end abruptly where the wide-screen extension starts
-    left_haze = np.zeros((H, W), bool)
-    cv2.fillPoly(left_haze.view(np.uint8), [HAZE_ZONES[0] * S], 1)
-    land &= ~(left_haze & (cv2.resize(layer1.astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST) == 1))
-
-    # layers: from the source, then each patch of one SVG colour that lies
-    # mostly in one layer goes there whole (layer edges follow colour edges)
-    layer = cv2.resize(layer1.astype(np.uint8), (W, H), interpolation=cv2.INTER_NEAREST).astype(np.int32)
-    # land the source called sky takes the layer of the nearest land
-    _, (iy, ix) = distance_transform_edt(layer == 0, return_indices=True)
-    layer = np.where(land, layer[iy, ix], 0)
-    for k in range(n):
-        cnt, comp, stats, _ = cv2.connectedComponentsWithStats(((lab == k) & land).astype(np.uint8), 8)
-        for i in range(1, cnt):
-            x, y, w, h = stats[i, :4]
-            sub = comp[y:y + h, x:x + w] == i
-            ly = layer[y:y + h, x:x + w]
-            hist = np.bincount(ly[sub], minlength=8)
-            top = hist.argmax()
-            if top and hist[top] >= 0.7 * hist.sum() and (hist[top] < hist.sum()):
-                if top == 2 or hist[2] == 0:      # never pull pieces into or out of the moved tower
-                    ly[sub] = top
-
-    # the haze right of the big tower also lies behind it (an extra copy
-    # under the tower), so nothing opens up when the tower is moved
-    ext = np.zeros((H, W), bool)
-    ext_lab = np.full((H, W), -1, np.int32)
-    x0, x1 = 1150 * S, 1256 * S
-    for y in range(380 * S, 560 * S):
-        if layer[y, x1] == 1:
-            behind = np.isin(layer[y, x0:x1], (0, 2))
-            ext[y, x0:x1] = behind
-            ext_lab[y, x0:x1][behind] = lab[y, x1 + 1]
-
-    # the distant haze is simplified further (thin cloud lines and narrow
-    # bands melt into their surroundings): this is the atmosphere
-    hz = (layer == 1) | ext
-    soft = vote(np.where(layer == 1, lab, np.where(ext, ext_lab, -1)), 3.0 * S)
-    keep = hz & (soft >= 0)
-    lab[keep & (layer == 1)] = soft[keep & (layer == 1)]
-    ext_lab[keep & ext] = soft[keep & ext]
-
-    # trees: the small dark cones on the slopes are redrawn as spruces; the
-    # traced blobs are taken out (the slope colour around closes over them)
-    C = np.hypot(ok[:, 1], ok[:, 2])
-    hue = np.degrees(np.arctan2(ok[:, 2], ok[:, 1])) % 360
-    treeish = (ok[:, 0] < 0.52) & (hue > 65) & (hue < 110) & (C > 0.04)
-    region = np.zeros((H, W), bool)
-    region[620:1160, 1300:2360] = True
-    trees = []
-    holes = np.zeros((H, W), bool)
-    for k in np.nonzero(treeish)[0]:
-        cnt, comp, stats, _ = cv2.connectedComponentsWithStats(((lab == k) & region & land).astype(np.uint8), 8)
-        for i in range(1, cnt):
-            x, y, w, h, a = stats[i]
-            if 60 <= a <= 1500 and h >= 1.2 * w and h >= 18:
-                sub = comp[y:y + h, x:x + w] == i
-                ly = int(np.bincount(layer[y:y + h, x:x + w][sub], minlength=8).argmax())
-                if ly in (5, 7):
-                    trees.append((ly, int(k), x + w / 2, y, w, h))
-                    holes[y:y + h, x:x + w] |= sub
-    if trees:
-        lab[cv2.dilate(holes.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)] = -1
-        lab = despeckle_holes(lab, lab < 0)
-
-    # the sky as a smooth field: the SVG's sky colours, blurred, and carried
-    # on behind the land (at a quarter of the size)
-    q = 4
-    small = cv2.resize(ok[lab].astype(np.float32), (W // q, H // q), interpolation=cv2.INTER_AREA)
-    skyw = cv2.resize((~land).astype(np.float32), (W // q, H // q), interpolation=cv2.INTER_AREA)
-    skyw = np.where(skyw > 0.99, 1.0, 0.0).astype(np.float32)
-    field = np.zeros_like(small)
-    have = np.zeros(skyw.shape, bool)
-    for sigma in (12, 30, 80, 200):
-        num = cv2.GaussianBlur(small * skyw[..., None], (0, 0), sigma)
-        den = cv2.GaussianBlur(skyw, (0, 0), sigma)
-        ok_ = (den > 0.15) & ~have
-        field[ok_] = num[ok_] / den[ok_][:, None]
-        have |= ok_
-    for x in range(field.shape[1]):          # below the lowest sky: hold the last value
-        col = np.nonzero(have[:, x])[0]
-        if len(col):
-            field[col[-1] + 1:, x] = field[col[-1], x]
-            field[:col[0], x] = field[col[0], x]
-    field = cv2.GaussianBlur(field, (0, 0), 6)
-
-    if debug:
-        cols = np.array([(0, 0, 0), (200, 170, 120), (60, 60, 200), (60, 160, 60),
-                         (240, 240, 240), (60, 200, 220), (40, 40, 40)], np.uint8)
-        cols = np.vstack([cols, [(120, 60, 160)]]).astype(np.uint8)
-        dbg = np.where(land[..., None], cols[layer], (255, 210, 160)).astype(np.uint8)
-        cv2.imwrite(f"{debug}/layers.png", cv2.resize(dbg, (W // 2, H // 2), interpolation=cv2.INTER_NEAREST))
-    return lab, palette, land, layer, ext, ext_lab, trees, field
-
-
-# ── tracing ───────────────────────────────────────────────────────────────
-
-def potrace_paths(mask):
-    """Absolute cubic/line subpaths for a boolean mask (pixel coordinates)."""
-    h, w = mask.shape
-    pbm = b"P4\n%d %d\n" % (w, h) + np.packbits(mask.astype(np.uint8), axis=1).tobytes()
-    out = subprocess.run(["potrace", "-b", "svg", "--flat", "-t", "16", "-a", "1.1", "-O", "1.0",
-                          "-u", "10", "-o", "-"], input=pbm, capture_output=True, check=True).stdout.decode()
-    d = " ".join(re.findall(r'<path d="([^"]*)"', out, re.S))
-    toks = re.findall(r"[MmCcLlZz]|-?\d+(?:\.\d+)?", d)
-    subpaths, cur, start, cmd, i = [], None, None, None, 0
-    while i < len(toks):
-        t = toks[i]
-        if t in "MmCcLlZz":
-            cmd = t
-            i += 1
-            if cmd in "Zz":
-                if cur:
-                    cur[1].append(("z",))
-                cmd = None
-            continue
-        nums = {"M": 2, "m": 2, "C": 6, "c": 6, "L": 2, "l": 2}[cmd]
-        v = [float(x) for x in toks[i:i + nums]]
-        i += nums
-        if cmd in "Mm":
-            base = (0.0, 0.0) if cmd == "M" or start is None else last
-            p = (base[0] + v[0], base[1] + v[1])
-            cur = (p, [])
-            subpaths.append(cur)
-            start = last = p
-            cmd = "l" if cmd == "m" else "L"
-        elif cmd in "Cc":
-            o = last if cmd == "c" else (0.0, 0.0)
-            pts = [(o[0] + v[j], o[1] + v[j + 1]) for j in (0, 2, 4)]
-            cur[1].append(("c", pts))
-            last = pts[2]
+def expand(spec):
+    out = set()
+    for s in spec:
+        if isinstance(s, tuple):
+            out.update(range(s[0], s[1] + 1))
         else:
-            o = last if cmd == "l" else (0.0, 0.0)
-            p = (o[0] + v[0], o[1] + v[1])
-            cur[1].append(("l", [p]))
-            last = p
-    # potrace units: 1/10 pixel, y up from the bottom
-    def tf(p):
-        return (p[0] / 10.0, h - p[1] / 10.0)
-    return [(tf(p0), [(s[0], [tf(q) for q in s[1]]) if s[0] != "z" else s for s in segs])
-            for p0, segs in subpaths]
+            out.add(s)
+    return out
 
 
-def fmt(nums):
-    s = ""
-    for v in nums:
-        t = str(int(v))
-        s += t if (not s or t.startswith("-")) else " " + t
+def read_paths():
+    svg = open(SRC, encoding="utf-8").read()
+    found = re.findall(r'<path fill="(#[0-9A-Fa-f]{6})"[^>]*?d="([^"]*)"', svg)
+    paths = []
+    for fill, d in found:
+        nums = [float(v) for v in re.findall(r"-?\d+(?:\.\d+)?", d)]
+        pts = np.array(nums).reshape(-1, 2)
+        paths.append((fill.upper(), pts))      # M x y, then C in threes, closed
+    return paths
+
+
+def flatten(pts, steps=8):
+    """Cubic Bézier chain (M + C...) to a polygon."""
+    out = [pts[0]]
+    t = np.linspace(0, 1, steps + 1)[1:, None]
+    for i in range(1, len(pts) - 2, 3):
+        p0, p1, p2, p3 = pts[i - 1], pts[i], pts[i + 1], pts[i + 2]
+        out.extend((1 - t) ** 3 * p0 + 3 * (1 - t) ** 2 * t * p1 + 3 * (1 - t) * t ** 2 * p2 + t ** 3 * p3)
+    return np.array(out)
+
+
+def id_map(paths):
+    """Which shape shows at each pixel of the canvas (1-based, 0 = none)."""
+    ids = np.zeros((H, W), np.int32)
+    for k, (_, pts) in enumerate(paths, 1):
+        poly = np.round(flatten(pts) * 4).astype(np.int32)       # 2 bits of sub-pixel precision
+        cv2.fillPoly(ids, [poly], int(k), lineType=cv2.LINE_8, shift=2)
+    return ids
+
+
+def num(v):
+    s = str(int(round(v)))
     return s
 
 
-def path_data(mask, ox, oy):
-    """SVG path data for a mask whose top-left pixel sits at (ox, oy)."""
-    ys, xs = np.nonzero(mask)
-    if not len(xs):
-        return ""
-    m = 3
-    x0, y0 = max(xs.min() - m, 0), max(ys.min() - m, 0)
-    x1, y1 = min(xs.max() + m + 1, mask.shape[1]), min(ys.max() + m + 1, mask.shape[0])
-    sub = mask[y0:y1, x0:x1]
-    out = []
-    for p0, segs in potrace_paths(sub):
-        cur = (round(p0[0] + x0 + ox), round(p0[1] + y0 + oy))
-        start = cur
-        rels = []                 # (command, relative numbers), rounded
-        for s in segs:
-            if s[0] == "z":
-                break
-            pts = [(round(q[0] + x0 + ox), round(q[1] + y0 + oy)) for q in s[1]]
-            rel = []
-            for q in pts:
-                rel += [q[0] - cur[0], q[1] - cur[1]]
-            cur = pts[-1]
-            if rel[-2:] == [0, 0] and (s[0] == "l" or rel == [0] * 6):
-                continue
-            if s[0] == "l" and rels and rels[-1][0] == "l":
-                px, py = rels[-1][1]
-                if px * rel[1] == py * rel[0] and px * rel[0] + py * rel[1] > 0:   # same direction
-                    rels[-1] = ("l", [px + rel[0], py + rel[1]])
-                    continue
-            rels.append((s[0], rel))
-        # the closing line is implied by z
-        if rels and rels[-1][0] == "l" and cur == start:
-            rels.pop()
-        if not rels:
-            continue
-        d = [f"M{start[0]} {start[1]}"]
-        prev = None
-        for cmd, rel in rels:
-            body = fmt(rel)
-            d.append(body if prev == cmd and body.startswith("-") else
-                     (" " + body if prev == cmd else cmd + body))
-            prev = cmd
-        out.append("".join(d) + "z")
-    return "".join(out)
+def path_d(pts):
+    """Compact path data: integer units, relative curves."""
+    q = np.round(pts).astype(int)
+    out = [f"M{q[0][0]} {q[0][1]}c"]
+    cur = q[0]
+    parts = []
+    for i in range(1, len(q) - 2, 3):
+        seg = [q[i] - cur, q[i + 1] - cur, q[i + 2] - cur]
+        parts.append(" ".join(f"{x} {y}" for x, y in seg))
+        cur = q[i + 2]
+    s = out[0] + " ".join(parts) + "z"
+    return re.sub(r" -", "-", s)
 
 
-def fill_down(mask):
-    """Every pixel at or below the top of the mask in each column (thin
-    strays and small loose pieces are ignored so they do not start a column)."""
-    mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_OPEN, np.ones((9, 9), np.uint8))
-    cnt, comp, stats, _ = cv2.connectedComponentsWithStats(mask, 8)
-    keep = stats[:, cv2.CC_STAT_AREA] >= max(4000, 0.02 * stats[1:, cv2.CC_STAT_AREA].sum())
-    keep[0] = False
-    mask = keep[comp]
-    has = mask.any(axis=0)
-    first = np.where(has, mask.argmax(axis=0), mask.shape[0])
-    return np.arange(mask.shape[0])[:, None] >= first[None, :]
-
+# ── trees ─────────────────────────────────────────────────────────────────
 
 def spruce(cx, top, w, h):
-    """Path data for a small spruce: three tiers and a short trunk."""
-    hw = max(w, 0.62 * h) / 2
-    pts = [(0, 0), (0.48, 0.34), (0.26, 0.34), (0.74, 0.64), (0.46, 0.64), (1.0, 0.92),
-           (0.12, 0.92), (0.12, 1.0)]
-    side = [(cx + hw * px, top + h * py) for px, py in pts]
-    other = [(cx - hw * px, top + h * py) for px, py in reversed(pts[1:])]
-    p = [(round(x), round(y)) for x, y in side + other]
-    d = f"M{p[0][0]} {p[0][1]}l" + fmt([v for a, b in zip(p[1:], p[:-1]) for v in (a[0] - b[0], a[1] - b[1])])
-    return d + "z"
+    """A narrow spruce: a wedge, wide at the foot and pointed at the top,
+    with a few short branch tips along each side and a stub of trunk."""
+    tiers = int(np.clip(round(h / 13), 3, 6))
+    foot = top + h * 0.93
+    half = w / 2
+    right = [(cx, top)]
+    for i in range(1, tiers + 1):
+        y_tip = top + (foot - top) * i / tiers
+        hw = half * (0.32 + 0.68 * i / tiers)            # wedge: thin at the top
+        right.append((cx + hw, y_tip))                    # branch tip
+        if i < tiers:
+            right.append((cx + hw * 0.76, y_tip - h * 0.01))    # a little back in towards the stem
+    trunk = max(w * 0.07, 1.5)
+    right += [(cx + trunk, foot), (cx + trunk, top + h)]
+    left = [(2 * cx - x, y) for x, y in reversed(right[1:])]
+    pts = right + left
+    return "M" + " ".join(f"{x:.1f} {y:.1f}" for x, y in pts) + "z"
 
 
-def trace(debug=None):
-    lab, palette, land, layer, ext, ext_lab, trees, field = build(debug)
-    H, W = lab.shape
-    P = PAD * S
+def trees_of(k, pts):
+    """Split one tree shape into its trees (peaks of its top edge)."""
+    poly = flatten(pts)
+    x0, y0 = poly.min(0)
+    x1, y1 = poly.max(0)
+    mask = np.zeros((int(y1 - y0) + 3, int(x1 - x0) + 3), np.uint8)
+    cv2.fillPoly(mask, [np.round(poly - [x0 - 1, y0 - 1]).astype(np.int32)], 1)
+    cols = np.where(mask.any(0), mask.argmax(0), mask.shape[0])
+    peaks, _ = find_peaks(-np.concatenate([[mask.shape[0]], cols, [mask.shape[0]]]), prominence=8)
+    peaks = peaks - 1
+    out = []
+    bounds = [0] + [int((a + b) / 2) for a, b in zip(peaks[:-1], peaks[1:])] + [mask.shape[1]]
+    for p, a, b in zip(peaks, bounds[:-1], bounds[1:]):
+        sub = mask[:, a:b]
+        rows = np.nonzero(sub.any(1))[0]
+        tp, bt = rows.min(), rows.max()
+        width = sub.sum(1)[int(tp + 0.8 * (bt - tp))]
+        cx = x0 - 1 + p
+        out.append((cx, y0 - 1 + tp, max(width * 1.05, 8.0), bt - tp))
+    return out
 
-    # wide screens: the outer strip of the picture is mirrored and stretched
-    # four times, so the land rolls on in long, gentle shapes (the towers are
-    # left out there; the sky shows instead)
-    key = np.where(land, layer * 128 + lab, -1)
-    d = np.arange(P)
-    left = key[:, np.minimum(d // 4, W - 1)][:, ::-1]
-    right = key[:, np.maximum(W - 1 - d // 4, 0)]
-    for part in (left, right):
-        part[np.isin(part // 128, (2, 3, 7))] = -1
-    # the stretch turns diagonal edges into stairs: smooth the strips
-    left, right = vote(left, 3.5 * S), vote(right, 3.5 * S)
-    key = np.concatenate([left, key, right], axis=1)
-    oy = TOP * S
-    ox = -P
-    key = key[oy:]
-    land_p = key >= 0
-    layer_p = np.where(land_p, key // 128, 0)
-    lab_p = np.where(land_p, key % 128, -1)
-    rank_p = RANK[layer_p]
-    zeros = np.zeros((H, P), bool)
-    ext_p = np.concatenate([zeros, ext, zeros], axis=1)[oy:]
-    ext_lab_p = np.concatenate([zeros - 1, ext_lab, zeros - 1], axis=1)[oy:]
-    okpal = srgb_to_oklab(palette)
 
-    def sky_at(x, y):
-        """The smoothed sky of the picture at source pixel (x, y) (2x units)."""
-        fy = int(np.clip(y // 4, 0, field.shape[0] - 1))
-        fx = int(np.clip(x // 4, 0, field.shape[1] - 1))
-        return field[fy, fx].astype(float)
+# ── sky ───────────────────────────────────────────────────────────────────
 
-    shapes = []          # (layer, class, path data)
-    haze_colour = {}     # class -> {theme: hex}
-    scene_h = H - oy
+def sky_field(paths, ids, sky):
+    """The picture's sky, blurred into a smooth field (OKLab, 1/8 scale)."""
+    lab_of = np.array([[0, 0, 0]] + [srgb_to_oklab(hex_rgb(f)) for f, _ in paths])
+    is_sky = np.zeros(len(paths) + 1, bool)
+    is_sky[list(sky)] = True
+    m = is_sky[ids].astype(float)
+    img = lab_of[ids] * m[..., None]
+    f = 8
+    small = lambda a: cv2.resize(a, (W // f, H // f), interpolation=cv2.INTER_AREA)
+    m8, img8 = small(m), small(img)
+    field = np.zeros_like(img8)
+    weight = np.zeros(m8.shape)
+    # normalized convolution at growing scales: fine where there is sky,
+    # wide where the land hides it
+    for sigma in (10, 20, 40, 80):
+        mw = gaussian_filter(m8, sigma)
+        fw = np.stack([gaussian_filter(img8[..., c], sigma) for c in range(3)], -1)
+        est = fw / np.maximum(mw, 1e-6)[..., None]
+        take = (weight < 0.5) & (mw > 0.02)
+        field[take] = est[take]
+        weight[take] = 1
+    return field
 
-    for ly in DRAW_ORDER:
-        lm = layer_p == ly
-        if ly == 1:
-            lm_all = lm | ext_p
-            labs_p = np.where(lm, lab_p, ext_lab_p)
-        else:
-            lm_all, labs_p = lm, lab_p
-        if not lm_all.any():
-            continue
-        labs = np.unique(labs_p[lm_all])
-        areas = {int(k): int((lm_all & (labs_p == k)).sum()) for k in labs if k >= 0}
-        order = sorted(areas, key=lambda k: -areas[k])
-        prefix = "h" if ly == 1 else "c"
-        # base: the layer's outline filled in its main colour, so no seams
-        # open between its shapes. Towers and rocks: just their outline;
-        # the rest: filled down to the bottom, but never over anything of a
-        # layer further back
-        if ly in (2, 7):
-            closed = cv2.morphologyEx(lm.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((9, 9), np.uint8))
-            cnts, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            solid = np.zeros_like(closed)
-            cv2.drawContours(solid, cnts, -1, 1, -1)
-            base_m = solid.astype(bool)
-        else:
-            base_m = fill_down(lm_all) & ((rank_p >= RANK[ly]) | ~land_p) & (land_p | lm_all)
-            base_m &= land_p | lm_all
-        base = path_data(base_m, ox, oy)
-        if base:
-            shapes.append((ly, f"{prefix}{order[0]}", base))
-        for k in order:
-            m = lm_all & (labs_p == k)
-            m = cv2.dilate(m.astype(np.uint8), np.ones((3, 3), np.uint8)).astype(bool)   # overlap: no seams
-            dpath = path_data(m, ox, oy)
-            if dpath:
-                shapes.append((ly, f"{prefix}{k}", dpath))
-            if ly == 1:
-                ys_, xs_ = np.nonzero(m)
-                yc, xc = float(np.median(ys_)) + oy, float(np.median(xs_)) - P
-                sky = sky_at(xc, yc)
-                delta = okpal[k] - sky
-                t = (yc - oy) / scene_h
-                cols = {}
-                for th in THEMES:
-                    if th == "natural":
-                        cols[th] = "#%02x%02x%02x" % tuple(palette[k])
-                    else:
-                        base_sky = shade(th, sky_map(th, sky), np.array(t))
-                        cols[th] = lab_hex(base_sky + delta * np.array([0.55, 0.15, 0.15]))
-                haze_colour[f"h{k}"] = cols
-        for ly_t, k, cx, top, w, h in trees:
-            if ly_t == ly:
-                shapes.append((ly, f"c{k}", spruce(cx, top, w, h)))
-    used = sorted({int(c[1:]) for _, c, _ in shapes if c[0] == "c"})
-    colours = {}
-    for k in used:
-        colours[f"c{k}"] = {th: ("#%02x%02x%02x" % tuple(palette[k]) if th == "natural"
-                                 else theme_colour(th, okpal[k])) for th in THEMES}
-    colours.update(haze_colour)
-    size = (W + 2 * P, H - oy)
 
-    # the sky: one small image per theme, stretched smooth over the scene
-    fw, fh = size[0] // SKY_PX, size[1] // SKY_PX
-    pic = field[oy // 4:]                                   # picture area, 1/4 scale
-    pw = int(round(P / 4))
-    canvas = np.concatenate([np.repeat(pic[:, :1], pw, 1), pic, np.repeat(pic[:, -1:], pw, 1)], axis=1)
-    canvas = cv2.resize(canvas, (fw, fh), interpolation=cv2.INTER_AREA)
-    yfrac = (np.arange(fh)[:, None] + 0.5) / fh * np.ones((1, fw))
-    skies = {}
+def smoothstep(t):
+    t = np.clip(t, 0, 1)
+    return t * t * (3 - 2 * t)
+
+
+def sky_images(field):
+    x0, x1 = -SIDE, W + SIDE
+    y0, y1 = TOP - EXT, H
+    fw, fh = (x1 - x0) // SKY_PX, (y1 - y0) // SKY_PX
+    xs = x0 + (np.arange(fw) + 0.5) * SKY_PX
+    ys = y0 + (np.arange(fh) + 0.5) * SKY_PX
+    fx = np.clip(xs / 8, 0, field.shape[1] - 1).astype(int)
+    fy = np.clip(ys / 8, 0, field.shape[0] - 1).astype(int)
+    base = field[fy[:, None], fx[None, :]]
+    # the strips beyond the picture repeat its edge columns: soften that
+    base = np.stack([cv2.GaussianBlur(base[..., c], (0, 0), 2.0) for c in range(3)], -1)
+    s = smoothstep((HORIZON_Y - ys) / (HORIZON_Y - ZENITH_Y))[:, None, None]
+    out = {}
     for th in THEMES:
-        img = shade(th, sky_map(th, canvas), yfrac)
+        sky = sky_map(th, base)
+        img = sky * (1 - s) + hex_lab(ZENITH[th]) * s
         rgb = np.clip(np.round(oklab_to_srgb(img.reshape(-1, 3))), 0, 255).reshape(fh, fw, 3).astype(np.uint8)
-        ok_, png = cv2.imencode(".png", cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_PNG_COMPRESSION, 9])
-        skies[th] = base64.b64encode(png.tobytes()).decode()
-    return shapes, colours, size, skies
+        _, png = cv2.imencode(".png", cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        out[th] = base64.b64encode(png.tobytes()).decode()
+    return out, (x0, y0, x1 - x0, y1 - y0)
 
 
-def svg_markup(shapes, size, skies):
-    w, h = size
-    x0, y0 = -PAD * S, TOP * S
-    sx, sy = RIGHT_ANCHOR[0] * S, RIGHT_ANCHOR[1] * S
-    tx, ty = RIGHT_SHIFT[0] * S, RIGHT_SHIFT[1] * S
-    lines = [f'<svg class="about-scene" viewBox="{x0} {y0} {w} {h}" '
-             'preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">']
-    for th in THEMES:
-        lines.append(f'<image class="sky sky-{th}" x="{x0}" y="{y0}" width="{w}" height="{h}" '
-                     f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
-    for ly in DRAW_ORDER:
-        items = [s for s in shapes if s[0] == ly]
-        if not items:
+# ── output ────────────────────────────────────────────────────────────────
+
+def build():
+    paths = read_paths()
+    ids = id_map(paths)
+    sky = expand(SKY_PATHS)
+    shown = set(np.unique(ids).tolist()) - {0}
+    field = sky_field(paths, ids, sky)
+    skies, box = sky_images(field)
+
+    classes = {}                                   # fill -> class
+    shapes = []                                    # (class, d)
+    trees = set(TREES)
+    for k, (fill, pts) in enumerate(paths, 1):
+        if k in sky or k not in shown:
             continue
-        attr = (f' transform="translate({sx + tx} {sy + ty}) scale({RIGHT_SCALE}) translate({-sx} {-sy})"'
-                if ly == 2 else "")
-        lines.append(f'<g class="{LAYERS[ly]}"{attr}>')
-        lines.extend(f'<path class="{cls}" d="{d}"/>' for _, cls, d in items)
+        cls = classes.setdefault(fill, f"c{len(classes)}")
+        if k in trees:
+            for cx, top, w, h in trees_of(k, pts):
+                shapes.append((cls, spruce(cx, top, w, h), (cx - w, cx + w)))
+        else:
+            shapes.append((cls, path_d(pts), (pts[:, 0].min(), pts[:, 0].max())))
+    colours = {cls: {th: theme_colour(th, fill) for th in THEMES} for fill, cls in classes.items()}
+    return shapes, colours, skies, box
+
+
+def svg_markup(shapes, skies, box):
+    vb = f"{-SIDE} {TOP} {W + 2 * SIDE} {H - TOP}"
+    bx, by, bw, bh = box
+    lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
+             'aria-hidden="true" focusable="false">',
+             "<defs>"]
+    for i, (a, b, _) in enumerate(STRIPS):
+        lines.append(f'<clipPath id="about-strip-{i}"><rect x="{a}" y="0" width="{b - a}" height="{H}"/></clipPath>')
+    lines.append("</defs>")
+    for th in THEMES:
+        lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
+                     f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
+    lines.append('<g class="land">')
+    lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, _ in shapes)
+    lines.append("</g>")
+    for i, (a, b, k) in enumerate(STRIPS):
+        edge = a if i == 0 else b
+        # the shapes in the strip, mirrored at the picture's edge and
+        # stretched outwards (copies, not <use>: CSS colours do not reach
+        # into <use> clones in every browser)
+        lines.append(f'<g class="strip" clip-path="url(#about-strip-{i})" '
+                     f'transform="matrix({k} 0 0 1 {edge * (1 - k)} 0)">')
+        lines.extend(f'<path class="{c}" d="{d}"/>' for c, d, (x0, x1) in shapes if x1 >= a and x0 <= b)
         lines.append("</g>")
     lines.append("</svg>")
     return "\n".join(lines)
 
 
 def scene_css(colours):
-    """Custom properties per theme (Kritt is the default), one rule per
-    class, and which sky image each theme shows."""
-    def sort_key(c):
-        return (c[0], int(c[1:]))
-    classes = sorted(colours, key=sort_key)
+    classes = sorted(colours, key=lambda c: int(c[1:]))
     blocks = []
     for th in [DEFAULT] + [t for t in THEMES if t != DEFAULT]:
         sel = "#om-meg" if th == DEFAULT else f'[data-theme="{th}"] #om-meg'
@@ -805,20 +420,19 @@ def scene_css(colours):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--debug", help="folder for check images and a preview in the original colours")
+    ap.add_argument("--debug", help="folder for a preview page per theme")
     ap.add_argument("--no-write", action="store_true")
     args = ap.parse_args()
-    shapes, colours, size, skies = trace(args.debug)
-    svg = svg_markup(shapes, size, skies)
+    shapes, colours, skies, box = build()
+    svg = svg_markup(shapes, skies, box)
     css = scene_css(colours)
     print(f"{len(shapes)} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
-        bg = dict(BG2)
         for th in THEMES:
             with open(f"{args.debug}/preview-{th}.html", "w") as f:
-                f.write(f'<!doctype html><html data-theme="{th}"><style>body{{margin:0;background:{bg[th]}}}'
-                        f'#om-meg{{--bg-secondary:{bg[th]}}}svg{{display:block;width:100%;height:auto}}{css}</style>'
-                        f'<section id="om-meg">{svg}</section></html>')
+                f.write(f'<!doctype html><html data-theme="{th}"><style>body{{margin:0;background:#888}}'
+                        f'#om-meg{{overflow:hidden;padding-top:300px}}svg{{display:block;width:100%;height:auto;overflow:visible}}'
+                        f'{css}</style><section id="om-meg">{svg}</section></html>')
     if args.no_write:
         return
     html = open(HTML, encoding="utf-8").read()

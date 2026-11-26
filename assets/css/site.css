@@ -24,8 +24,7 @@
 }
 
 /* ── Design tokens ──
-   Four colour themes named after geological periods, plus Naturlig (the
-   About picture's own sunset colours). :root holds Kritt
+   Five colour themes named after geological periods. :root holds Kritt
    (cretaceous, dark), the default; html[data-theme] switches the others.
    data-mode (dark/light) carries the styles shared by all dark or all
    light themes. */
@@ -90,26 +89,28 @@
   --focus-ring: #2f45a8;
 }
 
-/* Naturlig (natural): the original sunset colours of the About picture */
-[data-theme="natural"] {
+/* Devon (devonian): the age of fishes and of the golden-red sandstone
+   basins left by the collapsing Caledonides; the About picture keeps its
+   original sunset colours */
+[data-theme="devonian"] {
   color-scheme: dark;
-  --bg-primary: #161a20;
-  --bg-secondary: #1d222a;
-  --text-primary: #d6d0c8;
-  --text-secondary: #c2b9ae;
-  --text-muted: #b3aa9f;
-  --text-heading: #f6efe6;
-  --accent: #f2945c;
-  --accent-strong: #c8612a;
-  --accent-2: #ffc38a;
-  --accent-hover: rgba(242, 148, 92, 0.24);
-  --accent-bg: rgba(242, 148, 92, 0.13);
-  --accent-border: rgba(242, 148, 92, 0.32);
-  --nav-bg: rgba(22, 26, 32, 0.8);
+  --bg-primary: #17130e;
+  --bg-secondary: #211a12;
+  --text-primary: #ddd2c2;
+  --text-secondary: #c9bba7;
+  --text-muted: #b9a993;
+  --text-heading: #f8ecd8;
+  --accent: #eeb04f;
+  --accent-strong: #9a5a12;
+  --accent-2: #ffd789;
+  --accent-hover: rgba(238, 176, 79, 0.24);
+  --accent-bg: rgba(238, 176, 79, 0.13);
+  --accent-border: rgba(238, 176, 79, 0.32);
+  --nav-bg: rgba(23, 19, 14, 0.8);
   --nav-border: rgba(255, 255, 255, 0.07);
   --card-bg: rgba(255, 255, 255, 0.04);
   --card-border: rgba(255, 255, 255, 0.09);
-  --focus-ring: #ffb07f;
+  --focus-ring: #ffc867;
 }
 
 /* Hadeikum (hadean): magma */
@@ -454,6 +455,10 @@ nav a.nav-active {
 .theme-option[data-theme-value="cambrian"] .theme-icon { background: #13211b; }
 .theme-option[data-theme-value="cambrian"] .ti-a { fill: #4fcf8a; }
 .theme-option[data-theme-value="cambrian"] .ti-b { fill: #1f7a52; }
+.theme-option[data-theme-value="devonian"] .theme-icon { background: #3a2113; }
+.theme-option[data-theme-value="devonian"] .ti-a { fill: #f2b84b; }
+.theme-option[data-theme-value="devonian"] .ti-b { fill: #b8742a; }
+.theme-option[data-theme-value="devonian"] .ti-eye { fill: #2a1709; }
 .theme-option[data-theme-value="cretaceous"] .theme-icon { background: #181a20; }
 .theme-option[data-theme-value="cretaceous"] .ti-a { fill: #a7afc4; }
 .theme-option[data-theme-value="cretaceous"] .ti-b { fill: #5c657e; }
@@ -462,9 +467,6 @@ nav a.nav-active {
 .theme-option[data-theme-value="quaternary"] .ti-a { fill: #7a4b2c; }
 .theme-option[data-theme-value="quaternary"] .ti-tusk { fill: #fbf3df; stroke: #5a341d; stroke-width: 0.5; stroke-linejoin: round; }
 .theme-option[data-theme-value="quaternary"] .ti-eye { fill: #1d120b; }
-.theme-option[data-theme-value="natural"] .theme-icon { background: #2b2f3a; }
-.theme-option[data-theme-value="natural"] .ti-a { fill: #8d93a3; }
-.theme-option[data-theme-value="natural"] .ti-b { fill: #f7a35f; }
 
 .theme-label {
   display: flex;
