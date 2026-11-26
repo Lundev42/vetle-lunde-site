@@ -38,6 +38,7 @@ Use --debug DIR to write a preview page per theme.
 """
 import argparse
 import base64
+import os
 import re
 import sys
 
@@ -49,6 +50,11 @@ from scipy.signal import find_peaks
 SRC = "tools/about-scene.svg"              # Tre Cime and Cinque Torri: the right part
 SRC_LEFT = "tools/about-scene-seceda.svg"  # Seceda and the valley: the left part
 HTML = "index.html"
+# The user's own finishing touches: the scene as exported by this script
+# (Devon colours), with shapes and colours changed by hand in Inkscape. When
+# it is there, its land is what the page draws (each fill becoming a theme
+# colour as usual); this script still makes the sky.
+EDITED = "tools/about-scene-edited.svg"
 
 W, H = 2912, 1440          # canvas of the right picture; the scene uses its units
 TOP = -67                  # first row drawn (above the canvas: only sky there), so the
@@ -193,6 +199,12 @@ TREES = []
 # theme's zenith colour at ZENITH_Y (units of the source canvas).
 HORIZON_Y = 880
 ZENITH_Y = -430
+# The atmosphere reaches a fifth of the section higher than the pictures'
+# own sky: the glow above HORIZON_Y is drawn ATMOSPHERE times taller (and
+# smoothed sideways as it rises), and the fade into the zenith colour starts
+# LIFT units higher.
+ATMOSPHERE = 2.3
+LIFT = 536
 ZENITH = {
     "devonian": "#191d2b",      # dusk blue above the sunset
     "cretaceous": "#0f121a",
@@ -459,11 +471,18 @@ def sky_images(field):
     xs = x0 + (np.arange(fw) + 0.5) * SKY_PX
     ys = y0 + (np.arange(fh) + 0.5) * SKY_PX
     fx = np.clip((xs - X0) / 8, 0, field.shape[1] - 1).astype(int)
-    fy = np.clip(ys / 8, 0, field.shape[0] - 1).astype(int)
+    ys_a = np.where(ys < HORIZON_Y, HORIZON_Y - (HORIZON_Y - ys) / ATMOSPHERE, ys)
+    fy = np.clip(ys_a / 8, 0, field.shape[0] - 1).astype(int)
     base = field[fy[:, None], fx[None, :]]
     # the rows above the picture repeat its top row: soften that
     base = np.stack([cv2.GaussianBlur(base[..., c], (0, 0), 2.0) for c in range(3)], -1)
-    s = smoothstep((HORIZON_Y - ys) / (HORIZON_Y - ZENITH_Y))[:, None, None]
+    # higher up, the sky's patches (from the pictures' banded skies) are
+    # smoothed out sideways, so the taller glow shows no streaks
+    wide = np.stack([cv2.GaussianBlur(base[..., c], (0, 0), sigmaX=30, sigmaY=0.1,
+                                      borderType=cv2.BORDER_REFLECT) for c in range(3)], -1)
+    w = smoothstep((HORIZON_Y - ys) / (HORIZON_Y - TOP))[:, None, None]
+    base = base * (1 - w) + wide * w
+    s = smoothstep((HORIZON_Y - LIFT - ys) / (HORIZON_Y - ZENITH_Y))[:, None, None]
     out = {}
     for th in THEMES:
         sky = sky_map(th, base)
@@ -757,6 +776,88 @@ def svg_markup(parts, skies, box):
     return "\n".join(lines)
 
 
+def edited_markup(skies, box):
+    """The page's <svg> from the hand-edited scene (EDITED): its clip paths
+    and its land group (groups, transforms and clips as they are), every
+    fill turned into a class, and the generated skies."""
+    import xml.etree.ElementTree as ET
+    ns = "{http://www.w3.org/2000/svg}"
+    root = ET.parse(EDITED).getroot()
+    land = next(g for g in root.iter(ns + "g") if g.get("class") == "land")
+    classes = {}
+    cls = lambda fill: classes.setdefault(fill.upper(), f"c{len(classes)}")
+    squeeze = lambda d: re.sub(r"\s+", " ", d.strip())
+
+    def fill_of(e):
+        m = re.search(r"(?:^|;)\s*fill:\s*(#[0-9a-fA-F]{6})", e.get("style") or "")
+        f = m.group(1) if m else e.get("fill")
+        if not f or not re.fullmatch(r"#[0-9a-fA-F]{6}", f):
+            sys.exit(f"{EDITED}: a shape without a plain fill colour ({e.get('id')})")
+        return f
+
+    def attrs(e, keys):
+        return "".join(f' {k}="{e.get(k)}"' for k in keys if e.get(k))
+
+    def walk(e, out):
+        tag = e.tag.replace(ns, "")
+        if tag == "g":
+            out.append(f"<g{attrs(e, ('class', 'transform', 'clip-path'))}>")
+            for c in e:
+                walk(c, out)
+            out.append("</g>")
+        elif tag == "path":
+            out.append(f'<path class="{cls(fill_of(e))}" d="{squeeze(e.get("d"))}"'
+                       f'{attrs(e, ("transform",))}/>')
+        else:
+            sys.exit(f"{EDITED}: unexpected <{tag}> in the land")
+
+    defs = []
+    for cp in root.iter(ns + "clipPath"):
+        inner = []
+        for c in cp:
+            tag = c.tag.replace(ns, "")
+            if tag == "path":
+                inner.append(f'<path d="{squeeze(c.get("d"))}"{attrs(c, ("transform",))}/>')
+            elif tag == "rect":
+                inner.append(f"<rect{attrs(c, ('x', 'y', 'width', 'height', 'transform'))}/>")
+            else:
+                sys.exit(f"{EDITED}: unexpected <{tag}> in a clip path")
+        defs.append(f'<clipPath id="{cp.get("id")}">{"".join(inner)}</clipPath>')
+    # the land group, then whatever else was drawn over it: shapes beside it
+    # in its parent group (the scene's own units), and shapes moved out to
+    # Inkscape's layer (millimetres: mapped back by the inverse of the
+    # parent's transform). All of it goes inside the land group.
+    parent = {c: p for p in root.iter() for c in p}
+    scene_g = parent[land]
+    a, b, c, d, e, f = [float(v) for v in
+                        re.findall(r"-?[\d.]+(?:e-?\d+)?", scene_g.get("transform", "matrix(1,0,0,1,0,0)"))]
+    if scene_g.get("transform", "").startswith("translate") or b or c:
+        sys.exit(f"{EDITED}: the scene's group is not a plain scale and move")
+    inverse = f"matrix({1 / a:.9g} 0 0 {1 / d:.9g} {-e / a:.9g} {-f / d:.9g})"
+    body = []
+    walk(land, body)
+    body.pop()                                     # reopen the land group
+    for e in scene_g:
+        if e is not land and e.tag != ns + "image":
+            walk(e, body)
+    for e in parent[scene_g]:
+        if e is not scene_g:
+            body.append(f'<g transform="{inverse}">')
+            walk(e, body)
+            body.append("</g>")
+    body.append("</g>")
+    vb = f"{X0} {TOP} {W - SHIFT - X0} {H - TOP}"
+    bx, by, bw, bh = box
+    lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
+             'aria-hidden="true" focusable="false">', "<defs>"] + defs + ["</defs>"]
+    for th in THEMES:
+        lines.append(f'<image class="sky sky-{th}" x="{bx}" y="{by}" width="{bw}" height="{bh}" '
+                     f'preserveAspectRatio="none" href="data:image/png;base64,{skies[th]}"/>')
+    lines += body + ["</svg>"]
+    colours = {c: {th: theme_colour(th, fill) for th in THEMES} for fill, c in classes.items()}
+    return "\n".join(lines), colours
+
+
 def scene_css(colours):
     classes = sorted(colours, key=lambda c: int(c[1:]))
     blocks = []
@@ -783,9 +884,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--debug", help="folder for a preview page per theme")
     ap.add_argument("--no-write", action="store_true")
+    ap.add_argument("--generated", action="store_true",
+                    help="draw the scene this script builds, not the hand-edited one")
     args = ap.parse_args()
     parts, colours, skies, box = build()
     svg = svg_markup(parts, skies, box)
+    if os.path.exists(EDITED) and not args.generated:
+        svg, colours = edited_markup(skies, box)
     css = scene_css(colours)
     print(f"{' + '.join(str(len(v)) for v in parts.values())} shapes, {len(svg) / 1024:.0f} KB of SVG, {len(colours)} colours")
     if args.debug:
