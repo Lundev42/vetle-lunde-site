@@ -55,8 +55,8 @@ test.describe("Hero section", () => {
     await expect(overlay).toBeVisible();
   });
 
-  test("has no photo caption", async ({ page }) => {
-    await expect(page.locator("#hjem .hero-caption")).toHaveCount(0);
+  test("has one photo caption, spelled Galdhøpiggen", async ({ page }) => {
+    await expect(page.locator("#hjem .hero-caption")).toHaveCount(1);
     await expect(page.locator("#hjem")).not.toContainText("Galdhøgpiggen");
   });
 });
@@ -794,8 +794,6 @@ test.describe("Accessibility improvements", () => {
     await page.goto(PAGE_URL);
     const aboutImg = page.locator('#om-meg img[src*="vetle-vinter"]');
     await expect(aboutImg).toHaveAttribute("loading", "lazy");
-    const studyImg = page.locator('img[src*="hvl-campus-sogndal"]');
-    await expect(studyImg).toHaveAttribute("loading", "lazy");
   });
 
   test("gallery images have loading=lazy on bacheloroppgave", async ({ page }) => {
@@ -807,9 +805,9 @@ test.describe("Accessibility improvements", () => {
 
   test("images have width and height attributes on index", async ({ page }) => {
     await page.goto(PAGE_URL);
-    const hvlImg = page.locator('img[src*="hvl-campus-sogndal"]');
-    await expect(hvlImg).toHaveAttribute("width");
-    await expect(hvlImg).toHaveAttribute("height");
+    const aboutImg = page.locator('#om-meg img[src*="vetle-vinter"]');
+    await expect(aboutImg).toHaveAttribute("width");
+    await expect(aboutImg).toHaveAttribute("height");
   });
 
   test("images have width and height attributes on bacheloroppgave", async ({ page }) => {
@@ -1246,9 +1244,9 @@ test.describe("Academic background split into BSc and MSc", () => {
     await expect(page.locator('summary[data-i18n="msc.accordion.title"]')).toHaveText("Oppnådd faglig kompetanse");
   });
 
-  test("campus photo only sits beside the BSc block", async ({ page }) => {
-    await expect(page.locator('.degree-row img[src*="hvl-campus-sogndal"]')).toHaveCount(1);
-    await expect(page.locator('#bakgrunn img[src*="hvl-campus-sogndal"]')).toHaveCount(1);
+  test("Bakgrunn has no campus photo or caption", async ({ page }) => {
+    await expect(page.locator('#bakgrunn img')).toHaveCount(0);
+    await expect(page.locator('#bakgrunn figcaption')).toHaveCount(0);
   });
 
   test("MSc strings switch to English", async ({ page }) => {
@@ -1263,6 +1261,18 @@ test.describe("Hero and About cleanup", () => {
     await page.goto(PAGE_URL);
     await expect(page.locator("#hjem .scroll-hint")).toBeVisible();
     await expect(page.locator("#hjem a.scroll-hint")).toHaveCount(0);
+  });
+
+  test("hero photo caption sits bottom left and switches language", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    const cap = page.locator("#hjem .hero-caption");
+    await expect(cap).toHaveText("Fin utsikt over Visdalen på vei opp til Galdhøpiggen");
+    const hero = await page.locator("#hjem").boundingBox();
+    const box = await cap.boundingBox();
+    expect(box.x - hero.x).toBeLessThan(40);
+    expect(hero.y + hero.height - (box.y + box.height)).toBeLessThan(40);
+    await page.click(".lang-toggle");
+    await expect(cap).toHaveText("A fine view over Visdalen on the way up to Galdhøpiggen");
   });
 
   test("About section has no geology intro button", async ({ page }) => {

@@ -252,6 +252,37 @@
       z-index: 1;
     }
 
+    /* Photo caption, bottom left on the hero picture. No box: the text sits
+       on a soft blur of the photo that fades out at its edges. */
+    #hjem .hero-caption {
+      position: absolute;
+      left: 20px;
+      bottom: 16px;
+      z-index: 2;
+      max-width: calc(100% - 40px);
+      margin: 0;
+      padding: 10px 18px;
+      font-size: 0.85rem;
+      font-style: italic;
+      line-height: 1.4;
+      text-align: left;
+      color: rgba(255, 255, 255, 0.88);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+      isolation: isolate;
+    }
+
+    #hjem .hero-caption::before {
+      content: "";
+      position: absolute;
+      inset: -6px -14px;
+      z-index: -1;
+      background: rgba(15, 17, 23, 0.22);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+      mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+    }
+
     #hjem .hero-content {
       position: relative;
       z-index: 2;
@@ -1414,27 +1445,14 @@
     }
 
     #bakgrunn .text-col {
-      /* Width of the campus photo column and the gap before it. Every block
-         in the section shares the same left column, but only the BSc block
-         actually has the photo beside it. */
-      --bg-media-w: min(38%, 400px);
-      --bg-gap: 48px;
       max-width: 100%;
       flex: 1 1 100%;
     }
 
-    /* BSc text + campus photo side by side. The photo is sticky inside this
-       grid row only, so it scrolls away once the BSc block ends. */
-    .degree-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) var(--bg-media-w);
-      column-gap: var(--bg-gap);
-      align-items: start;
-    }
-
-    /* Blocks without the photo keep the same text width as the BSc block */
+    /* The degree blocks keep a comfortable reading width */
+    .degree-row,
     .degree-narrow {
-      max-width: calc(100% - var(--bg-media-w) - var(--bg-gap));
+      max-width: calc(100% - min(38%, 400px) - 48px);
     }
 
     .degree + .degree,
@@ -1454,32 +1472,6 @@
     .course-table td.course-pending {
       font-style: italic;
       color: var(--text-muted);
-    }
-
-    #bakgrunn .media-col {
-      position: sticky;
-      top: 96px;
-    }
-
-    #bakgrunn .media-col figure {
-      margin: 0;
-      border-radius: var(--radius);
-      overflow: hidden;
-      border: 1px solid var(--card-border);
-    }
-
-    #bakgrunn .media-col img {
-      width: 100%;
-      height: auto;
-    }
-
-    #bakgrunn .media-col figcaption {
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      padding: 12px 14px;
-      background: var(--card-bg);
-      transition: background-color var(--duration-state) var(--ease-out-quart), color var(--duration-state) var(--ease-out-quart);
     }
 
     .study-layout {
@@ -1720,19 +1712,21 @@
         align-self: center;
       }
 
-      /* Bakgrunn: stack the BSc text and campus photo */
-      .degree-row {
-        grid-template-columns: minmax(0, 1fr);
-        row-gap: 24px;
+      #hjem .hero-caption {
+        left: 8px;
+        bottom: 10px;
+        max-width: calc(100% - 16px);
+        font-size: 0.78rem;
       }
 
+      #hjem .hero-caption::before {
+        inset: -6px -8px;
+      }
+
+      /* Bakgrunn: the degree blocks use the full width */
+      .degree-row,
       .degree-narrow {
         max-width: none;
-      }
-
-      #bakgrunn .media-col {
-        width: 100%;
-        position: static;
       }
 
       /* Course table scroll */
@@ -1975,6 +1969,7 @@
         <p class="subtitle" data-i18n-html="hero.subtitle">Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class="quote-attr">&ndash; Henrik Ibsen</span></p>
         <p class="scroll-hint" data-i18n="hero.scroll">↓ Scroll ned for å lese mer</p>
       </div>
+      <p class="hero-caption" data-i18n="hero.caption">Fin utsikt over Visdalen på vei opp til Galdhøpiggen</p>
     </section>
 
     <!-- About me -->
@@ -3552,7 +3547,7 @@
           <div class="background-subsection">
             <h3 data-i18n="background.study.title">Faglig bakgrunn</h3>
 
-            <!-- BSc – Sogndal (the campus photo only sits beside this block) -->
+            <!-- BSc – Sogndal -->
             <div class="degree-row">
               <div class="degree">
                 <h4 class="degree-title" data-i18n="background.bsc.title">Bachelor i geologi og geofare – Sogndal 2023–2026</h4>
@@ -3681,20 +3676,6 @@
                   </table>
                   </div>
                   </details>
-              </div>
-              <div class="media-col">
-                <figure>
-                  <img
-                    src="images/optimized/hvl-campus-sogndal-1000.webp"
-                    alt="Høgskulen på Vestlandet, Campus Sogndal"
-                    data-i18n-alt="study.hvl.alt"
-                    loading="lazy"
-                    decoding="async"
-                    width="1000"
-                    height="666"
-                  />
-                  <figcaption data-i18n="study.hvl.caption">Høgskulen på Vestlandet, Campus Sogndal</figcaption>
-                </figure>
               </div>
             </div>
 
@@ -3847,6 +3828,7 @@
         "hero.geolog": "geolog",
         "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
         "hero.scroll": "↓ Scroll ned for å lese mer",
+        "hero.caption": "Fin utsikt over Visdalen på vei opp til Galdhøpiggen",
         "about.title": "Om meg",
         "about.text": "Hei, mitt navn er Vetle! Jeg er 23 år og kommer fra Stavanger.",
         "about.text2": "Siden barndommen har jeg hatt en stor interesse for geologi. Ønsket om å forstå hvorfor landskapet ser ut slik som det gjør, har vært en viktig drivkraft i min interesse for faget.",
@@ -3863,8 +3845,6 @@
         "background.study.title": "Faglig bakgrunn",
         "background.job.title": "Jobberfaring",
         "study.text": "Jeg fullførte bachelorgraden i Geologi og geofare ved Høgskulen på Vestlandet i Sogndal i 2026. Studiet ga meg et solid fundament i geologi, med særlig vekt på geofare. Gjennom hyppig og omfattende feltarbeid opparbeidet jeg meg erfaring med geologisk kartlegging, datainnsamling og tolkning for å forstå komplekse geologiske systemer. Etter tre års studier avsluttet jeg graden med en bacheloroppgave om litologi og geokronologi i Trondheimsdekkekomplekset.",
-        "study.hvl.alt": "Høgskulen på Vestlandet, Campus Sogndal",
-        "study.hvl.caption": "Høgskulen på Vestlandet, Campus Sogndal",
         "background.bsc.title": "Bachelor i geologi og geofare – Sogndal 2023–2026",
         "background.msc.title": "Master i geologi – Trondheim 2026–2028",
         "msc.text": "Kommer ...",
@@ -3915,6 +3895,7 @@
         "hero.geolog": "geologist",
         "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
         "hero.scroll": "↓ Scroll down to read more",
+        "hero.caption": "A fine view over Visdalen on the way up to Galdhøpiggen",
         "about.title": "About me",
         "about.text": "Hi, my name is Vetle! I’m 23 years old and from Stavanger.",
         "about.text2": "Since childhood, I’ve had a great interest in geology. The desire to understand why the landscape looks the way it does has been an important driving force in my interest in the subject.",
@@ -3931,8 +3912,6 @@
         "background.study.title": "Academic background",
         "background.job.title": "Work Experience",
         "study.text": "I completed my bachelor’s degree in Geology and Geohazards at Western Norway University of Applied Sciences in Sogndal in 2026. The programme provided me with a strong foundation in geology, with a particular emphasis on geohazards. Through frequent and extensive fieldwork I developed experience in geological mapping, data collection and interpretation skills to understand complex geological systems. After three years of study, I concluded my degree with a bachelor’s thesis focusing on rock lithology and geochronology of the Trondheim Nappe Complex.",
-        "study.hvl.alt": "Western Norway University of Applied Sciences, Campus Sogndal",
-        "study.hvl.caption": "Western Norway University of Applied Sciences, Campus Sogndal",
         "background.bsc.title": "Bachelor in Geology and Geohazards – Sogndal 2023–2026",
         "background.msc.title": "Master in Geology – Trondheim 2026–2028",
         "msc.text": "Coming soon ...",
