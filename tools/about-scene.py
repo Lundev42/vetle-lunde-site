@@ -827,19 +827,25 @@ def edited_markup(skies, box):
     # in its parent group (the scene's own units), and shapes moved out to
     # Inkscape's layer (millimetres: mapped back by the inverse of the
     # parent's transform). All of it goes inside the land group.
+    # Inkscape puts the scene's units either on a group around the land group
+    # or on the land group itself; either way its contents are in scene units.
     parent = {c: p for p in root.iter() for c in p}
-    scene_g = parent[land]
+    own = land.get("transform")
+    scene_g = land if own else parent[land]
     a, b, c, d, e, f = [float(v) for v in
                         re.findall(r"-?[\d.]+(?:e-?\d+)?", scene_g.get("transform", "matrix(1,0,0,1,0,0)"))]
     if scene_g.get("transform", "").startswith("translate") or b or c:
         sys.exit(f"{EDITED}: the scene's group is not a plain scale and move")
     inverse = f"matrix({1 / a:.9g} 0 0 {1 / d:.9g} {-e / a:.9g} {-f / d:.9g})"
     body = []
+    if own:
+        land.attrib.pop("transform")
     walk(land, body)
     body.pop()                                     # reopen the land group
-    for e in scene_g:
-        if e is not land and e.tag != ns + "image":
-            walk(e, body)
+    if not own:
+        for e in scene_g:
+            if e is not land and e.tag != ns + "image":
+                walk(e, body)
     for e in parent[scene_g]:
         if e is not scene_g:
             body.append(f'<g transform="{inverse}">')
