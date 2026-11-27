@@ -252,8 +252,8 @@
       z-index: 1;
     }
 
-    /* Photo caption, bottom left on the hero picture. No box: the text sits
-       on a soft blur of the photo that fades out at its edges. */
+    /* Photo caption, bottom left on the hero picture. No border or solid box:
+       the text sits on a rectangle of blurred photo with softened edges. */
     #hjem .hero-caption {
       position: absolute;
       left: 20px;
@@ -274,13 +274,21 @@
     #hjem .hero-caption::before {
       content: "";
       position: absolute;
-      inset: -6px -14px;
+      inset: 0;
       z-index: -1;
+      border-radius: 6px;
       background: rgba(15, 17, 23, 0.22);
       -webkit-backdrop-filter: blur(7px);
       backdrop-filter: blur(7px);
-      -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
-      mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+      /* A rectangle over the whole text, with only its very edges softened */
+      -webkit-mask-image:
+        linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 8px), transparent),
+        linear-gradient(to bottom, transparent, #000 6px, #000 calc(100% - 6px), transparent);
+      -webkit-mask-composite: source-in;
+      mask-image:
+        linear-gradient(to right, transparent, #000 8px, #000 calc(100% - 8px), transparent),
+        linear-gradient(to bottom, transparent, #000 6px, #000 calc(100% - 6px), transparent);
+      mask-composite: intersect;
     }
 
     #hjem .hero-content {
@@ -1717,10 +1725,6 @@
         bottom: 10px;
         max-width: calc(100% - 16px);
         font-size: 0.78rem;
-      }
-
-      #hjem .hero-caption::before {
-        inset: -6px -8px;
       }
 
       /* Bakgrunn: the degree blocks use the full width */
