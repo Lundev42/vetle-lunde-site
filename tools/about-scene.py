@@ -209,7 +209,7 @@ ZENITH = {
     "devonian": "#191d2b",      # dusk blue above the sunset
     "cretaceous": "#0f121a",
     "hadean": "#170b08",
-    "cambrian": "#0b1713",
+    "cambrian": "#0a1619",      # teal night
     "quaternary": "#c9d2de",    # light theme: a cool, slightly darker blue-grey
 }
 
@@ -281,16 +281,21 @@ def theme_colour(theme, hexcol):
     # 0 = sunlit rock, 30 = grass; greys (little chroma, unreliable hue) count as rock
     warm = float(np.clip((C - 0.02) / 0.03, 0, 1)) if 25 <= h <= 115 else 0.0
     hh = (float(np.clip(h, 45, 95)) - 55) * warm
-    if theme == "cretaceous":                 # moonlit night, blue rock, teal grass
-        return lch_hex(0.16 + 0.58 * L ** 1.35, min(0.014 + 0.42 * C, 0.06), 262 - 2.3 * hh)
+    if theme == "cretaceous":                 # moonlit night, blue rock, teal grass; deep foreground shadows
+        return lch_hex(0.13 + 0.61 * L ** 1.35, min(0.014 + 0.42 * C, 0.06), 262 - 2.3 * hh)
     if theme == "hadean":                     # dark rock, the light parts glow like magma
         g = float(np.clip((L - 0.7) / 0.22, 0, 1))
-        return lch_hex(0.13 + 0.5 * L ** 1.9 + 0.2 * g, 0.03 + 0.75 * C + 0.13 * g,
-                       30 + 0.5 * hh + 30 * g)
-    if theme == "cambrian":                   # green life
-        return lch_hex(0.15 + 0.6 * L ** 1.25, min(0.016 + 0.72 * C, 0.075), 170 - 1.2 * hh)
+        # the deepest shadows are lifted a little and turn plum, so they keep
+        # their planes instead of sinking into one red-black
+        s = float(np.clip((0.5 - L) / 0.3, 0, 1))
+        return lch_hex(0.16 + 0.47 * L ** 1.7 + 0.2 * g, 0.03 + 0.75 * C + 0.13 * g,
+                       30 + 0.5 * hh + 30 * g - 42 * s)
+    if theme == "cambrian":                   # green life; sunlit faces turn yellow-green
+        g = float(np.clip((L - 0.68) / 0.2, 0, 1))
+        return lch_hex(0.15 + 0.6 * L ** 1.25, min(0.016 + 0.72 * C, 0.075) + 0.025 * g,
+                       170 - 1.2 * hh - 48 * g)
     if theme == "quaternary":                 # ice age: blue-grey rock and snow, sage steppe
-        return lch_hex(0.36 + 0.58 * L, 0.008 + 0.3 * C, 245 - 3.2 * hh)
+        return lch_hex(0.29 + 0.65 * L, 0.008 + 0.3 * C, 245 - 3.2 * hh)   # darker shadows anchor the foreground
     raise ValueError(theme)
 
 
@@ -309,7 +314,7 @@ def sky_map(theme, lab):
     elif theme == "hadean":
         L2, C2, h2 = 0.26 + 0.34 * t, 0.07 + 0.55 * C, 28 + 22 * t
     elif theme == "cambrian":
-        L2, C2, h2 = 0.28 + 0.32 * t, 0.03 + 0.4 * C, 165 - 15 * t
+        L2, C2, h2 = 0.28 + 0.32 * t, 0.03 + 0.4 * C, 192 - 14 * t   # teal, so the green peaks stand out
     elif theme == "quaternary":
         # winter dusk: blue-grey above, a pale warm glow on the horizon
         L2, C2, h2 = 0.8 + 0.15 * t, 0.018 + 0.12 * C, 245 - 170 * t ** 2
