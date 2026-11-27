@@ -823,35 +823,65 @@ def edited_markup(skies, box):
             else:
                 sys.exit(f"{EDITED}: unexpected <{tag}> in a clip path")
         defs.append(f'<clipPath id="{cp.get("id")}">{"".join(inner)}</clipPath>')
-    # the land group, then whatever else was drawn over it: shapes beside it
-    # in its parent group (the scene's own units), and shapes moved out to
-    # Inkscape's layer (millimetres: mapped back by the inverse of the
-    # parent's transform). All of it goes inside the land group.
-    # Inkscape puts the scene's units either on a group around the land group
-    # or on the land group itself; either way its contents are in scene units.
+    # The land group holds the scene in its own units (Inkscape may have put
+    # the scale to millimetres on it or on a group around it). Shapes drawn
+    # outside it, in any group up to the document itself, are mapped back
+    # into scene units (the inverse of the land's own placement) and drawn
+    # in document order with it: before its contents or after them.
     parent = {c: p for p in root.iter() for c in p}
-    own = land.get("transform")
-    scene_g = land if own else parent[land]
-    a, b, c, d, e, f = [float(v) for v in
-                        re.findall(r"-?[\d.]+(?:e-?\d+)?", scene_g.get("transform", "matrix(1,0,0,1,0,0)"))]
-    if scene_g.get("transform", "").startswith("translate") or b or c:
-        sys.exit(f"{EDITED}: the scene's group is not a plain scale and move")
-    inverse = f"matrix({1 / a:.9g} 0 0 {1 / d:.9g} {-e / a:.9g} {-f / d:.9g})"
+
+    def matrix(tr):
+        m = np.eye(3)
+        for name, args in re.findall(r"([a-zA-Z]+)\s*\(([^)]*)\)", tr or ""):
+            v = [float(x) for x in re.findall(r"-?[\d.]+(?:e-?\d+)?", args)]
+            if name == "matrix":
+                t = [[v[0], v[2], v[4]], [v[1], v[3], v[5]], [0, 0, 1]]
+            elif name == "translate":
+                t = [[1, 0, v[0]], [0, 1, v[1] if len(v) > 1 else 0], [0, 0, 1]]
+            elif name == "scale":
+                t = [[v[0], 0, 0], [0, v[1] if len(v) > 1 else v[0], 0], [0, 0, 1]]
+            else:
+                sys.exit(f"{EDITED}: unsupported transform {name}()")
+            m = m @ np.array(t, float)
+        return m
+
+    def placement(e):                              # e's transform and its groups'
+        chain = []
+        while e is not None:
+            chain.append(e)
+            e = parent.get(e)
+        m = np.eye(3)
+        for n in reversed(chain):
+            m = m @ matrix(n.get("transform"))
+        return m
+
+    to_scene = np.linalg.inv(placement(land))
+    way = set()
+    n = land
+    while n is not None:
+        way.add(n)
+        n = parent.get(n)
+    before, after, past = [], [], [False]
+
+    def extras(node):
+        for c in node:
+            if c is land:
+                past[0] = True
+            elif c in way:
+                extras(c)
+            elif c.tag in (ns + "g", ns + "path"):  # not defs, images, Inkscape's settings
+                m = to_scene @ placement(parent[c])
+                out = after if past[0] else before
+                out.append(f'<g transform="matrix({m[0, 0]:.9g} {m[1, 0]:.9g} {m[0, 1]:.9g} '
+                           f'{m[1, 1]:.9g} {m[0, 2]:.9g} {m[1, 2]:.9g})">')
+                walk(c, out)
+                out.append("</g>")
+
+    extras(root)
+    land.attrib.pop("transform", None)
     body = []
-    if own:
-        land.attrib.pop("transform")
     walk(land, body)
-    body.pop()                                     # reopen the land group
-    if not own:
-        for e in scene_g:
-            if e is not land and e.tag != ns + "image":
-                walk(e, body)
-    for e in parent[scene_g]:
-        if e is not scene_g:
-            body.append(f'<g transform="{inverse}">')
-            walk(e, body)
-            body.append("</g>")
-    body.append("</g>")
+    body = body[:1] + before + body[1:-1] + after + body[-1:]
     vb = f"{X0} {TOP} {W - SHIFT - X0} {H - TOP}"
     bx, by, bw, bh = box
     lines = [f'<svg class="about-scene" viewBox="{vb}" preserveAspectRatio="xMidYMax slice" '
