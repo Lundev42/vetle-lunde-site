@@ -1040,7 +1040,7 @@ test.describe("About me mountain background", () => {
     // the land's highest point is the top of the big tower on the right
     const towersTop = svgEl.querySelector("g.land").getBoundingClientRect().top;
     const boxes = [];
-    document.querySelectorAll("#om-meg h2, #om-meg p").forEach((el) => {
+    document.querySelectorAll("#om-meg .section-inner h2, #om-meg .section-inner p").forEach((el) => {
       const range = document.createRange();
       range.selectNodeContents(el);
       Array.from(range.getClientRects()).forEach((b) => boxes.push(b));
@@ -1349,5 +1349,75 @@ test.describe("Course tables", () => {
     await page.click(".lang-toggle");
     await expect(table).toContainText("Geomechanics for CO₂ Storage");
     await expect(table.locator(".course-pending")).toHaveText("Coming soon ...");
+  });
+});
+
+test.describe("Mountain names over the About picture", () => {
+  test("three labels sit right above their summits and show heights", async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(PAGE_URL);
+    const labels = page.locator("#om-meg .peak");
+    await expect(labels).toHaveCount(3);
+    await expect(page.locator('#om-meg .peak[data-peak="trecime"] .peak-alt')).toHaveText("2999 moh.");
+    const svg = page.locator("#om-meg .about-peaks");
+    for (const name of ["seceda", "trecime", "cinque"]) {
+      const li = page.locator(`#om-meg .peak[data-peak="${name}"]`);
+      await expect(li).toBeVisible();
+      const gap = await li.evaluate((el) => {
+        const svg = document.querySelector("#om-meg .about-peaks");
+        const pt = svg.createSVGPoint();
+        pt.x = +el.dataset.x; pt.y = +el.dataset.y;
+        const p = pt.matrixTransform(svg.getScreenCTM());
+        const r = el.getBoundingClientRect();
+        return { dx: Math.abs(r.left + r.width / 2 - p.x), dy: p.y - r.bottom };
+      });
+      expect(gap.dx).toBeLessThan(2);
+      expect(Math.abs(gap.dy)).toBeLessThan(2);
+    }
+    await expect(svg).toHaveAttribute("viewBox", "-2553 -67 5250 1507");
+  });
+
+  test("tapping a name highlights that mountain's ridge, tapping again clears it", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    const btn = page.locator('#om-meg .peak[data-peak="trecime"] .peak-name');
+    await btn.click();
+    await expect(btn).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("#om-meg")).toHaveAttribute("data-peak-active", "trecime");
+    await expect(page.locator('#om-meg .peak-outline[data-peak="trecime"]')).toHaveCSS("opacity", "1");
+    await expect(page.locator('#om-meg .peak-outline[data-peak="seceda"]')).toHaveCSS("opacity", "0");
+    await btn.click();
+    await expect(btn).toHaveAttribute("aria-pressed", "false");
+    await expect(page.locator("#om-meg")).not.toHaveAttribute("data-peak-active", /.*/);
+  });
+
+  test("map links open OpenStreetMap in a new tab", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    const links = page.locator("#om-meg .peak-map");
+    await expect(links).toHaveCount(3);
+    for (let i = 0; i < 3; i++) {
+      await expect(links.nth(i)).toHaveAttribute("href", /^https:\/\/www\.openstreetmap\.org\//);
+      await expect(links.nth(i)).toHaveAttribute("target", "_blank");
+      await expect(links.nth(i)).toHaveAttribute("rel", /noopener/);
+    }
+  });
+
+  test("Dolomites caption and units switch to English", async ({ page }) => {
+    await page.goto(PAGE_URL);
+    await expect(page.locator("#om-meg .scene-caption")).toHaveText("Dolomittene, Italia");
+    await page.click(".lang-toggle");
+    await expect(page.locator("#om-meg .scene-caption")).toHaveText("The Dolomites, Italy");
+    await expect(page.locator('#om-meg .peak[data-peak="seceda"] .peak-alt')).toHaveText("2519 m");
+    await expect(page.locator('#om-meg .peak[data-peak="seceda"] .peak-map')).toHaveAttribute("aria-label", "Seceda on the map (opens in a new tab)");
+  });
+
+  test("labels never cover the profile photo on a phone", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(PAGE_URL);
+    const photo = await page.locator("#om-meg .media-col img").boundingBox();
+    for (const li of await page.locator("#om-meg .peak:visible").all()) {
+      const r = await li.boundingBox();
+      const overlap = !(r.y >= photo.y + photo.height || r.y + r.height <= photo.y || r.x >= photo.x + photo.width || r.x + r.width <= photo.x);
+      expect(overlap).toBe(false);
+    }
   });
 });

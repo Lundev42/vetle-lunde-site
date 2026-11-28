@@ -400,6 +400,189 @@
       pointer-events: none;
     }
 
+    /* Mountain names over the picture. The ridge lines share the picture's
+       geometry; the labels are placed over each summit by site.js (they keep
+       their own text size, whatever the picture's scale). */
+    #om-meg .about-peaks {
+      position: absolute;
+      z-index: 0;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 5250 / 1507;
+      min-height: var(--scene-min-h, 0px);
+      max-width: none;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    #om-meg .peak-outline {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      opacity: 0;
+      filter: drop-shadow(0 0 4px var(--accent));
+      transition: stroke-dashoffset 0.9s var(--ease-out-quart), opacity 0.25s ease;
+    }
+
+    #om-meg[data-peak-active="seceda"] .peak-outline[data-peak="seceda"],
+    #om-meg[data-peak-active="trecime"] .peak-outline[data-peak="trecime"],
+    #om-meg[data-peak-active="cinque"] .peak-outline[data-peak="cinque"] {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+
+    #om-meg .peak-labels {
+      display: none;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .js #om-meg .peak-labels { display: block; }
+
+    #om-meg .peak {
+      --lead: 26px;
+      position: absolute;
+      z-index: 2;
+      display: block;
+      margin: 0;
+      padding-bottom: var(--lead);
+      transform: translate(-50%, -100%);
+      white-space: nowrap;
+      visibility: hidden;
+    }
+
+    #om-meg .peak.is-placed { visibility: visible; }
+    #om-meg .peak[hidden] { display: none; }
+
+    /* the thin line from the label down to the summit */
+    #om-meg .peak::after {
+      content: "";
+      position: absolute;
+      left: calc(50% + var(--lead-x, 0px));
+      bottom: 4px;
+      height: calc(var(--lead) - 8px);
+      border-left: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 0 3px rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+    }
+
+    #om-meg .peak-name {
+      position: relative;
+    }
+
+    #om-meg .peak-name,
+    #om-meg .peak-map {
+      isolation: isolate;
+      border: 0;
+      background: none;
+      color: #fff;
+      font: inherit;
+      cursor: pointer;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.6);
+    }
+
+    /* same soft, borderless blur as the photo captions */
+    #om-meg .peak-name::before,
+    #om-meg .peak-map::before,
+    #om-meg .scene-caption::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: 6px;
+      background: rgba(15, 17, 23, 0.26);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+      transition: background-color var(--duration-state) var(--ease-out-quart);
+    }
+
+    #om-meg .peak-name {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px 10px 6px;
+      line-height: 1.2;
+    }
+
+    #om-meg .peak-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    #om-meg .peak-alt {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.82);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* the map pin hangs to the right, so the name stays centred on its summit */
+    #om-meg .peak-map {
+      position: absolute;
+      left: calc(100% + 4px);
+      top: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border-radius: 6px;
+    }
+
+    #om-meg .peak-map svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+    }
+
+    #om-meg .peak-name:hover::before,
+    #om-meg .peak-map:hover::before,
+    #om-meg .peak-name[aria-pressed="true"]::before {
+      background: rgba(15, 17, 23, 0.5);
+    }
+
+    /* the pinned label gets an accent bar (text stays white for contrast) */
+    #om-meg .peak-name[aria-pressed="true"]::before {
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    #om-meg .peak-name:focus-visible,
+    #om-meg .peak-map:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    #om-meg .scene-caption {
+      position: absolute;
+      right: 20px;
+      bottom: 16px;
+      z-index: 2;
+      margin: 0;
+      padding: 10px 18px;
+      isolation: isolate;
+      font-size: 0.85rem;
+      font-style: italic;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #om-meg .peak-outline { transition: opacity 0.2s ease; }
+    }
+
     /* scene-tones:start */
     #om-meg {
       --sc0: #5e6a82; --sc1: #4b6578; --sc2: #2c5763; --sc3: #2a5364; --sc4: #264e4d; --sc5: #223e3e;
@@ -1711,7 +1894,16 @@
         --scene-h: clamp(230px, 48.5vw, 760px);
         --scene-min-h: var(--scene-h);
         --scene-pb: calc(var(--scene-h) * 0.86 + var(--scene-gap));
+        /* room for the mountain labels above the summits */
+        --scene-gap: 72px;
       }
+
+      #om-meg .peak { --lead: 16px; }
+      #om-meg .peak-name { padding: 4px 8px 5px; }
+      #om-meg .peak-title { font-size: 0.7rem; }
+      #om-meg .peak-alt { font-size: 0.66rem; }
+      #om-meg .peak-map { width: 26px; height: 26px; }
+      #om-meg .scene-caption { right: 8px; bottom: 10px; font-size: 0.78rem; }
 
       #om-meg .media-col {
         flex: 0 0 auto;
@@ -3519,6 +3711,29 @@
 </g>
 </g>
 </svg>
+      <!-- The ridge line of each named mountain, drawn over the picture when
+           its label below is hovered, focused or tapped. Same geometry as the
+           picture, so the lines sit exactly on the summits. -->
+      <svg class="about-peaks" viewBox="-2553 -67 5250 1507" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+        <path class="peak-outline" data-peak="seceda" pathLength="1" d="M-2082.7,616.6 -2073.1,601.6 -2047.1,571.5 -2036.2,548.2 -2034.8,535.9 -2018.4,504.5 -2010.2,471.7 -1991.1,418.4 -1987,414.2 -1981.5,367.8 -1967.8,292.6 -1939.1,266.6 -1925.5,262.5 -1913.2,265.2 -1898.1,254.3 -1887.2,257 -1879,268 -1874.9,269.3 -1850.3,240.6 -1840.7,221.5 -1812,196.9 -1803.8,196.9 -1787.4,205.1 -1776.4,205.1 -1764.1,211.9 -1758.7,218.7 -1742.3,222.8 -1728.6,232.4 -1691.7,272.1 -1678,280.3 -1667.1,283 -1643.8,300.8 -1602.8,317.2 -1597.3,304.9 -1591.9,299.4 -1586.4,283 -1575.5,273.4 -1568.6,274.8 -1537.2,306.2 -1518,343.2 -1511.2,350 -1498.9,302.1 -1486.6,283 -1462,210.5 -1453.8,207.8 -1446.9,211.9 -1410,276.2 -1393.6,244.7 -1389.5,195.5 -1377.2,146.3 -1374.5,140.8 -1367.6,138.1 -1349.9,140.8 -1326.6,150.4 -1318.4,162.7 -1303.4,173.6 -1295.2,188.7 -1284.2,196.9 -1281.5,202.3 -1270.6,202.3 -1267.8,211.9 -1265.1,213.3 -1256.9,205.1 -1248.7,205.1 -1229.6,222.8 -1226.8,229.7 -1217.3,240.6 -1202.2,272.1 -1181.7,288.5 -1170.8,314.4 -1163.9,319.9 -1135.2,393.7 -1129.8,401.9 -1128.4,411.5 -1114.7,448.4 -1109.2,448.4"/>
+        <path class="peak-outline" data-peak="trecime" pathLength="1" d="M-124.9,693.2 -118,693.2 -116.7,544.1 -104.4,499 -100.3,494.9 -66.1,485.3 -59.2,478.5 -56.5,471.7 -48.3,464.8 -26.4,462.1 -11.4,438.9 -3.2,386.9 6.4,360.9 13.2,356.8 24.1,359.6 32.4,369.1 41.9,392.4 46,392.4 54.2,374.6 61.1,371.9 76.1,377.3 81.6,344.5 88.4,333.6 114.4,318.5 125.3,317.2 130.8,321.3 147.2,366.4 154,418.4 158.1,422.5 165,501.8 166.3,556.4 175.9,522.3 186.8,448.4 208.7,408.8 214.2,389.6 227.9,374.6 242.9,335 262,317.2 271.6,296.7 285.3,283 294.9,252.9 326.3,226.9 335.9,195.5 378.2,154.5 396,146.3 430.2,158.6 442.5,172.3 453.4,203.7 454.8,216 464.4,236.5 469.9,266.6 475.3,270.7 489,259.8 494.5,265.2 499.9,317.2 516.3,337.7 524.5,362.3 535.5,384.2 538.2,419.7 549.1,452.5 554.6,500.4 557.4,504.5 571,596.1 576.5,585.1 591.5,523.6 629.8,458 644.9,445.7 650.3,427.9 673.6,406 677.7,406 685.9,360.9 692.7,352.7 705,345.9 714.6,333.6 728.2,330.9 729.6,326.8 737.8,319.9 752.9,319.9 804.8,365 811.6,380.1 821.2,388.3 829.4,406 841.7,422.5 847.2,437.5 865,444.3 875.9,452.5 892.3,489.4 907.4,508.6 923.8,551 926.5,589.2 932,615.2 938.8,619.3 944.3,634.4 957.9,652.1 967.5,678.1 983.9,698.6 989.4,685 996.2,678.1 1004.4,678.1 1015.4,687.7 1018.1,716.4 1023.6,739.6 1033.1,746.5 1042.7,773.8 1050.9,772.5"/>
+        <path class="peak-outline" data-peak="cinque" pathLength="1" d="M1707.2,787.5 1730.4,787.5 1735.9,758.8 1742.7,745.1 1752.3,689.1 1761.8,682.2 1776.9,680.9 1800.1,667.2 1812.4,665.8 1815.2,663.1 1832.9,664.4 1839.8,668.5 1849.3,680.9 1853.4,739.6 1860.3,749.2 1863,783.4 1871.2,793 1882.2,716.4 1894.5,715 1904,719.1 1920.4,708.2 1925.9,697.3 1931.4,693.2 1945,693.2 1950.5,697.3 1983.3,706.8 1986.1,712.3 1987.4,730.1 1992.9,738.3 2020.2,739.6 2027.1,749.2 2031.2,750.6 2055.8,775.2 2064,779.3 2068.1,596.1 2079,542.8 2096.8,520.9 2102.3,479.9 2110.5,471.7 2113.2,451.2 2147.4,415.6 2152.9,414.2 2158.3,406 2165.2,406 2167.9,403.3 2224,403.3 2241.7,408.8 2260.9,419.7 2270.4,417 2303.2,418.4 2340.2,438.9 2347,449.8 2371.6,477.1 2381.2,504.5 2393.5,566 2396.2,682.2 2405.8,731.4 2418.1,741"/>
+      </svg>
+      <ul class="peak-labels" aria-label="Fjellene i bildet" data-i18n-aria-label="peaks.label">
+        <li class="peak" data-peak="seceda" data-x="-1367.6" data-y="138.1">
+          <button type="button" class="peak-name" aria-pressed="false"><span class="peak-title">Seceda</span> <span class="peak-alt">2519 <span data-i18n="peaks.unit">moh.</span></span></button>
+          <a class="peak-map" href="https://www.openstreetmap.org/?mlat=46.6003&amp;mlon=11.7236#map=14/46.6003/11.7236" target="_blank" rel="noopener noreferrer" aria-label="Seceda på kartet (åpnes i ny fane)" data-i18n-aria-label="peaks.seceda.map"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 2.5a7 7 0 0 0-7 7c0 5.2 7 12 7 12s7-6.8 7-12a7 7 0 0 0-7-7zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2z"/></svg></a>
+        </li>
+        <li class="peak" data-peak="trecime" data-x="396" data-y="146.3">
+          <button type="button" class="peak-name" aria-pressed="false"><span class="peak-title">Tre Cime di Lavaredo</span> <span class="peak-alt">2999 <span data-i18n="peaks.unit">moh.</span></span></button>
+          <a class="peak-map" href="https://www.openstreetmap.org/?mlat=46.6186&amp;mlon=12.3047#map=14/46.6186/12.3047" target="_blank" rel="noopener noreferrer" aria-label="Tre Cime di Lavaredo på kartet (åpnes i ny fane)" data-i18n-aria-label="peaks.trecime.map"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 2.5a7 7 0 0 0-7 7c0 5.2 7 12 7 12s7-6.8 7-12a7 7 0 0 0-7-7zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2z"/></svg></a>
+        </li>
+        <li class="peak" data-peak="cinque" data-x="2167.9" data-y="403.3">
+          <button type="button" class="peak-name" aria-pressed="false"><span class="peak-title">Cinque Torri</span> <span class="peak-alt">2361 <span data-i18n="peaks.unit">moh.</span></span></button>
+          <a class="peak-map" href="https://www.openstreetmap.org/?mlat=46.5122&amp;mlon=12.0497#map=14/46.5122/12.0497" target="_blank" rel="noopener noreferrer" aria-label="Cinque Torri på kartet (åpnes i ny fane)" data-i18n-aria-label="peaks.cinque.map"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 2.5a7 7 0 0 0-7 7c0 5.2 7 12 7 12s7-6.8 7-12a7 7 0 0 0-7-7zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2z"/></svg></a>
+        </li>
+      </ul>
+      <p class="scene-caption" data-i18n="peaks.caption">Dolomittene, Italia</p>
       <div class="section-inner reveal">
         <div class="text-col">
           <h2 data-i18n="about.title">Om meg</h2>
@@ -3833,6 +4048,12 @@
         "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
         "hero.scroll": "↓ Scroll ned for å lese mer",
         "hero.caption": "Fin utsikt over Visdalen på vei opp til Galdhøpiggen",
+        "peaks.label": "Fjellene i bildet",
+        "peaks.unit": "moh.",
+        "peaks.caption": "Dolomittene, Italia",
+        "peaks.seceda.map": "Seceda på kartet (åpnes i ny fane)",
+        "peaks.trecime.map": "Tre Cime di Lavaredo på kartet (åpnes i ny fane)",
+        "peaks.cinque.map": "Cinque Torri på kartet (åpnes i ny fane)",
         "about.title": "Om meg",
         "about.text": "Hei, mitt navn er Vetle! Jeg er 23 år og kommer fra Stavanger.",
         "about.text2": "Siden barndommen har jeg hatt en stor interesse for geologi. Ønsket om å forstå hvorfor landskapet ser ut slik som det gjør, har vært en viktig drivkraft i min interesse for faget.",
@@ -3900,6 +4121,12 @@
         "hero.subtitle": "Bergvæg, brist med drøn og brag<br>for mit tunge hammerslag!<br>Nedad må jeg vejen bryde,<br>til jeg hører malmen lyde.<br><span class=\"quote-attr\">– Henrik Ibsen<\/span>",
         "hero.scroll": "↓ Scroll down to read more",
         "hero.caption": "A fine view over Visdalen on the way up to Galdhøpiggen",
+        "peaks.label": "The mountains in the picture",
+        "peaks.unit": "m",
+        "peaks.caption": "The Dolomites, Italy",
+        "peaks.seceda.map": "Seceda on the map (opens in a new tab)",
+        "peaks.trecime.map": "Tre Cime di Lavaredo on the map (opens in a new tab)",
+        "peaks.cinque.map": "Cinque Torri on the map (opens in a new tab)",
         "about.title": "About me",
         "about.text": "Hi, my name is Vetle! I’m 23 years old and from Stavanger.",
         "about.text2": "Since childhood, I’ve had a great interest in geology. The desire to understand why the landscape looks the way it does has been an important driving force in my interest in the subject.",

@@ -285,6 +285,84 @@
     update();
   })();
 
+  /* ── Mountain names over the About picture ── */
+  (function () {
+    var section = document.getElementById("om-meg");
+    var svg = section && section.querySelector(".about-peaks");
+    var peaks = section ? section.querySelectorAll(".peak") : [];
+    if (!svg || !peaks.length || !svg.getScreenCTM) return;
+
+    var pinned = null;
+
+    function show(name) {
+      if (name) section.setAttribute("data-peak-active", name);
+      else section.removeAttribute("data-peak-active");
+    }
+
+    function pin(name) {
+      pinned = name;
+      forEach(peaks, function (li) {
+        var on = li.getAttribute("data-peak") === name;
+        li.querySelector(".peak-name").setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      show(name);
+    }
+
+    // Each label sits over its summit, given in the picture's own units.
+    // A label never runs off the page: it slides sideways and its line
+    // keeps pointing at the summit. Summits cropped away on narrow
+    // screens get no label.
+    function place() {
+      var m = svg.getScreenCTM();
+      if (!m) return;
+      var box = section.getBoundingClientRect();
+      var pt = svg.createSVGPoint();
+      forEach(peaks, function (li) {
+        pt.x = parseFloat(li.getAttribute("data-x"));
+        pt.y = parseFloat(li.getAttribute("data-y"));
+        var p = pt.matrixTransform(m);
+        var x = p.x - box.left;
+        var y = p.y - box.top;
+        var inside = x > 12 && x < box.width - 12;
+        li.classList.toggle("is-placed", inside);
+        li.hidden = !inside;
+        if (!inside) return;
+        var half = li.offsetWidth / 2;
+        var pinW = li.querySelector(".peak-map").offsetWidth + 4;
+        var left = Math.min(Math.max(x, half + 8), box.width - half - pinW - 8);
+        li.style.left = left + "px";
+        li.style.top = y + "px";
+        li.style.setProperty("--lead-x", (x - left) + "px");
+      });
+    }
+
+    forEach(peaks, function (li) {
+      var name = li.getAttribute("data-peak");
+      var button = li.querySelector(".peak-name");
+      li.addEventListener("mouseenter", function () { show(name); });
+      li.addEventListener("mouseleave", function () { show(pinned); });
+      li.addEventListener("focusin", function () { show(name); });
+      li.addEventListener("focusout", function () { show(pinned); });
+      button.addEventListener("click", function () { pin(pinned === name ? null : name); });
+    });
+
+    document.addEventListener("click", function (e) {
+      if (pinned && !e.target.closest(".peak")) pin(null);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && pinned) pin(null);
+    });
+
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("load", place);
+    if (window.ResizeObserver) {
+      var ro = new ResizeObserver(place);
+      ro.observe(section);
+      forEach(peaks, function (li) { ro.observe(li); });
+    }
+  })();
+
   /* ── Mobile menu ── */
   (function () {
     var hamburger = document.getElementById("hamburger");
